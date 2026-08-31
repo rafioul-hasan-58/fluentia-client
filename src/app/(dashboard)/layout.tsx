@@ -7,11 +7,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-paper text-ink flex">
+    <div className="min-h-screen bg-[#030712] text-slate-100 flex">
       {/* Sidebar Navigation */}
       <Sidebar />
 
-      {/* Main Content Area (Offset for sidebar width on large screens) */}
+      {/* Main Content Area */}
       <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
         {children}
       </div>

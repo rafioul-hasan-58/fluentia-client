@@ -120,7 +120,7 @@ export function Sidebar() {
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed bottom-6 right-6 z-50 p-3.5 bg-primary text-paper rounded-full shadow-lg hover:bg-primary-dark transition-all duration-200"
+        className="lg:hidden fixed bottom-6 right-6 z-50 p-3.5 bg-primary text-white rounded-full shadow-[0_0_20px_rgba(37,99,235,0.6)] hover:bg-primary-dark transition-all duration-200"
         aria-label="Toggle Navigation"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,34 +136,34 @@ export function Sidebar() {
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="lg:hidden fixed inset-0 bg-ink/30 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-paper border-r border-ink/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#0B132B] border-r border-white/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 text-white ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="h-20 flex items-center px-6 border-b border-ink/5">
+        <div className="h-20 flex items-center px-6 border-b border-white/10">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 group-hover:scale-105 transition-transform duration-200">
+            <div className="relative w-12 h-12 group-hover:scale-105 transition-transform duration-200">
               <Image
                 src="/logo.png"
                 alt="Fluentia Logo"
-                width={40}
-                height={40}
+                width={48}
+                height={48}
                 className="object-contain w-full h-full"
                 priority
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-xl font-bold tracking-tight text-ink">
+              <span className="font-display text-xl font-bold tracking-tight text-white">
                 Fluentia
               </span>
-              <span className="text-[11px] text-ink-soft font-medium -mt-1">
+              <span className="text-[11px] text-cyan-300 font-medium -mt-1">
                 Learning Hub
               </span>
             </div>
@@ -175,7 +175,7 @@ export function Sidebar() {
           {NAV_ITEMS.map((section, idx) => (
             <div key={idx} className="space-y-1">
               {section.category && (
-                <div className="px-3 pb-2 text-[11px] font-semibold text-ink-soft/75 uppercase tracking-wider">
+                <div className="px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                   {section.category}
                 </div>
               )}
@@ -190,14 +190,14 @@ export function Sidebar() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
                       isActive
-                        ? "bg-primary text-white shadow-sm shadow-primary/20"
-                        : "text-ink-soft hover:bg-primary-light/50 hover:text-ink"
+                        ? "bg-primary text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+                        : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
                         className={`w-5 h-5 transition-colors ${
-                          isActive ? "text-white" : "text-ink-soft group-hover:text-primary"
+                          isActive ? "text-white" : "text-slate-400 group-hover:text-cyan-300"
                         }`}
                       />
                       <span>{item.name}</span>
@@ -208,7 +208,7 @@ export function Sidebar() {
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                           isActive
                             ? "bg-white/20 text-white"
-                            : "bg-amber-light text-amber border border-amber/20"
+                            : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                         }`}
                       >
                         {item.badge}
@@ -222,14 +222,14 @@ export function Sidebar() {
         </div>
 
         {/* User Card / Footer */}
-        <div className="p-4 border-t border-ink/5 bg-ink/[0.02]">
-          <div className="flex items-center gap-3 p-2 rounded-xl">
-            <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary">
+        <div className="p-4 border-t border-white/10 bg-white/[0.02]">
+          <div className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.04] border border-white/5">
+            <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-sm font-bold text-cyan-300">
               FL
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-ink truncate">Learner Account</p>
-              <p className="text-[11px] text-ink-soft truncate">Level: Intermediate B2</p>
+              <p className="text-xs font-semibold text-white truncate">Learner Account</p>
+              <p className="text-[11px] text-slate-400 truncate">Level: Intermediate B2</p>
             </div>
           </div>
         </div>

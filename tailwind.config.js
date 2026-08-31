@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,19 +10,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        paper: "#F8FAFC",
+        paper: "#030712", // Deep space black
+        "paper-card": "#0b132b", // Surface card background
+        "paper-elevated": "#111827", // Elevated dialog / dropdown
         ink: {
-          DEFAULT: "#0F172A",
-          soft: "#475569",
+          DEFAULT: "#F8FAFC", // Crisp white text
+          soft: "#94A3B8", // Slate-400 secondary text
         },
         primary: {
           DEFAULT: "#2563EB",
           dark: "#1D4ED8",
-          light: "#EFF6FF",
+          light: "#1e3a8a",
         },
         amber: {
           DEFAULT: "#F59E0B",
-          light: "#FEF3C7",
+          light: "#78350f",
         },
       },
       fontFamily: {
