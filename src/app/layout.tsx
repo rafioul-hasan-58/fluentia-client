@@ -17,6 +17,11 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "Fluentia - Your Personal AI English Tutor",
   description: "Master English speaking, reading, writing, and vocabulary with personalized AI-powered coaching.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

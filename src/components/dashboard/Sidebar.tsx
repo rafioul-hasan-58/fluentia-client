@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 interface NavItem {
@@ -148,8 +149,15 @@ export function Sidebar() {
         {/* Brand Header */}
         <div className="h-20 flex items-center px-6 border-b border-ink/5">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-display font-bold text-xl shadow-md shadow-primary/10 group-hover:scale-105 transition-transform duration-200">
-              F
+            <div className="relative w-10 h-10 group-hover:scale-105 transition-transform duration-200">
+              <Image
+                src="/logo.png"
+                alt="Fluentia Logo"
+                width={40}
+                height={40}
+                className="object-contain w-full h-full"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-display text-xl font-bold tracking-tight text-ink">

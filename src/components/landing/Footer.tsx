@@ -1,13 +1,20 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
   return (
     <footer className="bg-paper border-t border-ink/5 py-12">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-paper font-display font-bold text-base">
-            F
+          <div className="relative w-8 h-8">
+            <Image
+              src="/logo.png"
+              alt="Fluentia Logo"
+              width={32}
+              height={32}
+              className="object-contain w-full h-full"
+            />
           </div>
           <span className="font-display text-lg font-bold text-ink">
             Fluentia

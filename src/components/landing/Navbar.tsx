@@ -1,13 +1,21 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export function Navbar() {
   return (
     <header className="sticky top-0 z-40 bg-paper/85 backdrop-blur-md border-b border-ink/5">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-display font-bold text-xl shadow-md shadow-primary/10 group-hover:scale-105 transition-transform duration-200">
-            F
+        <Link href="/" className="flex items-center gap-3.5 group">
+          <div className="relative w-14 h-14 group-hover:scale-105 transition-transform duration-200">
+            <Image
+              src="/logo.png"
+              alt="Fluentia Logo"
+              width={56}
+              height={56}
+              className="object-contain w-full h-full"
+              priority
+            />
           </div>
           <span className="font-display text-2xl font-bold tracking-tight text-ink">
             Fluentia
