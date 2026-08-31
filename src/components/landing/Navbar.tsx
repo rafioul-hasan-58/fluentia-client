@@ -18,6 +18,7 @@ export function Navbar() {
           <a href="#features" className="hover:text-jade transition-colors">Features</a>
           <a href="#demo" className="hover:text-jade transition-colors">Interactive Demo</a>
           <a href="#cta" className="hover:text-jade transition-colors">Get Started</a>
+          <Link href="/dashboard" className="hover:text-jade transition-colors">Dashboard</Link>
         </nav>
 
         <div>
