@@ -13,7 +13,7 @@ const FEATURE_CARDS: FeatureCard[] = [
     title: "Grammar Master",
     description: "Get real-time sentence restructuring and grammatical corrections with clear, friendly rules.",
     icon: "✍️",
-    color: "bg-jade-light/40 border-jade/20 text-jade",
+    color: "bg-primary-light/40 border-primary/20 text-primary",
     badge: "Grammar",
   },
   {
@@ -27,7 +27,7 @@ const FEATURE_CARDS: FeatureCard[] = [
     title: "IELTS Preparation",
     description: "Simulate speaking and writing tests and receive instant band evaluations based on official criteria.",
     icon: "🎯",
-    color: "bg-jade-light/40 border-jade/20 text-jade",
+    color: "bg-primary-light/40 border-primary/20 text-primary",
     badge: "IELTS",
   },
   {
@@ -56,7 +56,7 @@ export function Features() {
           {FEATURE_CARDS.map((card, i) => (
             <div
               key={i}
-              className="bg-paper border border-ink/10 rounded-2xl p-6 space-y-6 hover:shadow-md hover:border-jade/30 transition-all duration-300 flex flex-col justify-between"
+              className="bg-paper border border-ink/10 rounded-2xl p-6 space-y-6 hover:shadow-md hover:border-primary/30 transition-all duration-300 flex flex-col justify-between"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -72,7 +72,7 @@ export function Features() {
                   {card.description}
                 </p>
               </div>
-              <div className="pt-4 border-t border-ink/5 flex items-center justify-between text-xs font-semibold text-jade group cursor-pointer">
+              <div className="pt-4 border-t border-ink/5 flex items-center justify-between text-xs font-semibold text-primary group cursor-pointer">
                 <span>Explore Module</span>
                 <span className="transform group-hover:translate-x-1 transition-transform">→</span>
               </div>

@@ -2,8 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --paper: #f8fafc;
+  --ink: #0f172a;
+  --ink-soft: #475569;
+}
+
 body {
-  background-color: #FBFBF8; /* Matches tailwind's 'paper' config */
-  color: #1C2B33; /* Matches tailwind's 'ink' config */
+  background-color: var(--paper, #f8fafc);
+  color: var(--ink, #0f172a);
   font-family: var(--font-inter), sans-serif;
 }

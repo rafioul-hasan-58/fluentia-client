@@ -45,20 +45,20 @@ export function ChatDemo() {
   return (
     <div id="demo" className="bg-paper border border-ink/10 rounded-2xl shadow-xl overflow-hidden max-w-lg mx-auto transform hover:translate-y-[-4px] transition-transform duration-300">
       {/* Chat Header */}
-      <div className="bg-jade px-6 py-4 flex items-center justify-between border-b border-jade-dark/20">
+      <div className="bg-primary px-6 py-4 flex items-center justify-between border-b border-primary-dark/20">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-paper/10 flex items-center justify-center text-xl">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">
               🤖
             </div>
-            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-jade" />
+            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-primary" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-paper leading-tight">Fluentia Coach</div>
-            <div className="text-[11px] text-paper/80">Online & Ready to teach</div>
+            <div className="text-sm font-semibold text-white leading-tight">Fluentia Coach</div>
+            <div className="text-[11px] text-white/80">Online & Ready to teach</div>
           </div>
         </div>
-        <span className="text-[11px] font-semibold bg-jade-dark px-2.5 py-1 rounded-full text-paper/90">
+        <span className="text-[11px] font-semibold bg-primary-dark px-2.5 py-1 rounded-full text-white/90">
           Interactive Demo
         </span>
       </div>
@@ -78,7 +78,7 @@ export function ChatDemo() {
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                 msg.sender === "user"
-                  ? "bg-jade text-paper rounded-tr-none shadow-sm"
+                  ? "bg-primary text-white rounded-tr-none shadow-sm"
                   : "bg-paper border border-ink/10 text-ink rounded-tl-none shadow-sm"
               }`}
             >
@@ -105,12 +105,12 @@ export function ChatDemo() {
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
           placeholder="Type a response (e.g. 'I had a good day!')"
-          className="flex-grow bg-ink/5 border border-ink/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-jade/50 text-ink placeholder-ink-soft/60 transition-colors"
+          className="flex-grow bg-ink/5 border border-ink/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-ink placeholder-ink-soft/60 transition-colors"
         />
         <button
           type="submit"
           disabled={!userInput.trim() || isTyping}
-          className="h-11 w-11 rounded-xl bg-jade hover:bg-jade-dark disabled:bg-ink/10 disabled:text-ink-soft text-paper flex items-center justify-center font-bold transition-all duration-200 active:scale-95 shadow-sm"
+          className="h-11 w-11 rounded-xl bg-primary hover:bg-primary-dark disabled:bg-ink/10 disabled:text-ink-soft text-white flex items-center justify-center font-bold transition-all duration-200 active:scale-95 shadow-sm"
           aria-label="Send message"
         >
           →

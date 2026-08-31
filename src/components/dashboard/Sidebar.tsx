@@ -119,7 +119,7 @@ export function Sidebar() {
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed bottom-6 right-6 z-50 p-3.5 bg-jade text-paper rounded-full shadow-lg hover:bg-jade-dark transition-all duration-200"
+        className="lg:hidden fixed bottom-6 right-6 z-50 p-3.5 bg-primary text-paper rounded-full shadow-lg hover:bg-primary-dark transition-all duration-200"
         aria-label="Toggle Navigation"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +148,7 @@ export function Sidebar() {
         {/* Brand Header */}
         <div className="h-20 flex items-center px-6 border-b border-ink/5">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-jade flex items-center justify-center text-paper font-display font-bold text-xl shadow-md shadow-jade/10 group-hover:scale-105 transition-transform duration-200">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-display font-bold text-xl shadow-md shadow-primary/10 group-hover:scale-105 transition-transform duration-200">
               F
             </div>
             <div className="flex flex-col">
@@ -182,14 +182,14 @@ export function Sidebar() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
                       isActive
-                        ? "bg-jade text-paper shadow-sm shadow-jade/20"
-                        : "text-ink-soft hover:bg-jade-light/50 hover:text-ink"
+                        ? "bg-primary text-white shadow-sm shadow-primary/20"
+                        : "text-ink-soft hover:bg-primary-light/50 hover:text-ink"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
                         className={`w-5 h-5 transition-colors ${
-                          isActive ? "text-paper" : "text-ink-soft group-hover:text-jade"
+                          isActive ? "text-white" : "text-ink-soft group-hover:text-primary"
                         }`}
                       />
                       <span>{item.name}</span>
@@ -199,7 +199,7 @@ export function Sidebar() {
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                           isActive
-                            ? "bg-paper/20 text-paper"
+                            ? "bg-white/20 text-white"
                             : "bg-amber-light text-amber border border-amber/20"
                         }`}
                       >
@@ -216,7 +216,7 @@ export function Sidebar() {
         {/* User Card / Footer */}
         <div className="p-4 border-t border-ink/5 bg-ink/[0.02]">
           <div className="flex items-center gap-3 p-2 rounded-xl">
-            <div className="w-9 h-9 rounded-full bg-jade/10 border border-jade/20 flex items-center justify-center text-sm font-bold text-jade">
+            <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary">
               FL
             </div>
             <div className="flex-1 min-w-0">
