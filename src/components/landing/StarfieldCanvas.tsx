@@ -43,7 +43,19 @@ export function StarfieldCanvas() {
 
     window.addEventListener("resize", handleResize);
 
-    // Generate Stars
+    // Track dark mode via class on html element
+    let isDark = document.documentElement.classList.contains("dark");
+
+    const observer = new MutationObserver(() => {
+      isDark = document.documentElement.classList.contains("dark");
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    // Generate Stars / Sparkles
     const starCount = Math.floor((width * height) / 4500);
     const stars: Star[] = Array.from({ length: Math.max(starCount, 120) }, () => ({
       x: Math.random() * width,
@@ -54,7 +66,7 @@ export function StarfieldCanvas() {
       twinkleSpeed: Math.random() * 0.02 + 0.005,
     }));
 
-    // Meteors
+    // Meteors / Shooting lights
     const meteors: Meteor[] = Array.from({ length: 3 }, () => ({
       x: Math.random() * width,
       y: Math.random() * (height * 0.5),
@@ -83,30 +95,44 @@ export function StarfieldCanvas() {
       tick++;
       ctx.clearRect(0, 0, width, height);
 
-      // Deep Cosmic Space Background Gradient
+      // Sky Background Gradient (Dark Space vs Daylight Sky)
       const spaceGrad = ctx.createLinearGradient(0, 0, 0, height);
-      spaceGrad.addColorStop(0, "#030712"); // Deepest void
-      spaceGrad.addColorStop(0.5, "#0b132b"); // Midnight navy
-      spaceGrad.addColorStop(0.85, "#101d42"); // Deep sapphire
-      spaceGrad.addColorStop(1, "#030712"); // Base transition
+      if (isDark) {
+        spaceGrad.addColorStop(0, "#030712");
+        spaceGrad.addColorStop(0.5, "#0b132b");
+        spaceGrad.addColorStop(0.85, "#101d42");
+        spaceGrad.addColorStop(1, "#030712");
+      } else {
+        spaceGrad.addColorStop(0, "#F8FAFC");
+        spaceGrad.addColorStop(0.4, "#EFF6FF");
+        spaceGrad.addColorStop(0.85, "#DBEAFE");
+        spaceGrad.addColorStop(1, "#F8FAFC");
+      }
       ctx.fillStyle = spaceGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // Draw Twinkling Stars
+      // Draw Twinkling Stars (in Dark) or Soft Shimmer Sparkles (in Light)
       stars.forEach((star) => {
         star.opacity += Math.sin(tick * star.twinkleSpeed) * 0.015;
         const currentOpacity = Math.max(0.15, Math.min(1, star.opacity));
 
-        ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Extra twinkle bloom for larger stars
-        if (star.size > 1.4) {
-          ctx.fillStyle = `rgba(147, 197, 253, ${currentOpacity * 0.4})`;
+        if (isDark) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
           ctx.beginPath();
-          ctx.arc(star.x, star.y, star.size * 2.2, 0, Math.PI * 2);
+          ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (star.size > 1.4) {
+            ctx.fillStyle = `rgba(147, 197, 253, ${currentOpacity * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size * 2.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else {
+          // Daylight shimmer particles
+          ctx.fillStyle = `rgba(37, 99, 235, ${currentOpacity * 0.25})`;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.size * 1.2, 0, Math.PI * 2);
           ctx.fill();
         }
       });
@@ -128,9 +154,15 @@ export function StarfieldCanvas() {
         const tailY = m.y - Math.sin(m.angle) * m.length;
 
         const meteorGrad = ctx.createLinearGradient(tailX, tailY, m.x, m.y);
-        meteorGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-        meteorGrad.addColorStop(0.7, `rgba(96, 165, 250, ${m.opacity * 0.6})`);
-        meteorGrad.addColorStop(1, `rgba(255, 255, 255, ${m.opacity})`);
+        if (isDark) {
+          meteorGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
+          meteorGrad.addColorStop(0.7, `rgba(96, 165, 250, ${m.opacity * 0.6})`);
+          meteorGrad.addColorStop(1, `rgba(255, 255, 255, ${m.opacity})`);
+        } else {
+          meteorGrad.addColorStop(0, "rgba(37, 99, 235, 0)");
+          meteorGrad.addColorStop(0.7, `rgba(37, 99, 235, ${m.opacity * 0.35})`);
+          meteorGrad.addColorStop(1, `rgba(59, 130, 246, ${m.opacity * 0.7})`);
+        }
 
         ctx.strokeStyle = meteorGrad;
         ctx.lineWidth = 1.8;
@@ -140,11 +172,11 @@ export function StarfieldCanvas() {
         ctx.stroke();
       });
 
-      // Luminous Planetary Horizon Arc (Inspired by reference photo)
+      // Luminous Planetary Horizon Arc
       const horizonY = height * 0.58;
       const arcHeight = height * 0.22;
 
-      // Outer Atmospheric Nebula Glow
+      // Atmospheric Glow
       const glowGrad = ctx.createRadialGradient(
         width / 2,
         horizonY + 80,
@@ -153,31 +185,53 @@ export function StarfieldCanvas() {
         horizonY + 80,
         width * 0.65
       );
-      glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.45)"); // Royal Sapphire
-      glowGrad.addColorStop(0.3, "rgba(59, 130, 246, 0.25)");
-      glowGrad.addColorStop(0.65, "rgba(14, 165, 233, 0.12)"); // Electric Cyan
-      glowGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      if (isDark) {
+        glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.45)");
+        glowGrad.addColorStop(0.3, "rgba(59, 130, 246, 0.25)");
+        glowGrad.addColorStop(0.65, "rgba(14, 165, 233, 0.12)");
+        glowGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      } else {
+        glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.22)");
+        glowGrad.addColorStop(0.3, "rgba(59, 130, 246, 0.12)");
+        glowGrad.addColorStop(0.65, "rgba(14, 165, 233, 0.05)");
+        glowGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+      }
 
       ctx.fillStyle = glowGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // Planet Horizon Curved Line with Intense Neon Core
+      // Planet Horizon Curved Line
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(0, horizonY + arcHeight);
       ctx.quadraticCurveTo(width / 2, horizonY - 40, width, horizonY + arcHeight);
-      ctx.strokeStyle = "rgba(147, 197, 253, 0.85)"; // Bright Ice Core
-      ctx.lineWidth = 2.5;
-      ctx.shadowColor = "#38bdf8";
-      ctx.shadowBlur = 24;
-      ctx.stroke();
 
-      // Second soft aura pass on the curve
-      ctx.strokeStyle = "rgba(37, 99, 235, 0.6)";
-      ctx.lineWidth = 6;
-      ctx.shadowColor = "#2563eb";
-      ctx.shadowBlur = 35;
-      ctx.stroke();
+      if (isDark) {
+        ctx.strokeStyle = "rgba(147, 197, 253, 0.85)";
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "#38bdf8";
+        ctx.shadowBlur = 24;
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.6)";
+        ctx.lineWidth = 6;
+        ctx.shadowColor = "#2563eb";
+        ctx.shadowBlur = 35;
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.5)";
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "#2563eb";
+        ctx.shadowBlur = 18;
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
+        ctx.lineWidth = 6;
+        ctx.shadowColor = "#38bdf8";
+        ctx.shadowBlur = 25;
+        ctx.stroke();
+      }
       ctx.restore();
 
       animationFrameId = requestAnimationFrame(render);
@@ -186,6 +240,7 @@ export function StarfieldCanvas() {
     render();
 
     return () => {
+      observer.disconnect();
       window.removeEventListener("resize", handleResize);
       clearInterval(meteorInterval);
       cancelAnimationFrame(animationFrameId);

@@ -8,21 +8,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        paper: "#030712",
-        "paper-card": "#0b132b",
-        "paper-elevated": "#111827",
+        paper: "var(--background)",
+        "paper-card": "var(--surface)",
+        "paper-elevated": "var(--surface-hover)",
+        border: "var(--border)",
         ink: {
-          DEFAULT: "#F8FAFC",
-          soft: "#94A3B8",
+          DEFAULT: "var(--text)",
+          soft: "var(--text-soft)",
         },
         primary: {
           DEFAULT: "#2563EB",
           dark: "#1D4ED8",
-          light: "#1e3a8a",
+          light: "var(--primary-light)",
         },
         amber: {
           DEFAULT: "#F59E0B",
-          light: "#78350f",
+          light: "rgba(245, 158, 11, 0.15)",
         },
       },
       fontFamily: {

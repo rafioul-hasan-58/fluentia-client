@@ -195,18 +195,18 @@ export function ChatContainer() {
   const currentScenario = SCENARIOS.find((s) => s.id === selectedScenario);
 
   return (
-    <div className="space-y-6 text-white">
+    <div className="space-y-6 text-ink">
       {/* Header & Scenario Selector */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-white flex items-center gap-2.5">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink flex items-center gap-2.5">
               <span>AI English Coach</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 dark:bg-cyan-500/20 text-primary dark:text-cyan-300 border border-primary/20 dark:border-cyan-500/30">
                 Live Interactive
               </span>
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+            <p className="text-xs sm:text-sm text-ink-soft mt-0.5">
               Practice real conversations, receive instant grammar corrections, and improve fluency.
             </p>
           </div>
@@ -222,20 +222,20 @@ export function ChatContainer() {
       {/* Main Chat + Analytics Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Chat Feed Column */}
-        <div className="lg:col-span-8 bg-[#0B132B] border border-white/10 rounded-2xl shadow-xl overflow-hidden flex flex-col h-[640px]">
+        <div className="lg:col-span-8 bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[640px]">
           {/* Active Mode Banner */}
-          <div className="px-6 py-3.5 bg-[#080e21] border-b border-white/10 flex items-center justify-between">
+          <div className="px-6 py-3.5 bg-slate-50 dark:bg-[#080e21] border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-xl">{currentScenario?.icon}</span>
               <div>
-                <span className="text-xs font-bold text-white block">{currentScenario?.title}</span>
-                <span className="text-[11px] text-slate-400 line-clamp-1">{currentScenario?.description}</span>
+                <span className="text-xs font-bold text-ink block">{currentScenario?.title}</span>
+                <span className="text-[11px] text-ink-soft line-clamp-1">{currentScenario?.description}</span>
               </div>
             </div>
 
             <button
               onClick={() => setMessages(INITIAL_MESSAGES[selectedScenario])}
-              className="text-xs text-slate-400 hover:text-cyan-300 font-semibold flex items-center gap-1 transition-colors px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10"
+              className="text-xs text-ink-soft hover:text-primary dark:hover:text-cyan-300 font-semibold flex items-center gap-1 transition-colors px-2.5 py-1 rounded-lg bg-slate-200/50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10"
               title="Reset conversation"
             >
               <span>↺</span>
@@ -244,18 +244,18 @@ export function ChatContainer() {
           </div>
 
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#030712]/50">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-paper/40">
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} />
             ))}
 
             {isTyping && (
               <div className="flex flex-col items-start space-y-1">
-                <span className="text-[11px] text-slate-400 px-1">Fluentia Coach is thinking...</span>
-                <div className="bg-[#111827] border border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex gap-1.5 items-center shadow-md">
-                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <span className="text-[11px] text-ink-soft px-1">Fluentia Coach is thinking...</span>
+                <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex gap-1.5 items-center shadow-sm">
+                  <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             )}
@@ -263,15 +263,15 @@ export function ChatContainer() {
           </div>
 
           {/* Suggested Quick Prompts */}
-          <div className="px-4 py-2 bg-[#080e21] border-t border-white/10 flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+          <div className="px-4 py-2 bg-slate-50 dark:bg-[#080e21] border-t border-slate-200 dark:border-white/10 flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <span className="text-[10px] font-bold text-ink-soft uppercase tracking-wider whitespace-nowrap">
               Suggestions:
             </span>
             {SUGGESTED_PROMPTS[selectedScenario]?.map((prompt, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSendMessage(prompt)}
-                className="text-xs bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/40 px-3 py-1.5 rounded-full whitespace-nowrap text-slate-300 transition-all duration-200"
+                className="text-xs bg-paper hover:bg-primary/10 hover:text-primary dark:hover:bg-cyan-500/20 dark:hover:text-cyan-300 border border-slate-200 dark:border-white/10 hover:border-primary/40 dark:hover:border-cyan-500/40 px-3 py-1.5 rounded-full whitespace-nowrap text-ink-soft transition-all duration-200 shadow-2xs"
               >
                 {prompt}
               </button>
@@ -284,15 +284,15 @@ export function ChatContainer() {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-4 bg-[#0B132B] border-t border-white/10 flex items-center gap-3"
+            className="p-4 bg-paper-card border-t border-slate-200 dark:border-white/10 flex items-center gap-3"
           >
             <button
               type="button"
               onClick={toggleRecording}
               className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center ${
                 isRecording
-                  ? "bg-rose-500/20 border-rose-400 text-rose-300 animate-pulse"
-                  : "bg-white/5 border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40"
+                  ? "bg-rose-500/20 border-rose-400 text-rose-500 animate-pulse"
+                  : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-ink-soft hover:text-primary dark:hover:text-cyan-300"
               }`}
               title={isRecording ? "Listening..." : "Click to speak"}
             >
@@ -310,13 +310,13 @@ export function ChatContainer() {
                   ? "Listening to your voice..."
                   : "Type your English response or paste text..."
               }
-              className="flex-1 bg-[#030712] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-400 text-white placeholder-slate-500 transition-all"
+              className="flex-1 bg-paper border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary dark:focus:border-cyan-400 text-ink placeholder-ink-soft/60 transition-all"
             />
 
             <button
               type="submit"
               disabled={!inputVal.trim() || isTyping}
-              className="px-5 py-3 rounded-xl bg-primary hover:bg-primary-dark disabled:bg-white/5 disabled:text-slate-600 text-white text-sm font-semibold transition-all duration-200 active:scale-95 shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center gap-1.5"
+              className="px-5 py-3 rounded-xl bg-primary hover:bg-primary-dark disabled:bg-slate-200 dark:disabled:bg-white/5 disabled:text-ink-soft text-white text-sm font-semibold transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-1.5"
             >
               <span>Send</span>
               <span>→</span>
@@ -334,22 +334,22 @@ export function ChatContainer() {
           />
 
           {/* Quick Learning Tip */}
-          <div className="bg-[#0B132B] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
+          <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-amber text-lg">✨</span>
-              <h3 className="text-xs font-bold text-cyan-300 uppercase tracking-wider">Coach Pro-Tip</h3>
+              <h3 className="text-xs font-bold text-primary dark:text-cyan-300 uppercase tracking-wider">Coach Pro-Tip</h3>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Try to incorporate cohesive linking words like <strong className="text-white font-semibold">"Consequently"</strong>, <strong className="text-white font-semibold">"Furthermore"</strong>, or <strong className="text-white font-semibold">"In contrast"</strong> to sound more fluent.
+            <p className="text-xs text-ink-soft leading-relaxed">
+              Try to incorporate cohesive linking words like <strong className="text-ink font-semibold">"Consequently"</strong>, <strong className="text-ink font-semibold">"Furthermore"</strong>, or <strong className="text-ink font-semibold">"In contrast"</strong> to sound more fluent.
             </p>
           </div>
 
           {/* Vocabulary Snapshot */}
-          <div className="bg-[#0B132B] border border-white/10 rounded-2xl p-5 shadow-xl space-y-3">
-            <h3 className="text-xs font-bold text-cyan-300 uppercase tracking-wider">Recent Collocations</h3>
+          <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-3">
+            <h3 className="text-xs font-bold text-primary dark:text-cyan-300 uppercase tracking-wider">Recent Collocations</h3>
             <div className="flex flex-wrap gap-2">
               {["make progress", "unwind & recharge", "hectic schedule", "sensory details"].map((word, i) => (
-                <span key={i} className="text-xs bg-cyan-500/10 text-cyan-300 font-medium px-2.5 py-1 rounded-lg border border-cyan-500/20">
+                <span key={i} className="text-xs bg-primary/10 dark:bg-cyan-500/10 text-primary dark:text-cyan-300 font-medium px-2.5 py-1 rounded-lg border border-primary/20 dark:border-cyan-500/20">
                   {word}
                 </span>
               ))}
