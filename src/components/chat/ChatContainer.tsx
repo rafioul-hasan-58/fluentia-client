@@ -1,99 +1,38 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { MessageBubble, ChatMessage } from "./MessageBubble";
-import { ScenarioSelector, SCENARIOS } from "./ScenarioSelector";
-import { LiveMetrics } from "./LiveMetrics";
 
-const INITIAL_MESSAGES: Record<string, ChatMessage[]> = {
-  casual: [
-    {
-      id: "1",
-      sender: "ai",
-      text: "Hey there! Ready to chat? How has your week been going so far? Did you get a chance to relax or work on any exciting projects?",
-      timestamp: "Just now",
-      feedback: {
-        explanation: "This is an open-ended conversational icebreaker. Feel free to use past tense verbs (went, stayed, visited) or present continuous (working, studying).",
-        betterAlternatives: [
-          "It has been pretty hectic, but I managed to catch up on sleep.",
-          "I've been working on a new web project and making good progress!",
-        ],
-        vocabularyScore: 10,
-      },
-    },
-  ],
-  ielts: [
-    {
-      id: "1",
-      sender: "ai",
-      text: "Welcome to IELTS Speaking Practice. Let's start with Part 1: 'Do you prefer spending your free time indoors or outdoors, and why?'",
-      timestamp: "Just now",
-      feedback: {
-        explanation: "For IELTS Speaking Part 1, aim for 2-3 full sentences with varied conjunctions (e.g. 'Although I enjoy...', 'It largely depends on...').",
-        betterAlternatives: [
-          "I would definitely say I'm an outdoor enthusiast because being in nature rejuvenates my energy.",
-          "To be honest, it largely depends on the weather and my workload.",
-        ],
-        vocabularyScore: 25,
-      },
-    },
-  ],
-  interview: [
-    {
-      id: "1",
-      sender: "ai",
-      text: "Hello! Welcome to our mock interview session. Let's begin: 'Can you tell me about a challenging situation you faced at work and how you handled it?'",
-      timestamp: "Just now",
-      feedback: {
-        explanation: "Use the STAR method (Situation, Task, Action, Result). Highlight your proactive attitude and measurable outcomes.",
-        betterAlternatives: [
-          "In my previous role, we encountered a critical deadline crunch, so I spearheaded a reorganization of our task pipeline...",
-        ],
-        vocabularyScore: 30,
-      },
-    },
-  ],
-  grammar: [
-    {
-      id: "1",
-      sender: "ai",
-      text: "Welcome to Grammar Doctor! Paste any sentence or paragraph you are unsure about, or ask me to test you on a grammatical topic (e.g., Conditionals, Inversion, Subjunctive mood).",
-      timestamp: "Just now",
-      feedback: {
-        explanation: "You can write complex sentences to check subject-verb agreement, article usage, and punctuation.",
-        vocabularyScore: 15,
-      },
-    },
-  ],
-};
+interface Message {
+  id: string;
+  sender: "ai" | "user";
+  text: string;
+  timestamp: string;
+}
 
-const SUGGESTED_PROMPTS: Record<string, string[]> = {
-  casual: [
-    "I went for a hike in the mountains last Sunday.",
-    "I've been trying to learn cooking Italian food recently.",
-    "Can you recommend a good book to improve my vocabulary?",
-  ],
-  ielts: [
-    "I definitely prefer spending time outdoors when the weather permits.",
-    "In my hometown, the climate is quite humid throughout the year.",
-  ],
-  interview: [
-    "I led a cross-functional team to resolve a major technical bottleneck.",
-    "My biggest strength is clear communication under tight deadlines.",
-  ],
-  grammar: [
-    "If I would have known, I would have told you.",
-    "Neither of the solutions were acceptable.",
-  ],
-};
+const SKILL_OPTIONS = [
+  { id: "speaking", label: "🗣️ Speaking Practice", prompt: "Hello! Let's practice spoken English. How are you feeling today, and what would you like to talk about?" },
+  { id: "vocabulary", label: "📚 Vocabulary Building", prompt: "Welcome to Vocabulary Practice! Give me a topic, or ask me for new advanced collocations and idioms to practice today." },
+  { id: "grammar", label: "✍️ Grammar & Syntax", prompt: "Grammar mode activated! Paste any sentence you'd like me to analyze and correct, or ask a grammar question." },
+  { id: "reading", label: "📖 Reading Comprehension", prompt: "Let's work on Reading skills. I can provide a short paragraph with comprehension questions whenever you're ready." },
+  { id: "writing", label: "📝 Writing Assistant", prompt: "Welcome to Writing Practice! Paste an essay paragraph or email draft and I'll help you refine its clarity and style." },
+  { id: "listening", label: "🎧 Listening Practice", prompt: "Listening mode active! I'll share spoken scenarios and ask you follow-up questions to test your listening comprehension." },
+  { id: "ielts", label: "🎯 IELTS Speaking Coach", prompt: "Welcome to IELTS Prep! Let's start with Part 1: 'Can you describe the neighborhood or town where you grew up?'" },
+  { id: "casual", label: "☕ Casual Chit-Chat", prompt: "Hey there! Ready to chat about everyday life, hobbies, travel, or movies? How has your day been?" },
+];
 
 export function ChatContainer() {
-  const [selectedScenario, setSelectedScenario] = useState<string>("casual");
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES.casual);
-  const [inputVal, setInputVal] = useState<string>("");
+  const [selectedSkill, setSelectedSkill] = useState<string>("speaking");
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      sender: "ai",
+      text: SKILL_OPTIONS[0].prompt,
+      timestamp: "Just now",
+    },
+  ]);
+  const [inputValue, setInputValue] = useState<string>("");
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [earnedXP, setEarnedXP] = useState<number>(45);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -104,79 +43,17 @@ export function ChatContainer() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleScenarioChange = (id: string) => {
-    setSelectedScenario(id);
-    setMessages(INITIAL_MESSAGES[id] || INITIAL_MESSAGES.casual);
-  };
-
-  const handleSendMessage = (textToSend?: string) => {
-    const text = textToSend || inputVal;
-    if (!text.trim()) return;
-
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      sender: "user",
-      text: text,
-      timestamp: "Just now",
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInputVal("");
-    setIsTyping(true);
-
-    setTimeout(() => {
-      let aiText = "";
-      let explanation = "";
-      let alternatives: string[] = [];
-      const xpGain = 15;
-
-      const lower = text.toLowerCase();
-      if (selectedScenario === "ielts") {
-        aiText = "That's a well-constructed point! You demonstrated good fluency. To push your score towards Band 8, try linking your ideas with more complex transitional phrases and idiomatic collocations.";
-        explanation = "Band Descriptor note: Expanding on 'why' with specific sensory details or contrasting examples elevates Fluency & Coherence.";
-        alternatives = [
-          "Having said that, I do appreciate a quiet evening at home occasionally.",
-          "Furthermore, it gives me an invaluable opportunity to unwind and recharge.",
-        ];
-      } else if (selectedScenario === "grammar") {
-        if (lower.includes("if i would have")) {
-          aiText = "Good try! Here is a grammar correction: in the 'if'-clause of a Third Conditional, use the Past Perfect ('If I had known'), not 'would have'.";
-          explanation = "Rule: 'If + had + past participle, would have + past participle'.";
-          alternatives = [
-            "If I had known about the change, I would have told you immediately.",
-          ];
-        } else {
-          aiText = "Your sentence grammar is solid! The subject and predicate are aligned correctly, and the tense consistency is maintained throughout.";
-          explanation = "Grammar health check passed with zero fatal structural errors.";
-          alternatives = [
-            "Try converting this into a compound-complex structure for even richer syntax.",
-          ];
-        }
-      } else {
-        aiText = `That sounds wonderful! Thank you for sharing. How long have you been interested in that, and what inspired you in the first place?`;
-        explanation = "Great use of conversational pacing. Your sentence conveys your message clearly with natural rhythm.";
-        alternatives = [
-          "I've always had a passion for it since my early college days.",
-          "It actually started out as a casual hobby before turning into a daily routine.",
-        ];
-      }
-
-      const aiResponse: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+  const handleSkillChange = (skillId: string) => {
+    setSelectedSkill(skillId);
+    const chosen = SKILL_OPTIONS.find((s) => s.id === skillId) || SKILL_OPTIONS[0];
+    setMessages([
+      {
+        id: Date.now().toString(),
         sender: "ai",
-        text: aiText,
+        text: chosen.prompt,
         timestamp: "Just now",
-        feedback: {
-          explanation,
-          betterAlternatives: alternatives,
-          vocabularyScore: xpGain,
-        },
-      };
-
-      setMessages((prev) => [...prev, aiResponse]);
-      setEarnedXP((prev) => prev + xpGain);
-      setIsTyping(false);
-    }, 1200);
+      },
+    ]);
   };
 
   const toggleRecording = () => {
@@ -184,178 +61,175 @@ export function ChatContainer() {
       setIsRecording(true);
       setTimeout(() => {
         setIsRecording(false);
-        setInputVal("I really enjoy practicing English conversation every day with Fluentia.");
+        setInputValue("I really enjoy practicing English conversation every day with Fluentia.");
       }, 2500);
     } else {
       setIsRecording(false);
     }
   };
 
-  const userTurnCount = messages.filter((m) => m.sender === "user").length;
-  const currentScenario = SCENARIOS.find((s) => s.id === selectedScenario);
+  const handleSendMessage = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const userText = inputValue;
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      sender: "user",
+      text: userText,
+      timestamp: "Just now",
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInputValue("");
+    setIsTyping(true);
+
+    setTimeout(() => {
+      let aiText = "";
+      const lower = userText.toLowerCase();
+
+      if (selectedSkill === "grammar") {
+        aiText = `Great effort! Your sentence "${userText}" is clearly understood. To make it sound even more natural: try phrasing it with varied conjunctions. Keep going!`;
+      } else if (selectedSkill === "vocabulary") {
+        aiText = `Good point! A great advanced idiom or phrase you can use here is "broaden your horizons" or "hit the ground running". How would you use that in a sentence?`;
+      } else if (selectedSkill === "ielts") {
+        aiText = `Well answered! You gave a clear response. For IELTS Part 1 & 2, expanding with a specific example or sensory detail will boost your Fluency & Coherence score. What else can you add?`;
+      } else {
+        aiText = `That's very interesting! Thanks for sharing. How long have you felt that way, and what do you think is the best next step?`;
+      }
+
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: "ai",
+        text: aiText,
+        timestamp: "Just now",
+      };
+
+      setMessages((prev) => [...prev, aiMsg]);
+      setIsTyping(false);
+    }, 1000);
+  };
 
   return (
-    <div className="space-y-6 text-ink">
-      {/* Header & Scenario Selector */}
-      <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink flex items-center gap-2.5">
-              <span>AI English Coach</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 dark:bg-cyan-500/20 text-primary dark:text-cyan-300 border border-primary/20 dark:border-cyan-500/30">
-                Live Interactive
-              </span>
-            </h1>
-            <p className="text-xs sm:text-sm text-ink-soft mt-0.5">
-              Practice real conversations, receive instant grammar corrections, and improve fluency.
-            </p>
-          </div>
+    <div className="w-full max-w-4xl mx-auto space-y-4">
+      {/* Header with Dropdown */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm">
+        <div>
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-ink">
+            AI English Coach
+          </h1>
+          <p className="text-xs text-ink-soft">
+            Select a skill and chat naturally with your AI tutor
+          </p>
         </div>
 
-        {/* Practice Scenario Selector */}
-        <ScenarioSelector
-          activeScenarioId={selectedScenario}
-          onSelectScenario={handleScenarioChange}
-        />
+        {/* Skill Selector Dropdown */}
+        <div className="flex items-center gap-2">
+          <label htmlFor="skill-select" className="text-xs font-semibold text-ink-soft whitespace-nowrap">
+            Practice Skill:
+          </label>
+          <select
+            id="skill-select"
+            value={selectedSkill}
+            onChange={(e) => handleSkillChange(e.target.value)}
+            className="bg-paper border border-slate-200 dark:border-white/10 text-ink text-sm font-medium rounded-xl px-3.5 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer shadow-xs"
+          >
+            {SKILL_OPTIONS.map((skill) => (
+              <option key={skill.id} value={skill.id} className="bg-paper-card text-ink">
+                {skill.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Main Chat + Analytics Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Chat Feed Column */}
-        <div className="lg:col-span-8 bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[640px]">
-          {/* Active Mode Banner */}
-          <div className="px-6 py-3.5 bg-slate-50 dark:bg-[#080e21] border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{currentScenario?.icon}</span>
-              <div>
-                <span className="text-xs font-bold text-ink block">{currentScenario?.title}</span>
-                <span className="text-[11px] text-ink-soft line-clamp-1">{currentScenario?.description}</span>
-              </div>
-            </div>
+      {/* Main Single Chatbox Container */}
+      <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm overflow-hidden flex flex-col h-[600px]">
+        {/* Messages Feed */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-paper/30">
+          {messages.map((msg) => {
+            const isUser = msg.sender === "user";
+            return (
+              <div
+                key={msg.id}
+                className={`flex flex-col ${
+                  isUser ? "items-end" : "items-start"
+                } space-y-1`}
+              >
+                <span className="text-[10px] text-ink-soft px-1">
+                  {isUser ? "You" : "Fluentia AI"} • {msg.timestamp}
+                </span>
 
-            <button
-              onClick={() => setMessages(INITIAL_MESSAGES[selectedScenario])}
-              className="text-xs text-ink-soft hover:text-primary dark:hover:text-cyan-300 font-semibold flex items-center gap-1 transition-colors px-2.5 py-1 rounded-lg bg-slate-200/50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10"
-              title="Reset conversation"
-            >
-              <span>↺</span>
-              <span className="hidden sm:inline">Reset</span>
-            </button>
-          </div>
-
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-paper/40">
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
-            ))}
-
-            {isTyping && (
-              <div className="flex flex-col items-start space-y-1">
-                <span className="text-[11px] text-ink-soft px-1">Fluentia Coach is thinking...</span>
-                <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex gap-1.5 items-center shadow-sm">
-                  <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div
+                  className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                    isUser
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-none shadow-sm"
+                      : "bg-paper border border-slate-200 dark:border-white/10 text-ink rounded-tl-none shadow-xs"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{msg.text}</p>
                 </div>
               </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+            );
+          })}
 
-          {/* Suggested Quick Prompts */}
-          <div className="px-4 py-2 bg-slate-50 dark:bg-[#080e21] border-t border-slate-200 dark:border-white/10 flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span className="text-[10px] font-bold text-ink-soft uppercase tracking-wider whitespace-nowrap">
-              Suggestions:
-            </span>
-            {SUGGESTED_PROMPTS[selectedScenario]?.map((prompt, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSendMessage(prompt)}
-                className="text-xs bg-paper hover:bg-primary/10 hover:text-primary dark:hover:bg-cyan-500/20 dark:hover:text-cyan-300 border border-slate-200 dark:border-white/10 hover:border-primary/40 dark:hover:border-cyan-500/40 px-3 py-1.5 rounded-full whitespace-nowrap text-ink-soft transition-all duration-200 shadow-2xs"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
+          {isTyping && (
+            <div className="flex flex-col items-start space-y-1">
+              <span className="text-[10px] text-ink-soft px-1">Fluentia AI is typing...</span>
+              <div className="bg-paper border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex items-center gap-1.5 shadow-xs">
+                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+            </div>
+          )}
 
-          {/* Input Bar */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="p-4 bg-paper-card border-t border-slate-200 dark:border-white/10 flex items-center gap-3"
-          >
-            <button
-              type="button"
-              onClick={toggleRecording}
-              className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center ${
-                isRecording
-                  ? "bg-rose-500/20 border-rose-400 text-rose-500 animate-pulse"
-                  : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-ink-soft hover:text-primary dark:hover:text-cyan-300"
-              }`}
-              title={isRecording ? "Listening..." : "Click to speak"}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            </button>
+          <div ref={messagesEndRef} />
+        </div>
 
+        {/* Input Bar with Capsule Pill, Mic, and Circular Upward Arrow Button */}
+        <form
+          onSubmit={handleSendMessage}
+          className="p-4 bg-paper-card border-t border-slate-200 dark:border-white/10"
+        >
+          <div className="relative flex items-center bg-paper border border-slate-200 dark:border-white/10 rounded-full pl-5 pr-2 py-1.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-xs">
             <input
               type="text"
-              value={inputVal}
-              onChange={(e) => setInputVal(e.target.value)}
-              placeholder={
-                isRecording
-                  ? "Listening to your voice..."
-                  : "Type your English response or paste text..."
-              }
-              className="flex-1 bg-paper border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary dark:focus:border-cyan-400 text-ink placeholder-ink-soft/60 transition-all"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder={isRecording ? "Listening to your voice..." : "Type your message in English..."}
+              className="flex-1 bg-transparent text-sm text-ink placeholder-ink-soft/60 focus:outline-none pr-3"
             />
 
-            <button
-              type="submit"
-              disabled={!inputVal.trim() || isTyping}
-              className="px-5 py-3 rounded-xl bg-primary hover:bg-primary-dark disabled:bg-slate-200 dark:disabled:bg-white/5 disabled:text-ink-soft text-white text-sm font-semibold transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-1.5"
-            >
-              <span>Send</span>
-              <span>→</span>
-            </button>
-          </form>
-        </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Microphone Icon Button */}
+              <button
+                type="button"
+                onClick={toggleRecording}
+                className={`p-2 rounded-full text-ink-soft hover:text-ink hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors ${
+                  isRecording ? "text-rose-500 animate-pulse bg-rose-500/10" : ""
+                }`}
+                title={isRecording ? "Recording..." : "Voice input"}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </button>
 
-        {/* Analytics & Tips Column */}
-        <div className="lg:col-span-4 space-y-6">
-          <LiveMetrics
-            messageCount={userTurnCount}
-            grammarScore={96}
-            vocabXP={earnedXP}
-            activeLevel="Intermediate B2"
-          />
-
-          {/* Quick Learning Tip */}
-          <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-amber text-lg">✨</span>
-              <h3 className="text-xs font-bold text-primary dark:text-cyan-300 uppercase tracking-wider">Coach Pro-Tip</h3>
-            </div>
-            <p className="text-xs text-ink-soft leading-relaxed">
-              Try to incorporate cohesive linking words like <strong className="text-ink font-semibold">"Consequently"</strong>, <strong className="text-ink font-semibold">"Furthermore"</strong>, or <strong className="text-ink font-semibold">"In contrast"</strong> to sound more fluent.
-            </p>
-          </div>
-
-          {/* Vocabulary Snapshot */}
-          <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-3">
-            <h3 className="text-xs font-bold text-primary dark:text-cyan-300 uppercase tracking-wider">Recent Collocations</h3>
-            <div className="flex flex-wrap gap-2">
-              {["make progress", "unwind & recharge", "hectic schedule", "sensory details"].map((word, i) => (
-                <span key={i} className="text-xs bg-primary/10 dark:bg-cyan-500/10 text-primary dark:text-cyan-300 font-medium px-2.5 py-1 rounded-lg border border-primary/20 dark:border-cyan-500/20">
-                  {word}
-                </span>
-              ))}
+              {/* Circular Gradient Upward Arrow Send Button (Matching user image) */}
+              <button
+                type="submit"
+                disabled={!inputValue.trim() || isTyping}
+                className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-slate-200 disabled:to-slate-300 dark:disabled:from-white/10 dark:disabled:to-white/5 disabled:text-ink-soft text-white flex items-center justify-center font-bold transition-all duration-200 active:scale-90 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40"
+                aria-label="Send message"
+              >
+                <svg className="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+              </button>   
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

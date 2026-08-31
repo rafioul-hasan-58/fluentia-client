@@ -22,13 +22,13 @@ const DashboardPage = () => {
           <div className="pt-2 flex flex-wrap items-center gap-4">
             <Link
               href="/dashboard/chat"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-bold transition-all shadow-sm dark:shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:scale-[1.02]"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-sm font-bold transition-all shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 dark:shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:scale-[1.02] active:scale-95"
             >
               Resume AI Conversation →
             </Link>
             <Link
               href="/dashboard/vocabulary"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white dark:bg-white/10 hover:bg-slate-50 dark:hover:bg-white/15 text-ink text-sm font-semibold border border-slate-200 dark:border-white/10 transition-all hover:scale-[1.02]"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-white to-slate-100 dark:from-white/10 dark:to-white/5 hover:from-white hover:to-slate-200 dark:hover:from-white/15 dark:hover:to-white/10 text-ink text-sm font-semibold border border-slate-200 dark:border-white/10 transition-all hover:scale-[1.02] active:scale-95 shadow-xs"
             >
               Review Daily Words
             </Link>

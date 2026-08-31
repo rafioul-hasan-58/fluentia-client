@@ -99,22 +99,26 @@ export function ChatDemo() {
       </div>
 
       {/* Chat Input */}
-      <form onSubmit={handleSend} className="p-4 border-t border-slate-200 dark:border-white/10 bg-paper-card flex items-center gap-3">
-        <input
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder="Type a response (e.g. 'I had a good day!')"
-          className="flex-grow bg-paper border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-ink placeholder-ink-soft/60 transition-colors"
-        />
-        <button
-          type="submit"
-          disabled={!userInput.trim() || isTyping}
-          className="h-11 w-11 rounded-xl bg-primary hover:bg-primary-dark disabled:bg-slate-200 dark:disabled:bg-white/5 disabled:text-ink-soft text-white flex items-center justify-center font-bold transition-all duration-200 active:scale-95 shadow-sm"
-          aria-label="Send message"
-        >
-          →
-        </button>
+      <form onSubmit={handleSend} className="p-3.5 border-t border-slate-200 dark:border-white/10 bg-paper-card">
+        <div className="flex items-center bg-paper border border-slate-200 dark:border-white/10 rounded-full pl-4 pr-1.5 py-1 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-xs">
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder="Type a response (e.g. 'I had a good day!')"
+            className="flex-grow bg-transparent text-sm focus:outline-none text-ink placeholder-ink-soft/60 pr-2"
+          />
+          <button
+            type="submit"
+            disabled={!userInput.trim() || isTyping}
+            className="w-9 h-9 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-slate-200 disabled:to-slate-300 dark:disabled:from-white/10 dark:disabled:to-white/5 disabled:text-ink-soft text-white flex items-center justify-center font-bold transition-all duration-200 active:scale-90 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 shrink-0"
+            aria-label="Send message"
+          >
+            <svg className="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          </button>
+        </div>
       </form>
     </div>
   );

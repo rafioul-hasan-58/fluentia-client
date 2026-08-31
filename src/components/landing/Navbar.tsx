@@ -34,7 +34,7 @@ export function Navbar() {
           <ThemeToggle />
           <Link
             href="/dashboard/chat"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-semibold transition-all duration-200 shadow-sm dark:shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-[1.02]"
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-sm font-semibold transition-all duration-200 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95"
           >
             Start Free Practice
           </Link>

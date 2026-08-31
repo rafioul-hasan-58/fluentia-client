@@ -17,7 +17,7 @@ export function CallToAction() {
         <div className="pt-2">
           <Link
             href="/dashboard/chat"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-base transition-all duration-300 shadow-md dark:shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:scale-[1.03]"
+            className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white font-bold text-base transition-all duration-300 shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 dark:shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:scale-[1.03] active:scale-95"
           >
             Launch Learning Console →
           </Link>

@@ -123,14 +123,14 @@ export function Hero() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <Link
               href="/dashboard/chat"
-              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-base transition-all duration-300 shadow-md dark:shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:scale-[1.03] active:scale-95"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white font-bold text-base transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40 dark:shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:scale-[1.03] active:scale-95"
             >
               Start Free Practice Now →
             </Link>
 
             <button
               onClick={() => setShowDemoModal(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 text-ink dark:text-white font-semibold text-base border border-slate-200 dark:border-white/15 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-white/90 to-slate-100/90 dark:from-white/10 dark:to-white/5 hover:from-white hover:to-slate-200 dark:hover:from-white/15 dark:hover:to-white/10 text-ink dark:text-white font-semibold text-base border border-slate-300/80 dark:border-white/15 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-md"
             >
               🎮 Try Interactive Demo
             </button>
