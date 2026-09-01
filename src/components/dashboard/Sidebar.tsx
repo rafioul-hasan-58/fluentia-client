@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/shared";
+import { useAuth } from "@/context/AuthContext";
+import { Avatar } from "@/components/ui/avatar";
 
 interface NavItem {
   name: string;
@@ -115,6 +117,16 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "FL";
 
   return (
     <>
@@ -258,20 +270,46 @@ export function Sidebar() {
 
         {/* User Card / Bottom Profile & Theme */}
         <div className="p-3.5 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
-          <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/5 shadow-2xs">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-xs font-bold text-primary dark:text-cyan-300 shrink-0">
-                FL
+          {isAuthenticated && user ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/5 shadow-2xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Avatar
+                    src={user.avatar}
+                    fallback={initials}
+                    size="sm"
+                    className="w-8 h-8 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-ink truncate">{user.name}</p>
+                    <p className="text-[10px] text-ink-soft truncate">{user.level || "Intermediate"}</p>
+                  </div>
+                </div>
+                <div className="hidden lg:block">
+                  <ThemeToggle />
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-ink truncate">Learner</p>
-                <p className="text-[10px] text-ink-soft truncate">Intermediate B2</p>
-              </div>
+
+              <button
+                type="button"
+                onClick={logout}
+                className="w-full text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 py-1 px-2 rounded-lg text-left flex items-center justify-between transition-colors"
+              >
+                <span>Sign Out</span>
+                <span>🚪</span>
+              </button>
             </div>
-            <div className="hidden lg:block">
-              <ThemeToggle />
+          ) : (
+            <div className="space-y-2">
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="w-full flex items-center justify-center py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-sm"
+              >
+                Sign In to Fluentia
+              </Link>
             </div>
-          </div>
+          )}
         </div>
       </aside>
     </>
