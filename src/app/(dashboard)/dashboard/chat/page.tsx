@@ -1,5 +1,5 @@
 import React from "react";
-import ChatPage from "@/pages/ChatPage";
+import ChatPage from "@/views/ChatPage";
 
 export const metadata = {
   title: "AI English Coach - Fluentia",
