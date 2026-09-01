@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
 interface Message {
   id: string;
@@ -156,9 +157,22 @@ export function ChatContainer() {
                   isUser ? "items-end" : "items-start"
                 } space-y-1`}
               >
-                <span className="text-[10px] text-ink-soft px-1">
-                  {isUser ? "You" : "Fluentia AI"} • {msg.timestamp}
-                </span>
+                <div className="flex items-center gap-1.5 text-[10px] text-ink-soft px-1">
+                  {!isUser && (
+                    <div className="relative w-4 h-4 rounded-full overflow-hidden shrink-0">
+                      <Image
+                        src="/logo.png"
+                        alt="Fluentia AI"
+                        width={16}
+                        height={16}
+                        className="object-contain w-full h-full"
+                      />
+                    </div>
+                  )}
+                  <span>{isUser ? "You" : "Fluentia AI"}</span>
+                  <span>•</span>
+                  <span>{msg.timestamp}</span>
+                </div>
 
                 <div
                   className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
@@ -175,7 +189,18 @@ export function ChatContainer() {
 
           {isTyping && (
             <div className="flex flex-col items-start space-y-1">
-              <span className="text-[10px] text-ink-soft px-1">Fluentia AI is typing...</span>
+              <div className="flex items-center gap-1.5 text-[10px] text-ink-soft px-1">
+                <div className="relative w-4 h-4 rounded-full overflow-hidden shrink-0">
+                  <Image
+                    src="/logo.png"
+                    alt="Fluentia AI"
+                    width={16}
+                    height={16}
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+                <span>Fluentia AI is typing...</span>
+              </div>
               <div className="bg-paper border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex items-center gap-1.5 shadow-xs">
                 <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                 <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />

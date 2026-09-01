@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 
 export interface ChatMessage {
   id: string;
@@ -30,7 +31,18 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
   return (
     <div className={`flex flex-col ${isUser ? "items-end" : "items-start"} space-y-2 group`}>
       {/* Sender Header */}
-      <div className="flex items-center gap-2 px-1 text-[11px] text-ink-soft">
+      <div className="flex items-center gap-1.5 px-1 text-[11px] text-ink-soft">
+        {!isUser && (
+          <div className="relative w-4 h-4 rounded-full overflow-hidden shrink-0">
+            <Image
+              src="/logo.png"
+              alt="Fluentia AI Coach"
+              width={16}
+              height={16}
+              className="object-contain w-full h-full"
+            />
+          </div>
+        )}
         <span>{isUser ? "You" : "Fluentia AI Coach"}</span>
         <span>•</span>
         <span>{message.timestamp}</span>

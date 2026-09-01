@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 
 interface Message {
   sender: "ai" | "user";
@@ -48,8 +49,14 @@ export function ChatDemo() {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-900 dark:to-indigo-900 px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-white/10 text-white">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
-              🤖
+            <div className="w-10 h-10 rounded-full bg-white/20 p-1 flex items-center justify-center backdrop-blur-md border border-white/20">
+              <Image
+                src="/logo.png"
+                alt="Fluentia Coach"
+                width={32}
+                height={32}
+                className="object-contain w-full h-full"
+              />
             </div>
             <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-cyan-400 ring-2 ring-blue-700 animate-pulse" />
           </div>
@@ -72,8 +79,19 @@ export function ChatDemo() {
               msg.sender === "user" ? "items-end" : "items-start"
             }`}
           >
-            <div className="text-[10px] text-ink-soft mb-1 px-1">
-              {msg.sender === "user" ? "You" : "Fluentia Tutor"}
+            <div className="flex items-center gap-1.5 text-[10px] text-ink-soft mb-1 px-1">
+              {msg.sender === "ai" && (
+                <div className="relative w-3.5 h-3.5 rounded-full overflow-hidden shrink-0">
+                  <Image
+                    src="/logo.png"
+                    alt="Fluentia"
+                    width={14}
+                    height={14}
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+              )}
+              <span>{msg.sender === "user" ? "You" : "Fluentia Tutor"}</span>
             </div>
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
@@ -88,7 +106,18 @@ export function ChatDemo() {
         ))}
         {isTyping && (
           <div className="flex flex-col items-start">
-            <div className="text-[10px] text-ink-soft mb-1 px-1">Fluentia Tutor</div>
+            <div className="flex items-center gap-1.5 text-[10px] text-ink-soft mb-1 px-1">
+              <div className="relative w-3.5 h-3.5 rounded-full overflow-hidden shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Fluentia"
+                  width={14}
+                  height={14}
+                  className="object-contain w-full h-full"
+                />
+              </div>
+              <span>Fluentia Tutor</span>
+            </div>
             <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex gap-1.5 items-center">
               <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
               <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
