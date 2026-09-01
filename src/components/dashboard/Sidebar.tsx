@@ -30,7 +30,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
         ),
       },
       {
-        name: "AI Chat",
+        name: "AI Practice Chat",
         href: "/dashboard/chat",
         badge: "AI",
         icon: ({ className }) => (
@@ -118,70 +118,102 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed bottom-6 right-6 z-50 p-3.5 bg-primary text-white rounded-full shadow-lg hover:bg-primary-dark transition-all duration-200"
-        aria-label="Toggle Navigation"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {mobileOpen ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-          )}
-        </svg>
-      </button>
+      {/* Mobile Top App Bar */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-paper/95 dark:bg-[#030712]/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 z-30 flex items-center justify-between px-4">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="relative w-8 h-8">
+            <Image
+              src="/logo.png"
+              alt="Fluentia Logo"
+              width={32}
+              height={32}
+              className="object-contain w-full h-full"
+            />
+          </div>
+          <span className="font-display text-lg font-bold tracking-tight text-ink">
+            Fluentia
+          </span>
+        </Link>
 
-      {/* Mobile Backdrop */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="p-2 rounded-xl text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+            aria-label="Open Navigation Menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Backdrop Overlay */}
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
+          aria-hidden="true"
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Sidebar Container (Desktop fixed + Mobile slide-out drawer) */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-paper-card border-r border-slate-200 dark:border-white/10 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 max-w-[85vw] bg-paper-card border-r border-slate-200 dark:border-white/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="h-20 flex items-center px-6 border-b border-slate-200 dark:border-white/10">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-12 h-12 group-hover:scale-105 transition-transform duration-200">
+        <div className="h-16 lg:h-20 flex items-center justify-between px-5 border-b border-slate-200 dark:border-white/10">
+          <Link href="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 group-hover:scale-105 transition-transform duration-200">
               <Image
                 src="/logo.png"
                 alt="Fluentia Logo"
-                width={48}
-                height={48}
+                width={40}
+                height={40}
                 className="object-contain w-full h-full"
                 priority
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-xl font-bold tracking-tight text-ink">
+              <span className="font-display text-lg font-bold tracking-tight text-ink">
                 Fluentia
               </span>
-              <span className="text-[11px] text-primary dark:text-cyan-300 font-medium -mt-1">
+              <span className="text-[10px] text-primary dark:text-cyan-300 font-medium -mt-1">
                 Learning Hub
               </span>
             </div>
           </Link>
+
+          {/* Close button for mobile drawer */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/10"
+            aria-label="Close menu"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        {/* Navigation Sections */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+        {/* Navigation Items */}
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
           {NAV_ITEMS.map((section, idx) => (
             <div key={idx} className="space-y-1">
               {section.category && (
-                <div className="px-3 pb-2 text-[11px] font-semibold text-ink-soft uppercase tracking-wider">
+                <div className="px-3 pb-1.5 text-[10px] font-bold text-ink-soft uppercase tracking-wider">
                   {section.category}
                 </div>
               )}
               {section.items.map((item) => {
-                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/dashboard" && pathname?.startsWith(item.href));
                 const Icon = item.icon;
 
                 return (
@@ -189,7 +221,7 @@ export function Sidebar() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group ${
                       isActive
                         ? "bg-primary text-white shadow-sm dark:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
                         : "text-ink-soft hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-ink"
@@ -197,8 +229,10 @@ export function Sidebar() {
                   >
                     <div className="flex items-center gap-3">
                       <Icon
-                        className={`w-5 h-5 transition-colors ${
-                          isActive ? "text-white" : "text-ink-soft group-hover:text-primary dark:group-hover:text-cyan-300"
+                        className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
+                          isActive
+                            ? "text-white"
+                            : "text-ink-soft group-hover:text-primary dark:group-hover:text-cyan-300"
                         }`}
                       />
                       <span>{item.name}</span>
@@ -206,7 +240,7 @@ export function Sidebar() {
 
                     {item.badge && (
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                           isActive
                             ? "bg-white/20 text-white"
                             : "bg-amber-500/20 text-amber-500 dark:text-amber-300 border border-amber-500/30"
@@ -222,19 +256,21 @@ export function Sidebar() {
           ))}
         </div>
 
-        {/* User Card / Footer */}
-        <div className="p-4 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
-          <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/5">
+        {/* User Card / Bottom Profile & Theme */}
+        <div className="p-3.5 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
+          <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/5 shadow-2xs">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-sm font-bold text-primary dark:text-cyan-300 shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-xs font-bold text-primary dark:text-cyan-300 shrink-0">
                 FL
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-ink truncate">Learner Account</p>
-                <p className="text-[10px] text-ink-soft truncate">Level: Intermediate</p>
+                <p className="text-xs font-semibold text-ink truncate">Learner</p>
+                <p className="text-[10px] text-ink-soft truncate">Intermediate B2</p>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="hidden lg:block">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </aside>

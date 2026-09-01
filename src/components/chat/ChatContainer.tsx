@@ -72,7 +72,7 @@ export function ChatContainer() {
     const initialAiMessage: ChatMessage = {
       id: `welcome-${selectedSkillSlug}`,
       sender: "ai",
-      text: `👋 Welcome! You've selected **${skillName}**.\n\nAsk any question (e.g. *"When should I use will vs would?"*) or click one of the suggested prompts below to generate your personalized interactive lesson!`,
+      text: `👋 Welcome! You've selected **${skillName}**.\n\nAsk any question (e.g. *"When should I use will vs would?"*) or tap one of the suggested prompts below to generate your personalized interactive lesson!`,
       timestamp: "Just now",
     };
 
@@ -223,37 +223,37 @@ export function ChatContainer() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4">
+    <div className="w-full max-w-4xl mx-auto space-y-3 sm:space-y-4">
       {/* Top Header & Skill Selector Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-5 bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-blue-500/25 shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-5 bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-md shadow-blue-500/25 shrink-0">
             ✨
           </div>
           <div>
-            <h1 className="font-display text-xl sm:text-2xl font-bold text-ink flex items-center gap-2">
+            <h1 className="font-display text-lg sm:text-2xl font-bold text-ink flex items-center gap-2">
               AI Grammar & Skill Coach
             </h1>
-            <p className="text-xs text-ink-soft">
+            <p className="text-[11px] sm:text-xs text-ink-soft">
               Select a grammar skill to receive AI-powered rules, examples, and mistake analysis
             </p>
           </div>
         </div>
 
         {/* Skill Selector Dropdown */}
-        <div className="flex items-center gap-2 self-start sm:self-center">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <label
             htmlFor="grammar-skill-select"
             className="text-xs font-bold text-ink-soft whitespace-nowrap"
           >
             Skill:
           </label>
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-initial">
             <select
               id="grammar-skill-select"
               value={selectedSkillSlug}
               onChange={(e) => setSelectedSkillSlug(e.target.value)}
-              className="bg-paper border border-slate-200 dark:border-white/10 text-ink text-xs sm:text-sm font-semibold rounded-xl px-3.5 py-2 pr-8 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer shadow-xs appearance-none"
+              className="w-full sm:w-auto bg-paper border border-slate-200 dark:border-white/10 text-ink text-xs sm:text-sm font-semibold rounded-xl px-3 py-2 pr-8 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer shadow-xs appearance-none"
             >
               {skills.length > 0 ? (
                 skills.map((skill) => (
@@ -289,22 +289,22 @@ export function ChatContainer() {
 
       {/* Suggested Starter Prompt Chips */}
       {activePreset && activePreset.samplePrompts?.length > 0 && (
-        <div className="bg-paper-card/60 border border-slate-200/80 dark:border-white/5 rounded-2xl p-3.5 space-y-2">
-          <div className="flex items-center justify-between text-xs text-ink-soft font-semibold">
+        <div className="bg-paper-card/60 border border-slate-200/80 dark:border-white/5 rounded-2xl p-3 sm:p-3.5 space-y-2">
+          <div className="flex items-center justify-between text-[11px] sm:text-xs text-ink-soft font-semibold">
             <span className="flex items-center gap-1.5 text-primary dark:text-cyan-300">
               <span>💡</span>
-              <span>Quick Prompt Inspiration for {activePreset.name}:</span>
+              <span className="line-clamp-1">Quick Prompts for {activePreset.name}:</span>
             </span>
-            <span className="text-[11px] text-ink-soft/70">Click to ask instantly</span>
+            <span className="text-[10px] sm:text-[11px] text-ink-soft/70 whitespace-nowrap">Tap to ask</span>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {activePreset.samplePrompts.map((prompt, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => handlePromptChipClick(prompt)}
                 disabled={isTyping}
-                className="px-3 py-1.5 rounded-xl bg-paper border border-slate-200 dark:border-white/10 hover:border-primary/50 dark:hover:border-cyan-400/50 hover:bg-primary/5 dark:hover:bg-cyan-500/10 text-xs font-medium text-ink transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 text-left shadow-2xs"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-paper border border-slate-200 dark:border-white/10 hover:border-primary/50 dark:hover:border-cyan-400/50 hover:bg-primary/5 dark:hover:bg-cyan-500/10 text-[11px] sm:text-xs font-medium text-ink transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 text-left shadow-2xs leading-snug"
               >
                 &ldquo;{prompt}&rdquo;
               </button>
@@ -314,9 +314,9 @@ export function ChatContainer() {
       )}
 
       {/* Main Single Chatbox Container */}
-      <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm overflow-hidden flex flex-col h-[640px]">
+      <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden flex flex-col h-[calc(100dvh-270px)] min-h-[460px] max-h-[700px]">
         {/* Messages Feed */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-paper/30">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 space-y-3.5 sm:space-y-4 bg-paper/30">
           {messages.map((msg) => {
             const isUser = msg.sender === "user";
 
@@ -325,12 +325,12 @@ export function ChatContainer() {
                 key={msg.id}
                 className={`flex flex-col ${
                   isUser ? "items-end" : "items-start"
-                } space-y-1`}
+                } space-y-1 w-full`}
               >
                 {/* Message Header */}
-                <div className="flex items-center gap-1.5 text-[11px] text-ink-soft px-1">
+                <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-ink-soft px-1">
                   {!isUser && (
-                    <div className="relative w-4 h-4 rounded-full overflow-hidden shrink-0">
+                    <div className="relative w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full overflow-hidden shrink-0">
                       <Image
                         src="/logo.png"
                         alt="Fluentia AI"
@@ -347,7 +347,7 @@ export function ChatContainer() {
 
                 {/* Lesson Card or Standard Bubble */}
                 {msg.lessonData ? (
-                  <div className="w-full max-w-3xl">
+                  <div className="w-full">
                     <GrammarLessonCard
                       data={msg.lessonData}
                       onActionSelect={(prompt) => {
@@ -357,7 +357,7 @@ export function ChatContainer() {
                   </div>
                 ) : (
                   <div
-                    className={`max-w-[88%] sm:max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                    className={`max-w-[90%] sm:max-w-[78%] rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm leading-relaxed ${
                       isUser
                         ? "bg-gradient-to-r from-blue-600 via-primary to-indigo-600 text-white rounded-tr-none shadow-sm shadow-blue-500/20"
                         : msg.isError
@@ -374,9 +374,9 @@ export function ChatContainer() {
 
           {/* AI Typing / Generating Lesson Skeleton */}
           {isTyping && (
-            <div className="flex flex-col items-start space-y-2">
-              <div className="flex items-center gap-1.5 text-[11px] text-ink-soft px-1">
-                <div className="relative w-4 h-4 rounded-full overflow-hidden shrink-0">
+            <div className="flex flex-col items-start space-y-1.5 sm:space-y-2">
+              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-ink-soft px-1">
+                <div className="relative w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full overflow-hidden shrink-0">
                   <Image
                     src="/logo.png"
                     alt="Fluentia AI"
@@ -389,12 +389,12 @@ export function ChatContainer() {
                   Fluentia AI is generating your lesson...
                 </span>
               </div>
-              <div className="bg-paper border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-5 py-3.5 text-sm flex items-center gap-2 shadow-2xs">
-                <span className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                <span className="text-xs text-ink-soft font-medium pl-2">
-                  Analyzing grammar rules & generating examples...
+              <div className="bg-paper border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-4 sm:px-5 py-2.5 sm:py-3.5 text-xs sm:text-sm flex items-center gap-2 shadow-2xs">
+                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <span className="text-[11px] sm:text-xs text-ink-soft font-medium pl-1 sm:pl-2">
+                  Analyzing rules & generating examples...
                 </span>
               </div>
             </div>
@@ -406,34 +406,34 @@ export function ChatContainer() {
         {/* Input Bar with Capsule Pill, Mic, and Gradient Arrow */}
         <form
           onSubmit={handleFormSubmit}
-          className="p-4 bg-paper-card border-t border-slate-200 dark:border-white/10"
+          className="p-2.5 sm:p-4 bg-paper-card border-t border-slate-200 dark:border-white/10"
         >
-          <div className="relative flex items-center bg-paper border border-slate-200 dark:border-white/10 rounded-full pl-5 pr-2 py-1.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-xs">
+          <div className="relative flex items-center bg-paper border border-slate-200 dark:border-white/10 rounded-full pl-3.5 sm:pl-5 pr-1.5 py-1 sm:py-1.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-xs">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder={
                 isRecording
-                  ? "Listening to your voice..."
-                  : `Ask about ${activePreset?.name || "grammar"} (e.g. When should I use will vs would?)...`
+                  ? "Listening..."
+                  : `Ask about ${activePreset?.name || "grammar"}...`
               }
               disabled={isTyping}
-              className="flex-1 bg-transparent text-sm text-ink placeholder-ink-soft/60 focus:outline-none pr-3 disabled:opacity-50"
+              className="flex-1 bg-transparent text-xs sm:text-sm text-ink placeholder-ink-soft/60 focus:outline-none pr-2 disabled:opacity-50"
             />
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
               {/* Microphone Icon Button */}
               <button
                 type="button"
                 onClick={toggleRecording}
                 disabled={isTyping}
-                className={`p-2 rounded-full text-ink-soft hover:text-ink hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors disabled:opacity-50 ${
+                className={`p-1.5 sm:p-2 rounded-full text-ink-soft hover:text-ink hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors disabled:opacity-50 ${
                   isRecording ? "text-rose-500 animate-pulse bg-rose-500/10" : ""
                 }`}
                 title={isRecording ? "Recording... click to stop" : "Voice input"}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
