@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  fluentia-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+    image: fluentia-client:latest
+    container_name: fluentia-client
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+      - BACKEND_INTERNAL_URL=${BACKEND_INTERNAL_URL:-http://fluentia-server:5000/api/v1/:path*}
+    networks:
+      - fluentia-network
+
+networks:
+  fluentia-network:
+    driver: bridge
