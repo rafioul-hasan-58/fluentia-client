@@ -21,7 +21,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const { register, loginWithGoogle } = useAuth();
 
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +35,7 @@ export default function RegisterPage() {
     setError(null);
     setIsSubmitting(true);
 
-    const result = await register(name, email, password);
+    const result = await register({ firstName, lastName, email, password });
     setIsSubmitting(false);
 
     if (result.success) {
@@ -83,7 +84,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Main Register Card */}
-      <Card className="w-full max-w-md backdrop-blur-xl bg-paper-card/90">
+      <Card className="w-full max-w-lg backdrop-blur-xl bg-paper-card/90">
         <CardHeader className="text-center space-y-1.5">
           <CardTitle>Create Your Account</CardTitle>
           <CardDescription>
@@ -149,17 +150,33 @@ export default function RegisterPage() {
 
           {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                disabled={isSubmitting || isGoogleLoading}
-              />
+            {/* First Name & Last Name in 2 columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1.5">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="e.g. John"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  disabled={isSubmitting || isGoogleLoading}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="e.g. Doe"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  disabled={isSubmitting || isGoogleLoading}
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5">

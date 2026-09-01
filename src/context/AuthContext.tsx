@@ -5,6 +5,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 export interface User {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   avatar?: string | null;
   role?: string;
@@ -12,12 +14,19 @@ export interface User {
   provider?: "email" | "google";
 }
 
+export interface RegisterParams {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (params: RegisterParams | { name: string; email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
@@ -89,19 +98,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const register = async (
+    params: RegisterParams | { name: string; email: string; password: string }
+  ): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     try {
       await new Promise((res) => setTimeout(res, 600));
 
-      if (!name || !email || !password) {
+      let fullName = "";
+      let fName = "";
+      let lName = "";
+
+      if ("firstName" in params) {
+        fName = params.firstName.trim();
+        lName = params.lastName.trim();
+        fullName = `${fName} ${lName}`.trim();
+      } else {
+        fullName = params.name.trim();
+        const parts = fullName.split(" ");
+        fName = parts[0] || "";
+        lName = parts.slice(1).join(" ") || "";
+      }
+
+      if (!fullName || !params.email || !params.password) {
         return { success: false, error: "All fields are required." };
       }
 
       const newUser: User = {
         id: `user_${Date.now()}`,
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
+        name: fullName,
+        firstName: fName,
+        lastName: lName,
+        email: params.email.toLowerCase().trim(),
         avatar: null,
         level: "Beginner A1",
         role: "student",
@@ -126,6 +154,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const googleUser: User = {
         id: `google_${Date.now()}`,
         name: "Google Learner",
+        firstName: "Google",
+        lastName: "Learner",
         email: "learner.google@fluentia.ai",
         avatar: null,
         level: "Intermediate B2",
