@@ -19,7 +19,7 @@ export function Footer() {
                   className="object-contain w-full h-full"
                 />
               </div>
-              <span className="font-display text-xl sm:text-2xl font-bold tracking-tight text-ink">
+              <span className="font-brand text-xl sm:text-2xl font-bold tracking-tight text-ink">
                 Fluentia
               </span>
             </Link>
@@ -135,7 +135,7 @@ export function Footer() {
         {/* Sub-footer */}
         <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-[11px] sm:text-xs text-ink-soft text-center sm:text-left">
           <div>
-            © {new Date().getFullYear()} Fluentia. Developed with passion by <span className="font-semibold text-ink">Rafioul Hasan</span>.
+            © {new Date().getFullYear()} <span className="font-brand font-bold text-ink">Fluentia</span>. Developed with passion by <span className="font-semibold text-ink">Rafioul Hasan</span>.
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5">
             <span className="hover:text-ink transition-colors cursor-pointer">Privacy Policy</span>

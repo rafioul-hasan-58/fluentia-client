@@ -48,13 +48,13 @@ export function Navbar() {
                 priority
               />
             </div>
-            <span className="font-display text-xl sm:text-2xl font-bold tracking-tight text-ink dark:text-white">
+            <span className="font-brand text-xl sm:text-2xl font-bold tracking-tight text-ink dark:text-white">
               Fluentia
             </span>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 lg:gap-8 text-sm font-medium text-ink-soft dark:text-slate-300">
+          <nav className="hidden md:flex items-center gap-7 lg:gap-8 text-sm font-semibold font-nav text-ink-soft dark:text-slate-300">
             <a href="#features" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
               Features
             </a>
@@ -78,7 +78,7 @@ export function Navbar() {
               <UserProfileDropdown />
             ) : (
               /* If Unauthenticated: Show Login link and Start Practice button */
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 font-nav">
                 <Link
                   href="/login"
                   className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
@@ -88,7 +88,7 @@ export function Navbar() {
 
                 <Link
                   href="/dashboard/chat"
-                  className="inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold transition-all duration-200 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95"
+                  className="inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-xs sm:text-sm font-bold transition-all duration-200 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95"
                 >
                   Start Practice
                 </Link>
@@ -114,7 +114,7 @@ export function Navbar() {
         </div>
 
         {/* Mobile Quick Scroll Nav Strip */}
-        <div className="md:hidden flex items-center gap-2 px-4 py-2 border-t border-slate-200/70 dark:border-white/5 overflow-x-auto no-scrollbar bg-slate-50/70 dark:bg-white/[0.02]">
+        <div className="md:hidden flex items-center gap-2 px-4 py-2 border-t border-slate-200/70 dark:border-white/5 overflow-x-auto no-scrollbar bg-slate-50/70 dark:bg-white/[0.02] font-nav">
           <a
             href="#features"
             className="px-3 py-1 rounded-lg text-xs font-semibold text-ink-soft hover:text-ink hover:bg-paper whitespace-nowrap transition-colors"
@@ -187,10 +187,10 @@ export function Navbar() {
 
           {/* Main Navigation Links */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-ink-soft px-2 block mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-ink-soft px-2 block mb-1 font-brand">
               Menu Navigation
             </span>
-            <nav className="flex flex-col space-y-1">
+            <nav className="flex flex-col space-y-1 font-nav">
               {NAV_LINKS.map((item, idx) => (
                 <Link
                   key={idx}
@@ -203,7 +203,7 @@ export function Navbar() {
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="bg-primary/15 text-primary dark:text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    <span className="bg-primary/15 text-primary dark:text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-full font-brand">
                       {item.badge}
                     </span>
                   )}
@@ -213,8 +213,8 @@ export function Navbar() {
           </div>
 
           {/* Quick Learning Tracks in Mobile Menu */}
-          <div className="pt-3 border-t border-slate-200 dark:border-white/10 space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-ink-soft px-2 block">
+          <div className="pt-3 border-t border-slate-200 dark:border-white/10 space-y-2 font-nav">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-ink-soft px-2 block font-brand">
               Quick Practice Tracks
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -233,7 +233,7 @@ export function Navbar() {
           </div>
 
           {/* Auth Actions in Mobile Menu */}
-          <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-2">
+          <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-2 font-nav">
             {!isAuthenticated ? (
               <div className="flex flex-col gap-2">
                 <Link

@@ -52,8 +52,8 @@ export function UserProfileDropdown() {
           <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-[#030712]" />
         </div>
 
-        <div className="hidden sm:flex flex-col text-left pr-1">
-          <span className="text-xs font-bold text-ink leading-tight group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors truncate max-w-[120px]">
+        <div className="hidden sm:flex flex-col text-left pr-1 font-nav">
+          <span className="text-xs font-bold font-brand text-ink leading-tight group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors truncate max-w-[120px]">
             {user.name}
           </span>
           <span className="text-[10px] text-ink-soft leading-tight truncate">
@@ -75,7 +75,7 @@ export function UserProfileDropdown() {
 
       {/* Dropdown Menu Modal */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-2xl z-50 p-2 space-y-1 animate-fadeIn divide-y divide-slate-200/60 dark:divide-white/5 text-ink">
+        <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-2xl z-50 p-2 space-y-1 animate-fadeIn divide-y divide-slate-200/60 dark:divide-white/5 text-ink font-nav">
           {/* User Info Header */}
           <div className="px-3 py-2.5 pb-3">
             <div className="flex items-center gap-2.5">
@@ -86,9 +86,9 @@ export function UserProfileDropdown() {
                 className="w-10 h-10 shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-ink truncate">{user.name}</p>
+                <p className="text-xs font-bold font-brand text-ink truncate">{user.name}</p>
                 <p className="text-[11px] text-ink-soft truncate">{user.email}</p>
-                <span className="inline-block mt-1 bg-primary/10 dark:bg-cyan-500/20 text-primary dark:text-cyan-300 text-[9px] font-bold px-2 py-0.5 rounded-md border border-primary/20 dark:border-cyan-500/30">
+                <span className="inline-block mt-1 bg-primary/10 dark:bg-cyan-500/20 text-primary dark:text-cyan-300 text-[9px] font-bold px-2 py-0.5 rounded-md border border-primary/20 dark:border-cyan-500/30 font-brand">
                   {user.level || "Intermediate B2"}
                 </span>
               </div>

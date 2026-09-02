@@ -61,7 +61,7 @@ export default function LoginPage() {
               priority
             />
           </div>
-          <span className="font-display text-3xl font-bold tracking-tight text-ink dark:text-white">
+          <span className="font-brand text-3xl font-bold tracking-tight text-ink dark:text-white">
             Fluentia
           </span>
         </Link>

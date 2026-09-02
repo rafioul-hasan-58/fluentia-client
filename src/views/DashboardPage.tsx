@@ -13,7 +13,7 @@ const DashboardPage = () => {
             <span>🔥</span>
             <span>Day 5 Streak: Master Fluency</span>
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-ink tracking-tight">
+          <h1 className="font-brand text-2xl sm:text-3xl lg:text-4xl font-bold text-ink tracking-tight">
             Welcome back to Fluentia! 👋
           </h1>
           <p className="text-xs sm:text-sm lg:text-base text-ink-soft leading-relaxed">

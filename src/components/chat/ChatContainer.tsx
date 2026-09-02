@@ -231,7 +231,7 @@ export function ChatContainer() {
             ✨
           </div>
           <div>
-            <h1 className="font-display text-lg sm:text-2xl font-bold text-ink flex items-center gap-2">
+            <h1 className="font-brand text-lg sm:text-2xl font-bold text-ink flex items-center gap-2">
               AI Grammar & Skill Coach
             </h1>
             <p className="text-[11px] sm:text-xs text-ink-soft">
@@ -340,7 +340,7 @@ export function ChatContainer() {
                       />
                     </div>
                   )}
-                  <span>{isUser ? "You" : "Fluentia AI Coach"}</span>
+                  <span className="font-brand font-semibold">{isUser ? "You" : "Fluentia AI Coach"}</span>
                   <span>•</span>
                   <span>{msg.timestamp}</span>
                 </div>
@@ -385,7 +385,7 @@ export function ChatContainer() {
                     className="object-contain w-full h-full"
                   />
                 </div>
-                <span className="text-primary dark:text-cyan-300 font-semibold">
+                <span className="text-primary dark:text-cyan-300 font-semibold font-brand">
                   Fluentia AI is generating your lesson...
                 </span>
               </div>

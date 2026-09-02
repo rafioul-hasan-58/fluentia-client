@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces } from "next/font/google";
+import { Inter, Montserrat, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 
@@ -9,10 +9,18 @@ const inter = Inter({
   display: "swap",
 });
 
-const fraunces = Fraunces({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-brand",
   display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -31,7 +39,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${montserrat.variable} ${outfit.variable}`}
+      suppressHydrationWarning
+    >
       <body className="antialiased min-h-screen bg-paper text-ink font-sans transition-colors duration-200">
         <AuthProvider>{children}</AuthProvider>
       </body>

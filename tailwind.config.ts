@@ -30,7 +30,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "serif"],
+        brand: ["var(--font-brand)", "var(--font-outfit)", "var(--font-inter)", "sans-serif"],
+        nav: ["var(--font-brand)", "var(--font-outfit)", "var(--font-inter)", "sans-serif"],
+        display: ["var(--font-brand)", "var(--font-outfit)", "sans-serif"],
         sans: ["var(--font-inter)", "sans-serif"],
       },
       maxWidth: {

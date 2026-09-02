@@ -43,7 +43,7 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
             />
           </div>
         )}
-        <span>{isUser ? "You" : "Fluentia AI Coach"}</span>
+        <span className="font-brand font-semibold">{isUser ? "You" : "Fluentia AI Coach"}</span>
         <span>•</span>
         <span>{message.timestamp}</span>
       </div>

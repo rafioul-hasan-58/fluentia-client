@@ -61,7 +61,7 @@ export function ChatDemo() {
             <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-cyan-400 ring-2 ring-blue-700 animate-pulse" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-white leading-tight">Fluentia Coach</div>
+            <div className="text-sm font-semibold font-brand text-white leading-tight">Fluentia Coach</div>
             <div className="text-[11px] text-cyan-200/90">Online & Ready to teach</div>
           </div>
         </div>
@@ -91,7 +91,7 @@ export function ChatDemo() {
                   />
                 </div>
               )}
-              <span>{msg.sender === "user" ? "You" : "Fluentia Tutor"}</span>
+              <span className="font-brand font-semibold">{msg.sender === "user" ? "You" : "Fluentia Tutor"}</span>
             </div>
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
@@ -116,7 +116,7 @@ export function ChatDemo() {
                   className="object-contain w-full h-full"
                 />
               </div>
-              <span>Fluentia Tutor</span>
+              <span className="font-brand font-semibold text-primary dark:text-cyan-300">Fluentia Tutor</span>
             </div>
             <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex gap-1.5 items-center">
               <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />

@@ -142,7 +142,7 @@ export function Sidebar() {
               className="object-contain w-full h-full"
             />
           </div>
-          <span className="font-display text-lg font-bold tracking-tight text-ink">
+          <span className="font-brand text-lg font-bold tracking-tight text-ink">
             Fluentia
           </span>
         </Link>
@@ -191,10 +191,10 @@ export function Sidebar() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-lg font-bold tracking-tight text-ink">
+              <span className="font-brand text-lg font-bold tracking-tight text-ink">
                 Fluentia
               </span>
-              <span className="text-[10px] text-primary dark:text-cyan-300 font-medium -mt-1">
+              <span className="text-[10px] text-primary dark:text-cyan-300 font-semibold font-brand -mt-1">
                 Learning Hub
               </span>
             </div>
@@ -214,11 +214,11 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Items */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5 font-nav">
           {NAV_ITEMS.map((section, idx) => (
             <div key={idx} className="space-y-1">
               {section.category && (
-                <div className="px-3 pb-1.5 text-[10px] font-bold text-ink-soft uppercase tracking-wider">
+                <div className="px-3 pb-1.5 text-[10px] font-bold text-ink-soft uppercase tracking-wider font-brand">
                   {section.category}
                 </div>
               )}
@@ -304,7 +304,7 @@ export function Sidebar() {
               <Link
                 href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="w-full flex items-center justify-center py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-sm"
+                className="w-full flex items-center justify-center py-2 rounded-xl bg-primary text-white text-xs font-bold font-brand shadow-sm"
               >
                 Sign In to Fluentia
               </Link>
