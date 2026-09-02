@@ -27,7 +27,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (params: RegisterParams | { name: string; email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
-  loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: (googleCredential: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
 
@@ -145,32 +145,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+  const loginWithGoogle = async (googleCredential: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     try {
-      // Simulate authentic Google OAuth profile flow
-      await new Promise((res) => setTimeout(res, 800));
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const res = await fetch(`${apiUrl}/auth/google-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: googleCredential,
+        }),
+      });
 
-      const googleUser: User = {
-        id: `google_${Date.now()}`,
-        name: "Google Learner",
-        firstName: "Google",
-        lastName: "Learner",
-        email: "learner.google@fluentia.ai",
-        avatar: null,
-        level: "Intermediate B2",
-        role: "student",
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to authenticate with Google");
+      }
+
+      // Extract user and token from backend response
+      const authenticatedUser: User = data.user || (data.data && data.data.user) || {
+        id: data.id || `google_${Date.now()}`,
+        name: data.name || (data.firstName ? `${data.firstName} ${data.lastName || ""}`.trim() : "Google User"),
+        firstName: data.firstName || "Google",
+        lastName: data.lastName || "Learner",
+        email: data.email || "",
+        avatar: data.avatar || data.picture || null,
+        role: data.role || "student",
+        level: data.level || "Intermediate B2",
         provider: "google",
       };
 
-      saveUserSession(googleUser);
+      const token = data.accessToken || data.access_token || data.token || (data.data && (data.data.accessToken || data.data.token));
+
+      saveUserSession(authenticatedUser);
+      if (token) {
+        localStorage.setItem("fluentia_auth_token", token);
+      }
       return { success: true };
     } catch (err: any) {
-      return { success: false, error: err.message || "Google sign in failed" };
+      return { success: false, error: err.message || "Google sign-in failed" };
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const logout = () => {
     saveUserSession(null);

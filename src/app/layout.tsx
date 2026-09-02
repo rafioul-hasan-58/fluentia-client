@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Montserrat, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,7 +46,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased min-h-screen bg-paper text-ink font-sans transition-colors duration-200">
-        <AuthProvider>{children}</AuthProvider>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+          <AuthProvider>{children}</AuthProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

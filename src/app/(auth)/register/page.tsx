@@ -71,14 +71,14 @@ export default function RegisterPage() {
 
       {/* Main Register Card */}
       <Card className="w-full max-w-lg backdrop-blur-xl bg-paper-card/90">
-        <CardHeader className="text-center space-y-1.5">
+        <CardHeader className="text-center space-y-1">
           <CardTitle>Create Your Account</CardTitle>
           <CardDescription>
             Join thousands of learners mastering spoken English & IELTS fluency
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-3 pb-3">
+        <CardContent className="space-y-3">
           {/* Error Message Alert */}
           {error && (
             <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
@@ -182,20 +182,20 @@ export default function RegisterPage() {
                   <span>Creating Account...</span>
                 </span>
               ) : (
-                "Create Free Account →"
+                "Create Account"
               )}
             </Button>
           </form>
         </CardContent>
 
         <CardFooter className="justify-center text-center mt-2 py-4">
-          <p className="text-xs text-ink-soft">
+          <p className="text-sm text-ink-soft">
             Already have an account?{" "}
             <Link
               href="/login"
               className="font-bold text-primary dark:text-cyan-300 hover:underline ml-1"
             >
-              Sign in
+              Login
             </Link>
           </p>
         </CardFooter>
