@@ -157,105 +157,62 @@ export const DEFAULT_GRAMMAR_PRESETS: GrammarSkillPreset[] = [
 
 /**
  * Call the Grammar Teach API endpoint: POST /api/v1/grammar/teach
- * Tries relative Next.js proxy route first, then direct server URLs.
  */
 export async function teachGrammar(
   request: TeachGrammarRequest
 ): Promise<TeachGrammarResponse> {
-  const isBrowser = typeof window !== "undefined";
-  const configuredBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/grammar/teach`;
 
-  // Candidate URLs to try in order
-  const candidateUrls: string[] = [];
-  if (isBrowser) {
-    candidateUrls.push("/api/v1/grammar/teach");
-  }
-  if (configuredBase) {
-    candidateUrls.push(`${configuredBase}/api/v1/grammar/teach`);
-  }
-  candidateUrls.push("http://localhost:5000/api/v1/grammar/teach");
-  candidateUrls.push("http://127.0.0.1:5000/api/v1/grammar/teach");
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      skillSlug: request.skillSlug,
+      userPrompt: request.userPrompt?.trim() || "Teach me this grammar rule",
+    }),
+  });
 
-  // Filter unique candidate URLs
-  const uniqueUrls = Array.from(new Set(candidateUrls));
-  let lastError: Error = new Error("Failed to connect to grammar service");
-
-  for (const url of uniqueUrls) {
+  if (!res.ok) {
+    let errorMessage = `Server error (status ${res.status})`;
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          skillSlug: request.skillSlug,
-          userPrompt: request.userPrompt?.trim() || "Teach me this grammar rule",
-        }),
-      });
-
-      if (!res.ok) {
-        let errorMessage = `Server error (status ${res.status})`;
-        try {
-          const errJson = await res.json();
-          if (errJson.message) {
-            errorMessage = Array.isArray(errJson.message)
-              ? errJson.message.join(", ")
-              : errJson.message;
-          }
-        } catch {
-          // ignore
-        }
-        throw new Error(errorMessage);
+      const errJson = await res.json();
+      if (errJson.message) {
+        errorMessage = Array.isArray(errJson.message)
+          ? errJson.message.join(", ")
+          : errJson.message;
       }
-
-      const data: TeachGrammarResponse = await res.json();
-      return data;
-    } catch (err: any) {
-      lastError = err;
-      // Continue to next candidate URL if fetch failed
-      continue;
+    } catch {
+      // ignore
     }
+    throw new Error(errorMessage);
   }
 
-  throw lastError;
+  const data: TeachGrammarResponse = await res.json();
+  return data;
 }
 
 /**
  * Fetch all available skills from the database: GET /api/v1/skills
  */
 export async function fetchSkills(): Promise<SkillSummary[]> {
-  const isBrowser = typeof window !== "undefined";
-  const configuredBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/skills`;
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
 
-  const candidateUrls: string[] = [];
-  if (isBrowser) {
-    candidateUrls.push("/api/v1/skills");
-  }
-  if (configuredBase) {
-    candidateUrls.push(`${configuredBase}/api/v1/skills`);
-  }
-  candidateUrls.push("http://localhost:5000/api/v1/skills");
-  candidateUrls.push("http://127.0.0.1:5000/api/v1/skills");
-
-  const uniqueUrls = Array.from(new Set(candidateUrls));
-
-  for (const url of uniqueUrls) {
-    try {
-      const res = await fetch(url, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-
-      if (res.ok) {
-        const json: SkillsListResponse = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          return json.data;
-        }
+    if (res.ok) {
+      const json: SkillsListResponse = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        return json.data;
       }
-    } catch {
-      continue;
     }
+  } catch {
+    // ignore
   }
 
   return DEFAULT_GRAMMAR_PRESETS.map((p) => ({
@@ -265,3 +222,4 @@ export async function fetchSkills(): Promise<SkillSummary[]> {
     cefr: p.cefr,
   }));
 }
+
