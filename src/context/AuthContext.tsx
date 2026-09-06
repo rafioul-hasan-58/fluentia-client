@@ -6,7 +6,11 @@ import {
   UserProfileData,
   UpdateUserProfileDto,
 } from "@/types/user";
-import { fetchUserProfile, updateUserProfile as apiUpdateUserProfile } from "@/lib/api/user";
+import {
+  fetchUserProfile,
+  updateUserProfile as apiUpdateUserProfile,
+  uploadProfileImage as apiUploadProfileImage,
+} from "@/lib/api/user";
 
 export interface User {
   id: string;
@@ -45,6 +49,7 @@ interface AuthContextType {
   loginWithGoogle: (googleCredential: string) => Promise<{ success: boolean; error?: string }>;
   updateUser: (userData: Partial<User>) => void;
   updateProfile: (dto: UpdateUserProfileDto) => Promise<{ success: boolean; data?: User; error?: string }>;
+  uploadAvatar: (file: File) => Promise<{ success: boolean; profileImageUrl?: string; error?: string }>;
   refreshProfile: () => Promise<void>;
   logout: () => void;
 }
@@ -57,18 +62,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Restore user session on initial load
+  // Restore user session on initial load and refresh latest real data from backend
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        setUser(JSON.parse(stored));
+    const initAuth = async () => {
+      try {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored) {
+          setUser(JSON.parse(stored));
+        }
+
+        const token = localStorage.getItem("fluentia_auth_token");
+        if (token || stored) {
+          const profileData = await fetchUserProfile();
+          if (profileData) {
+            const fullName = profileData.firstName || profileData.lastName
+              ? `${profileData.firstName || ""} ${profileData.lastName || ""}`.trim()
+              : "Learner";
+
+            const updated: User = {
+              id: profileData.id || `user_${Date.now()}`,
+              name: fullName,
+              firstName: profileData.firstName,
+              lastName: profileData.lastName,
+              email: profileData.email || "",
+              avatar: profileData.profileImage || null,
+              profileImage: profileData.profileImage || null,
+              bio: profileData.bio || null,
+              phoneNumber: profileData.phoneNumber || null,
+              country: profileData.country || null,
+              timezone: profileData.timezone || null,
+              role: profileData.role || "USER",
+              level: profileData.level || "Intermediate B2",
+              provider: profileData.registrationMethod === "GOOGLE" ? "google" : "email",
+              registrationMethod: profileData.registrationMethod || "EMAIL",
+              createdAt: profileData.createdAt,
+              updatedAt: profileData.updatedAt,
+              profile: profileData.profile || null,
+            };
+            setUser(updated);
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+          }
+        }
+      } catch {
+        // ignore
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      // ignore
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    initAuth();
   }, []);
 
   const saveUserSession = (userData: User | null) => {
@@ -306,6 +348,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const uploadAvatar = async (
+    file: File
+  ): Promise<{ success: boolean; profileImageUrl?: string; error?: string }> => {
+    try {
+      const { profileImageUrl, data } = await apiUploadProfileImage(file);
+      if (profileImageUrl) {
+        setUser((prev) => {
+          if (!prev) return null;
+          const updated: User = {
+            ...prev,
+            ...(data || {}),
+            avatar: profileImageUrl,
+            profileImage: profileImageUrl,
+            updatedAt: data?.updatedAt || new Date().toISOString(),
+          };
+          saveUserSession(updated);
+          return updated;
+        });
+        return { success: true, profileImageUrl };
+      }
+      return { success: false, error: "Image upload did not return a valid URL" };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err.message || "Failed to upload image file.",
+      };
+    }
+  };
+
   const logout = () => {
     saveUserSession(null);
     if (typeof window !== "undefined") {
@@ -324,6 +395,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithGoogle,
         updateUser,
         updateProfile,
+        uploadAvatar,
         refreshProfile,
         logout,
       }}

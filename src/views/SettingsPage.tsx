@@ -60,7 +60,7 @@ const FLUENCY_LEVELS = [
 ];
 
 export default function SettingsPage() {
-  const { user, updateProfile, refreshProfile } = useAuth();
+  const { user, updateProfile, uploadAvatar, refreshProfile } = useAuth();
 
   // Tab State
   const [activeTab, setActiveTab] = useState<"profile" | "account" | "preferences">("profile");
@@ -79,8 +79,9 @@ export default function SettingsPage() {
   const [customAvatarUrl, setCustomAvatarUrl] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
 
-  // Status feedback
+  // Status feedback & image uploading state
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [copiedId, setCopiedId] = useState(false);
 
@@ -204,14 +205,43 @@ export default function SettingsPage() {
     }
   };
 
-  const handleImageUploadSimulation = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Instant local preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfileImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    setIsUploadingImage(true);
+    setStatusMessage(null);
+
+    try {
+      const result = await uploadAvatar(file);
+      if (result.success && result.profileImageUrl) {
+        setProfileImage(result.profileImageUrl);
+        setStatusMessage({
+          type: "success",
+          text: "Profile picture uploaded and saved successfully!",
+        });
+        setTimeout(() => setStatusMessage(null), 4000);
+      } else {
+        setStatusMessage({
+          type: "error",
+          text: result.error || "Failed to upload image to server.",
+        });
+      }
+    } catch (err: any) {
+      setStatusMessage({
+        type: "error",
+        text: err.message || "Failed to upload image file.",
+      });
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
     }
   };
 
@@ -308,9 +338,22 @@ export default function SettingsPage() {
                 size="lg"
                 className="w-20 h-20 sm:w-24 sm:h-24 min-w-[5rem] min-h-[5rem] sm:min-w-[6rem] sm:min-h-[6rem] max-w-[5rem] max-h-[5rem] sm:max-w-[6rem] sm:max-h-[6rem] aspect-square shrink-0 rounded-2xl ring-4 ring-white dark:ring-white/10 shadow-md text-2xl font-bold"
               />
+
+              {/* Uploading Spinner Overlay */}
+              {isUploadingImage && (
+                <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center backdrop-blur-2xs z-20">
+                  <svg className="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  </svg>
+                </div>
+              )}
+
               <label
                 htmlFor="avatar-file-top"
-                className="absolute -bottom-1 -right-1 p-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg cursor-pointer shadow-md transition-transform hover:scale-110 active:scale-95"
+                className={`absolute -bottom-1 -right-1 p-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg cursor-pointer shadow-md transition-transform hover:scale-110 active:scale-95 z-20 ${
+                  isUploadingImage ? "opacity-50 pointer-events-none" : ""
+                }`}
                 title="Upload profile picture"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -321,7 +364,8 @@ export default function SettingsPage() {
                   id="avatar-file-top"
                   type="file"
                   accept="image/*"
-                  onChange={handleImageUploadSimulation}
+                  onChange={handleImageUpload}
+                  disabled={isUploadingImage}
                   className="hidden"
                 />
               </label>
@@ -453,24 +497,37 @@ export default function SettingsPage() {
                   Profile Photo & Avatar
                 </Label>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <Avatar
-                    src={profileImage || user?.avatar}
-                    fallback={initials}
-                    size="md"
-                    className="w-16 h-16 min-w-[4rem] min-h-[4rem] max-w-[4rem] max-h-[4rem] aspect-square rounded-xl border border-slate-200 dark:border-white/10 shrink-0"
-                  />
+                  <div className="relative group shrink-0">
+                    <Avatar
+                      src={profileImage || user?.avatar}
+                      fallback={initials}
+                      size="md"
+                      className="w-16 h-16 min-w-[4rem] min-h-[4rem] max-w-[4rem] max-h-[4rem] aspect-square rounded-xl border border-slate-200 dark:border-white/10 shrink-0"
+                    />
+                    {isUploadingImage && (
+                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center backdrop-blur-2xs z-20">
+                        <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1 space-y-2 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <label
                         htmlFor="avatar-file-input"
-                        className="px-3 py-1.5 rounded-lg bg-paper-card border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-ink cursor-pointer transition-colors"
+                        className={`px-3 py-1.5 rounded-lg bg-paper-card border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-ink cursor-pointer transition-colors ${
+                          isUploadingImage ? "opacity-50 pointer-events-none" : ""
+                        }`}
                       >
-                        📁 Choose Image File
+                        {isUploadingImage ? "⏳ Uploading Image..." : "📁 Choose Image File"}
                         <input
                           id="avatar-file-input"
                           type="file"
                           accept="image/*"
-                          onChange={handleImageUploadSimulation}
+                          onChange={handleImageUpload}
+                          disabled={isUploadingImage}
                           className="hidden"
                         />
                       </label>

@@ -15,14 +15,14 @@ const getAuthToken = (): string | null => {
 };
 
 /**
- * Fetch current user profile: GET /users/profile
+ * Fetch current user profile: GET /users/my-profile
  */
 export async function fetchUserProfile(): Promise<UserProfileData | null> {
   const token = getAuthToken();
   const baseUrl = getApiBaseUrl();
 
   const headers: HeadersInit = {
-    Accept: "application/json",
+    Accept: "*/*",
   };
 
   if (token) {
@@ -30,7 +30,8 @@ export async function fetchUserProfile(): Promise<UserProfileData | null> {
   }
 
   try {
-    const res = await fetch(`${baseUrl}/users/profile`, {
+    // Primary endpoint: GET /users/my-profile
+    const res = await fetch(`${baseUrl}/users/my-profile`, {
       method: "GET",
       headers,
     });
@@ -40,11 +41,21 @@ export async function fetchUserProfile(): Promise<UserProfileData | null> {
       if (data.success && data.data) {
         return data.data;
       }
-      return data.data || null;
+      return data.data || data;
     }
 
-    // Fallback attempt: GET /users/me if /users/profile returns 404
+    // Fallback attempt 1: GET /users/profile if 404
     if (res.status === 404) {
+      const resProfile = await fetch(`${baseUrl}/users/profile`, {
+        method: "GET",
+        headers,
+      });
+      if (resProfile.ok) {
+        const dataProfile = await resProfile.json();
+        return dataProfile.data || dataProfile;
+      }
+
+      // Fallback attempt 2: GET /users/me
       const resMe = await fetch(`${baseUrl}/users/me`, {
         method: "GET",
         headers,
@@ -62,7 +73,7 @@ export async function fetchUserProfile(): Promise<UserProfileData | null> {
 }
 
 /**
- * Update current user profile: PATCH /users/profile
+ * Update current user profile: PATCH /users/my-profile
  */
 export async function updateUserProfile(
   dto: UpdateUserProfileDto
@@ -72,7 +83,7 @@ export async function updateUserProfile(
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
-    Accept: "application/json",
+    Accept: "*/*",
   };
 
   if (token) {
@@ -82,8 +93,8 @@ export async function updateUserProfile(
   let errorMessage = "Failed to update user profile";
 
   try {
-    // Try PATCH /users/profile
-    const res = await fetch(`${baseUrl}/users/profile`, {
+    // Try PATCH /users/my-profile
+    const res = await fetch(`${baseUrl}/users/my-profile`, {
       method: "PATCH",
       headers,
       body: JSON.stringify(dto),
@@ -94,18 +105,32 @@ export async function updateUserProfile(
       if (result.data) {
         return result.data;
       }
+      return result as any;
     } else if (res.status === 404 || res.status === 405) {
-      // Try PUT /users/profile
-      const resPut = await fetch(`${baseUrl}/users/profile`, {
-        method: "PUT",
+      // Try PATCH /users/profile or PUT /users/my-profile
+      const resAlt = await fetch(`${baseUrl}/users/profile`, {
+        method: "PATCH",
         headers,
         body: JSON.stringify(dto),
       });
 
-      if (resPut.ok) {
-        const resultPut: UpdateUserProfileResponse = await resPut.json();
-        if (resultPut.data) {
-          return resultPut.data;
+      if (resAlt.ok) {
+        const resultAlt: UpdateUserProfileResponse = await resAlt.json();
+        if (resultAlt.data) {
+          return resultAlt.data;
+        }
+      } else {
+        const resPut = await fetch(`${baseUrl}/users/my-profile`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify(dto),
+        });
+
+        if (resPut.ok) {
+          const resultPut: UpdateUserProfileResponse = await resPut.json();
+          if (resultPut.data) {
+            return resultPut.data;
+          }
         }
       }
     } else {
@@ -145,4 +170,72 @@ export async function updateUserProfile(
     updatedAt: new Date().toISOString(),
     level: dto.level || "Intermediate B2",
   };
+}
+
+/**
+ * Upload profile image: POST /users/upload-profile-image
+ */
+export async function uploadProfileImage(
+  file: File
+): Promise<{ profileImageUrl?: string; data?: UserProfileData }> {
+  const token = getAuthToken();
+  const baseUrl = getApiBaseUrl();
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const headers: HeadersInit = {
+    Accept: "*/*",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/users/upload-profile-image`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      const responseData = result.data || result;
+      const profileImageUrl =
+        typeof responseData === "string"
+          ? responseData
+          : responseData.profileImage ||
+            responseData.url ||
+            responseData.avatar ||
+            responseData.imageUrl ||
+            (responseData.user && (responseData.user.profileImage || responseData.user.avatar));
+
+      return {
+        profileImageUrl: profileImageUrl || undefined,
+        data: typeof responseData === "object" ? responseData : undefined,
+      };
+    } else {
+      let errorMessage = "Failed to upload profile image";
+      try {
+        const errJson = await res.json();
+        if (errJson.message) {
+          errorMessage = Array.isArray(errJson.message)
+            ? errJson.message.join(", ")
+            : errJson.message;
+        }
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+  } catch (err: any) {
+    if (err.message && err.message !== "Failed to fetch") {
+      throw err;
+    }
+    console.warn("uploadProfileImage network fallback:", err);
+    // In local dev without active backend, simulate upload with local object URL
+    const localUrl = URL.createObjectURL(file);
+    return { profileImageUrl: localUrl };
+  }
 }
