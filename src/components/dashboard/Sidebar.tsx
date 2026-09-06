@@ -112,6 +112,21 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
       },
     ],
   },
+  {
+    category: "Preferences",
+    items: [
+      {
+        name: "Settings & Profile",
+        href: "/dashboard/settings",
+        icon: ({ className }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        ),
+      },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -272,32 +287,46 @@ export function Sidebar() {
         <div className="p-3.5 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
           {isAuthenticated && user ? (
             <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/5 shadow-2xs">
+              <Link
+                href="/dashboard/settings"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/5 shadow-2xs transition-all group"
+              >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <Avatar
-                    src={user.avatar}
+                    src={user.profileImage || user.avatar}
                     fallback={initials}
                     size="sm"
-                    className="w-8 h-8 shrink-0"
+                    className="w-8 h-8 shrink-0 group-hover:scale-105 transition-transform"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-ink truncate">{user.name}</p>
+                    <p className="text-xs font-semibold text-ink truncate group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors">
+                      {user.name}
+                    </p>
                     <p className="text-[10px] text-ink-soft truncate">{user.level || "Intermediate"}</p>
                   </div>
                 </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-ink-soft group-hover:text-primary transition-colors p-1" title="Settings">
+                    ⚙️
+                  </span>
+                </div>
+              </Link>
+
+              <div className="flex items-center justify-between gap-2 px-1">
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 py-1 px-2 rounded-lg text-left flex items-center gap-1.5 transition-colors"
+                >
+                  <span>🚪</span>
+                  <span>Sign Out</span>
+                </button>
+
                 <div className="hidden lg:block">
                   <ThemeToggle />
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={logout}
-                className="w-full text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 py-1 px-2 rounded-lg text-left flex items-center justify-between transition-colors"
-              >
-                <span>Sign Out</span>
-                <span>🚪</span>
-              </button>
             </div>
           ) : (
             <div className="space-y-2">

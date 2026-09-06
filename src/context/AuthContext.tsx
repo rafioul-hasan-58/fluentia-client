@@ -2,16 +2,31 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+import {
+  UserProfileData,
+  UpdateUserProfileDto,
+} from "@/types/user";
+import { fetchUserProfile, updateUserProfile as apiUpdateUserProfile } from "@/lib/api/user";
+
 export interface User {
   id: string;
   name: string;
-  firstName?: string;
-  lastName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   email: string;
   avatar?: string | null;
+  profileImage?: string | null;
+  bio?: string | null;
+  phoneNumber?: string | null;
+  country?: string | null;
+  timezone?: string | null;
   role?: string;
   level?: string;
   provider?: "email" | "google";
+  registrationMethod?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  profile?: Record<string, any> | null;
 }
 
 export interface RegisterParams {
@@ -28,6 +43,9 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (params: RegisterParams | { name: string; email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: (googleCredential: string) => Promise<{ success: boolean; error?: string }>;
+  updateUser: (userData: Partial<User>) => void;
+  updateProfile: (dto: UpdateUserProfileDto) => Promise<{ success: boolean; data?: User; error?: string }>;
+  refreshProfile: () => Promise<void>;
   logout: () => void;
 }
 
@@ -191,8 +209,108 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
 
+  const updateUser = (userData: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated: User = {
+        ...prev,
+        ...userData,
+        name:
+          userData.name ||
+          (userData.firstName || userData.lastName
+            ? `${userData.firstName || prev.firstName || ""} ${userData.lastName || prev.lastName || ""}`.trim()
+            : prev.name),
+        avatar: userData.profileImage !== undefined ? userData.profileImage : (userData.avatar !== undefined ? userData.avatar : prev.avatar),
+      };
+      saveUserSession(updated);
+      return updated;
+    });
+  };
+
+  const refreshProfile = async () => {
+    try {
+      const profileData = await fetchUserProfile();
+      if (profileData) {
+        setUser((prev) => {
+          const fullName = profileData.firstName || profileData.lastName
+            ? `${profileData.firstName || ""} ${profileData.lastName || ""}`.trim()
+            : (prev?.name || "Learner");
+
+          const updated: User = {
+            id: profileData.id || prev?.id || `user_${Date.now()}`,
+            name: fullName,
+            firstName: profileData.firstName,
+            lastName: profileData.lastName,
+            email: profileData.email || prev?.email || "",
+            avatar: profileData.profileImage || prev?.avatar || null,
+            profileImage: profileData.profileImage || null,
+            bio: profileData.bio || null,
+            phoneNumber: profileData.phoneNumber || null,
+            country: profileData.country || null,
+            timezone: profileData.timezone || null,
+            role: profileData.role || prev?.role || "USER",
+            level: profileData.level || prev?.level || "Intermediate B2",
+            provider: prev?.provider || (profileData.registrationMethod === "GOOGLE" ? "google" : "email"),
+            registrationMethod: profileData.registrationMethod || (prev?.provider === "google" ? "GOOGLE" : "EMAIL"),
+            createdAt: profileData.createdAt || prev?.createdAt,
+            updatedAt: profileData.updatedAt || prev?.updatedAt,
+            profile: profileData.profile || prev?.profile || null,
+          };
+          saveUserSession(updated);
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.warn("Could not refresh profile from server:", err);
+    }
+  };
+
+  const updateProfile = async (
+    dto: UpdateUserProfileDto
+  ): Promise<{ success: boolean; data?: User; error?: string }> => {
+    setIsLoading(true);
+    try {
+      const responseData = await apiUpdateUserProfile(dto);
+      const fullName = (dto.firstName !== undefined || dto.lastName !== undefined)
+        ? `${dto.firstName ?? user?.firstName ?? ""} ${dto.lastName ?? user?.lastName ?? ""}`.trim()
+        : user?.name || "Learner";
+
+      const updatedUser: User = {
+        ...(user || {
+          id: responseData.id || `user_${Date.now()}`,
+          email: responseData.email || "user@fluentia.ai",
+        }),
+        ...responseData,
+        name: fullName || "Learner",
+        firstName: dto.firstName !== undefined ? dto.firstName : responseData.firstName,
+        lastName: dto.lastName !== undefined ? dto.lastName : responseData.lastName,
+        profileImage: dto.profileImage !== undefined ? dto.profileImage : responseData.profileImage,
+        avatar: dto.profileImage !== undefined ? dto.profileImage : (responseData.profileImage || user?.avatar || null),
+        bio: dto.bio !== undefined ? dto.bio : responseData.bio,
+        phoneNumber: dto.phoneNumber !== undefined ? dto.phoneNumber : responseData.phoneNumber,
+        country: dto.country !== undefined ? dto.country : responseData.country,
+        timezone: dto.timezone !== undefined ? dto.timezone : responseData.timezone,
+        level: dto.level !== undefined ? dto.level : (responseData.level || user?.level),
+        updatedAt: responseData.updatedAt || new Date().toISOString(),
+      };
+
+      saveUserSession(updatedUser);
+      return { success: true, data: updatedUser };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err.message || "Failed to update profile settings.",
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     saveUserSession(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("fluentia_auth_token");
+    }
   };
 
   return (
@@ -204,6 +322,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         loginWithGoogle,
+        updateUser,
+        updateProfile,
+        refreshProfile,
         logout,
       }}
     >

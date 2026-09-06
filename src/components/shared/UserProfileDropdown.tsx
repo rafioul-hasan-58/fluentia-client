@@ -44,7 +44,7 @@ export function UserProfileDropdown() {
       >
         <div className="relative">
           <Avatar
-            src={user.avatar}
+            src={user.profileImage || user.avatar}
             fallback={initials}
             size="sm"
             className="w-8 h-8 sm:w-9 sm:h-9"
@@ -80,7 +80,7 @@ export function UserProfileDropdown() {
           <div className="px-3 py-2.5 pb-3">
             <div className="flex items-center gap-2.5">
               <Avatar
-                src={user.avatar}
+                src={user.profileImage || user.avatar}
                 fallback={initials}
                 size="md"
                 className="w-10 h-10 shrink-0"
@@ -104,6 +104,15 @@ export function UserProfileDropdown() {
             >
               <span>📊</span>
               <span>Learning Dashboard</span>
+            </Link>
+
+            <Link
+              href="/dashboard/settings"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-ink-soft hover:text-ink"
+            >
+              <span>⚙️</span>
+              <span>Settings & Profile</span>
             </Link>
 
             <Link
