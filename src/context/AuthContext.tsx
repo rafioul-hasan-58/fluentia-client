@@ -277,10 +277,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             data.accessToken ||
             data.access_token ||
             data.token ||
-            (data.data && (data.data.accessToken || data.data.token));
+            (data.data && (data.data.accessToken || data.data.token || data.data.access_token));
 
           if (token) {
             localStorage.setItem("fluentia_auth_token", token);
+          } else {
+            // Auto-authenticate with login endpoint if token not returned in register response
+            return await login(params.email, params.password);
           }
 
           const userPayload = data.user || (data.data && data.data.user) || data.data || data;
@@ -293,11 +296,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             avatar: userPayload.profileImage || userPayload.avatar || null,
             profileImage: userPayload.profileImage || userPayload.avatar || null,
             level: "Beginner A1",
-            role: "USER",
+            role: userPayload.role || "USER",
             provider: "email",
           };
 
           saveUserSession(registeredUser);
+
+          // Hydrate profile in background
+          try {
+            const fullProfile = await fetchUserProfile();
+            if (fullProfile) {
+              saveUserSession({
+                ...registeredUser,
+                ...fullProfile,
+                name: `${fullProfile.firstName || fName} ${fullProfile.lastName || lName}`.trim(),
+              });
+            }
+          } catch {
+            // non-blocking
+          }
+
           return { success: true };
         } else {
           let errMessage = "Failed to create account";
