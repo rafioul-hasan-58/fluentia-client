@@ -10,7 +10,8 @@ import {
   fetchUserProfile,
   updateUserProfile as apiUpdateUserProfile,
   uploadProfileImage as apiUploadProfileImage,
-} from "@/lib/api/user";
+  getApiBaseUrl,
+} from "@/lib/api";
 
 export interface User {
   id: string;
@@ -134,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: "Please enter your email and password." };
       }
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/auth/login`;
+      const url = `${getApiBaseUrl()}/auth/login`;
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -254,7 +255,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: "All fields are required." };
       }
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/auth/register`;
+      const url = `${getApiBaseUrl()}/auth/register`;
       try {
         const res = await fetch(url, {
           method: "POST",
@@ -353,7 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = async (googleCredential: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/auth/google-login`;
+      const url = `${getApiBaseUrl()}/auth/google-login`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

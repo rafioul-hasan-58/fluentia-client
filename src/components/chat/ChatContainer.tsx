@@ -203,7 +203,7 @@ export function ChatContainer() {
         sender: "ai",
         text: `⚠️ **Unable to load lesson:** ${
           error.message || "Connection to the grammar service failed."
-        }\n\nPlease check that the server is running at \`http://localhost:5000\` and try again.`,
+        }\n\nPlease check your internet connection or server availability and try again.`,
         timestamp: "Just now",
         isError: true,
       };

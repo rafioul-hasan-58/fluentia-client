@@ -4,10 +4,7 @@ import {
   UpdateUserProfileDto,
   UpdateUserProfileResponse,
 } from "@/types/user";
-
-const getApiBaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-};
+import { getApiBaseUrl } from "./config";
 
 const getAuthToken = (): string | null => {
   if (typeof window === "undefined") return null;

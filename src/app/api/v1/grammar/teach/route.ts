@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/lib/api";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const serverUrl = "http://127.0.0.1:5000/api/v1/grammar/teach";
+    const serverUrl = `${getApiBaseUrl()}/grammar/teach`;
 
     const response = await fetch(serverUrl, {
       method: "POST",
@@ -21,9 +22,10 @@ export async function POST(req: NextRequest) {
       {
         success: false,
         statusCode: 500,
-        message: error.message || "Failed to reach backend server on port 5000",
+        message: error.message || "Failed to reach backend grammar service",
       },
       { status: 500 }
     );
   }
 }
+

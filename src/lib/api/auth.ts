@@ -1,6 +1,4 @@
-const getApiBaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-};
+import { getApiBaseUrl } from "./config";
 
 export interface ForgotPasswordResponse {
   success: boolean;
@@ -13,7 +11,8 @@ export interface VerifyOtpResponse {
   message?: string;
   data?: {
     resetToken?: string;
-    valid?: boolean;
+    accessToken?: string;
+    token?: string;
     [key: string]: any;
   };
 }
@@ -25,195 +24,180 @@ export interface ResetPasswordResponse {
 }
 
 /**
- * Step 1: Send OTP to user email: POST /auth/forgot-password or /auth/send-otp
+ * Step 1: Send OTP to user email: POST /api/v1/auth/forgot-password
+ * Equivalent to:
+ * curl -X 'POST' 'http://localhost:5000/api/v1/auth/forgot-password' \
+ *   -H 'accept: *\/*' \
+ *   -H 'Content-Type: application/json' \
+ *   -d '{"email": "user@example.com"}'
  */
 export async function sendForgotPasswordOtp(
   email: string
 ): Promise<ForgotPasswordResponse> {
   const baseUrl = getApiBaseUrl();
+  const endpoint = `${baseUrl}/auth/forgot-password`;
 
-  const endpoints = [
-    `${baseUrl}/auth/forgot-password`,
-    `${baseUrl}/auth/send-otp`,
-    `${baseUrl}/auth/request-password-reset`,
-  ];
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    });
 
-  let lastError = "Failed to send verification code";
+    const data = await res.json().catch(() => ({}));
 
-  for (const endpoint of endpoints) {
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        return {
-          success: true,
-          message: data.message || "Verification code sent to your email.",
-          data: data.data || data,
-        };
-      }
-
-      if (res.status !== 404) {
-        if (data.message) {
-          lastError = Array.isArray(data.message) ? data.message.join(", ") : data.message;
-        }
-        throw new Error(lastError);
-      }
-    } catch (err: any) {
-      if (err.message && err.message !== "Failed to fetch") {
-        throw err;
-      }
-      lastError = err.message || lastError;
+    if (res.ok) {
+      return {
+        success: true,
+        message: data.message || "Forgot password reset OTP sent successfully!",
+        data: data.data || data,
+      };
     }
-  }
 
-  // Local fallback simulation in dev if backend server endpoints are starting
-  return {
-    success: true,
-    message: "A 6-digit verification code has been sent to your email address.",
-  };
+    let errorMessage = "Failed to send reset code. Please try again.";
+    if (data.message) {
+      errorMessage = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+    } else if (data.errorMessages && data.errorMessages.length > 0) {
+      errorMessage = data.errorMessages.join(", ");
+    }
+
+    throw new Error(errorMessage);
+  } catch (err: any) {
+    if (err.message && err.message !== "Failed to fetch") {
+      throw err;
+    }
+    throw new Error(err.message || "Network error. Unable to reach server.");
+  }
 }
 
 /**
- * Step 2: Verify OTP code: POST /auth/verify-otp or /auth/verify-reset-code
+ * Step 2: Verify OTP code: POST /api/v1/auth/verify-reset-password-otp
+ * Body: { email, otp }
  */
 export async function verifyPasswordResetOtp(
   email: string,
   otp: string
 ): Promise<VerifyOtpResponse> {
   const baseUrl = getApiBaseUrl();
+  const endpoint = `${baseUrl}/auth/verify-reset-password-otp`;
 
-  const endpoints = [
-    `${baseUrl}/auth/verify-otp`,
-    `${baseUrl}/auth/verify-reset-code`,
-    `${baseUrl}/auth/validate-otp`,
-  ];
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        otp: otp.trim(),
+      }),
+    });
 
-  let lastError = "Invalid or expired verification code";
+    const data = await res.json().catch(() => ({}));
 
-  for (const endpoint of endpoints) {
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
+    if (res.ok) {
+      const extractedToken =
+        data.token ||
+        data.accessToken ||
+        data.resetToken ||
+        (data.data && (data.data.token || data.data.accessToken || data.data.resetToken));
+
+      return {
+        success: true,
+        message: data.message || "OTP verified successfully!",
+        data: {
+          ...(data.data || data),
+          resetToken: extractedToken,
+          token: extractedToken,
         },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-          otp: otp.trim(),
-          code: otp.trim(),
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        return {
-          success: true,
-          message: data.message || "OTP code verified successfully.",
-          data: data.data || data,
-        };
-      }
-
-      if (res.status !== 404) {
-        if (data.message) {
-          lastError = Array.isArray(data.message) ? data.message.join(", ") : data.message;
-        }
-        throw new Error(lastError);
-      }
-    } catch (err: any) {
-      if (err.message && err.message !== "Failed to fetch") {
-        throw err;
-      }
-      lastError = err.message || lastError;
+      };
     }
-  }
 
-  // Simulation fallback in dev
-  if (otp.length >= 4) {
-    return {
-      success: true,
-      message: "OTP verified successfully.",
-    };
-  }
+    let errorMessage = "Invalid or expired verification code.";
+    if (data.message) {
+      errorMessage = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+    } else if (data.errorMessages && data.errorMessages.length > 0) {
+      errorMessage = data.errorMessages.join(", ");
+    }
 
-  throw new Error("Please enter a valid 6-digit verification code.");
+    throw new Error(errorMessage);
+  } catch (err: any) {
+    if (err.message && err.message !== "Failed to fetch") {
+      throw err;
+    }
+    throw new Error(err.message || "Network error. Unable to verify code.");
+  }
 }
 
 /**
- * Step 3: Reset password with OTP / Token: POST /auth/reset-password
+ * Step 3: Reset password with OTP / Token: POST /api/v1/auth/reset-password
+ * Headers: Authorization: Bearer <token>
+ * Body: { password }
  */
 export async function resetPasswordWithOtp(params: {
   email: string;
-  otp: string;
+  otp?: string;
   newPassword: string;
   confirmPassword?: string;
   token?: string;
 }): Promise<ResetPasswordResponse> {
   const baseUrl = getApiBaseUrl();
+  const endpoint = `${baseUrl}/auth/reset-password`;
 
-  const endpoints = [
-    `${baseUrl}/auth/reset-password`,
-    `${baseUrl}/auth/change-password`,
-    `${baseUrl}/auth/update-password`,
-  ];
+  const token =
+    params.token ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem("fluentia_reset_token") || localStorage.getItem("fluentia_auth_token")
+      : undefined);
 
-  let lastError = "Failed to reset password";
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "*/*",
+  };
 
-  for (const endpoint of endpoints) {
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-        body: JSON.stringify({
-          email: params.email.trim().toLowerCase(),
-          otp: params.otp?.trim(),
-          code: params.otp?.trim(),
-          token: params.token,
-          newPassword: params.newPassword,
-          password: params.newPassword,
-          confirmPassword: params.confirmPassword || params.newPassword,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        return {
-          success: true,
-          message: data.message || "Your password has been reset successfully.",
-          data: data.data || data,
-        };
-      }
-
-      if (res.status !== 404) {
-        if (data.message) {
-          lastError = Array.isArray(data.message) ? data.message.join(", ") : data.message;
-        }
-        throw new Error(lastError);
-      }
-    } catch (err: any) {
-      if (err.message && err.message !== "Failed to fetch") {
-        throw err;
-      }
-      lastError = err.message || lastError;
-    }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
-  return {
-    success: true,
-    message: "Your password has been reset successfully. You can now login.",
-  };
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        password: params.newPassword,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("fluentia_reset_token");
+      }
+      return {
+        success: true,
+        message: data.message || "Your password has been reset successfully. You can now login.",
+        data: data.data || data,
+      };
+    }
+
+    let errorMessage = "Failed to reset password. Please try again.";
+    if (data.message) {
+      errorMessage = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+    } else if (data.errorMessages && data.errorMessages.length > 0) {
+      errorMessage = data.errorMessages.join(", ");
+    }
+
+    throw new Error(errorMessage);
+  } catch (err: any) {
+    if (err.message && err.message !== "Failed to fetch") {
+      throw err;
+    }
+    throw new Error(err.message || "Network error. Unable to reset password.");
+  }
 }
+

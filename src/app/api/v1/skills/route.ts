@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/lib/api";
 
 export async function GET() {
   try {
-    const serverUrl = "http://127.0.0.1:5000/api/v1/skills";
+    const serverUrl = `${getApiBaseUrl()}/skills`;
 
     const response = await fetch(serverUrl, {
       method: "GET",
@@ -18,9 +19,10 @@ export async function GET() {
       {
         success: false,
         statusCode: 500,
-        message: error.message || "Failed to reach backend server on port 5000",
+        message: error.message || "Failed to reach backend skills service",
       },
       { status: 500 }
     );
   }
 }
+

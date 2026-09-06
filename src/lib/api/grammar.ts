@@ -5,6 +5,7 @@ import {
   SkillSummary,
   GrammarSkillPreset,
 } from "@/types/grammar";
+import { getApiBaseUrl } from "./config";
 
 export const DEFAULT_GRAMMAR_PRESETS: GrammarSkillPreset[] = [
   {
@@ -161,7 +162,8 @@ export const DEFAULT_GRAMMAR_PRESETS: GrammarSkillPreset[] = [
 export async function teachGrammar(
   request: TeachGrammarRequest
 ): Promise<TeachGrammarResponse> {
-  const url = `${process.env.NEXT_PUBLIC_API_URL}/grammar/teach`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}/grammar/teach`;
 
   const res = await fetch(url, {
     method: "POST",
@@ -198,7 +200,8 @@ export async function teachGrammar(
  * Fetch all available skills from the database: GET /api/v1/skills
  */
 export async function fetchSkills(): Promise<SkillSummary[]> {
-  const url = `${process.env.NEXT_PUBLIC_API_URL}/skills`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}/skills`;
   try {
     const res = await fetch(url, {
       method: "GET",
@@ -222,4 +225,5 @@ export async function fetchSkills(): Promise<SkillSummary[]> {
     cefr: p.cefr,
   }));
 }
+
 

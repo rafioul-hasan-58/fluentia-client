@@ -59,6 +59,7 @@ export default function ForgotPasswordPage({
   // Form Fields
   const [email, setEmail] = useState(queryEmail);
   const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
+  const [resetToken, setResetToken] = useState<string>("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -241,7 +242,20 @@ export default function ForgotPasswordPage({
       const res = await verifyPasswordResetOtp(email, otpCode);
       setIsSubmitting(false);
       if (res.success) {
-        setSuccessMessage("Code verified! Now choose a new password.");
+        const token =
+          res.data?.resetToken ||
+          res.data?.token ||
+          res.data?.accessToken ||
+          res.data?.data?.resetToken ||
+          res.data?.data?.token;
+
+        if (token) {
+          setResetToken(token);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("fluentia_reset_token", token);
+          }
+        }
+        setSuccessMessage(res.message || "Code verified! Now choose a new password.");
         setStep("reset");
       } else {
         setError(res.message || "Invalid verification code. Please check and try again.");
@@ -278,6 +292,7 @@ export default function ForgotPasswordPage({
         otp: otpCode,
         newPassword,
         confirmPassword,
+        token: resetToken,
       });
 
       setIsSubmitting(false);
