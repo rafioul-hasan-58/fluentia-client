@@ -8,11 +8,23 @@ export interface UserProfileData {
   phoneNumber?: string | null;
   country?: string | null;
   timezone?: string | null;
+  nativeLanguage?: string | null;
+  learningGoals?: string | string[] | null;
+  estimatedCEFR?: string | null;
+  targetLevel?: string | null;
+  dailyGoalMinutes?: number | string | null;
   role?: string;
   registrationMethod?: string;
   createdAt?: string;
   updatedAt?: string;
-  profile?: Record<string, any> | null;
+  profile?: {
+    nativeLanguage?: string | null;
+    learningGoals?: string | string[] | null;
+    estimatedCEFR?: string | null;
+    targetLevel?: string | null;
+    dailyGoalMinutes?: number | string | null;
+    [key: string]: any;
+  } | null;
   level?: string;
 }
 
@@ -31,7 +43,12 @@ export interface UpdateUserProfileDto {
   phoneNumber?: string | null;
   country?: string | null;
   timezone?: string | null;
-  profileImage?: string | null;
+  nativeLanguage?: string | null;
+  learningGoals?: string | string[] | null;
+  estimatedCEFR?: string | null;
+  targetLevel?: string | null;
+  dailyGoalMinutes?: number | string | null;
+  profileImage?: File | string | null;
   level?: string;
 }
 

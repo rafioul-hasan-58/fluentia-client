@@ -59,6 +59,41 @@ const FLUENCY_LEVELS = [
   { value: "Proficient C2", label: "C2 - Mastery", desc: "Near-native precision & expression" },
 ];
 
+const POPULAR_LANGUAGES = [
+  "Bengali",
+  "Spanish",
+  "French",
+  "German",
+  "Hindi",
+  "Arabic",
+  "Mandarin Chinese",
+  "Japanese",
+  "Portuguese",
+  "Russian",
+  "Turkish",
+  "Korean",
+  "Italian",
+  "Urdu",
+  "Vietnamese",
+  "Indonesian",
+];
+
+const AVAILABLE_GOALS = [
+  "Speaking",
+  "Grammar",
+  "Business English",
+  "IELTS Band 8.0+",
+  "Vocabulary",
+  "Job Interviews",
+  "Academic Writing",
+  "Pronunciation",
+  "Daily Conversation",
+];
+
+const CEFR_CHOICES = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
+const DAILY_MINUTE_CHOICES = [10, 15, 20, 30, 45, 60];
+
 export default function SettingsPage() {
   const { user, updateProfile, uploadAvatar, refreshProfile } = useAuth();
 
@@ -72,6 +107,16 @@ export default function SettingsPage() {
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
   const [country, setCountry] = useState(user?.country || "Bangladesh");
   const [timezone, setTimezone] = useState(user?.timezone || "Asia/Dhaka");
+  const [nativeLanguage, setNativeLanguage] = useState(user?.nativeLanguage || user?.profile?.nativeLanguage || "Bengali");
+  const [learningGoals, setLearningGoals] = useState<string[]>(() => {
+    const raw = user?.learningGoals || user?.profile?.learningGoals;
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === "string") return raw.split(",").map((s) => s.trim()).filter(Boolean);
+    return ["Speaking", "Grammar", "Business English"];
+  });
+  const [estimatedCEFR, setEstimatedCEFR] = useState(user?.estimatedCEFR || user?.profile?.estimatedCEFR || "B1");
+  const [targetLevel, setTargetLevel] = useState(user?.targetLevel || user?.profile?.targetLevel || "B2");
+  const [dailyGoalMinutes, setDailyGoalMinutes] = useState<number>(Number(user?.dailyGoalMinutes || user?.profile?.dailyGoalMinutes) || 15);
   const [profileImage, setProfileImage] = useState(user?.profileImage || user?.avatar || "");
   const [level, setLevel] = useState(user?.level || "Intermediate B2");
 
@@ -94,6 +139,18 @@ export default function SettingsPage() {
       setPhoneNumber(user.phoneNumber || "");
       setCountry(user.country || "Bangladesh");
       setTimezone(user.timezone || "Asia/Dhaka");
+      setNativeLanguage(user.nativeLanguage || user?.profile?.nativeLanguage || "Bengali");
+      
+      const rawGoals = user.learningGoals || user?.profile?.learningGoals;
+      if (Array.isArray(rawGoals)) {
+        setLearningGoals(rawGoals);
+      } else if (typeof rawGoals === "string") {
+        setLearningGoals(rawGoals.split(",").map((s) => s.trim()).filter(Boolean));
+      }
+
+      setEstimatedCEFR(user.estimatedCEFR || user?.profile?.estimatedCEFR || "B1");
+      setTargetLevel(user.targetLevel || user?.profile?.targetLevel || "B2");
+      setDailyGoalMinutes(Number(user.dailyGoalMinutes || user?.profile?.dailyGoalMinutes) || 15);
       setProfileImage(user.profileImage || user.avatar || "");
       setLevel(user.level || "Intermediate B2");
     }
@@ -104,6 +161,13 @@ export default function SettingsPage() {
     refreshProfile();
   }, []);
 
+  // Toggle learning goal selection
+  const toggleGoal = (goal: string) => {
+    setLearningGoals((prev) =>
+      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]
+    );
+  };
+
   // Compute if form has dirty / unsaved changes
   const isDirty = useMemo(() => {
     const origFirst = user?.firstName || (user?.name ? user.name.split(" ")[0] : "");
@@ -112,6 +176,13 @@ export default function SettingsPage() {
     const origPhone = user?.phoneNumber || "";
     const origCountry = user?.country || "Bangladesh";
     const origTimezone = user?.timezone || "Asia/Dhaka";
+    const origNative = user?.nativeLanguage || user?.profile?.nativeLanguage || "Bengali";
+    const origGoals = Array.isArray(user?.learningGoals || user?.profile?.learningGoals)
+      ? (user?.learningGoals || user?.profile?.learningGoals).join(",")
+      : (user?.learningGoals || user?.profile?.learningGoals || "Speaking,Grammar,Business English");
+    const origEst = user?.estimatedCEFR || user?.profile?.estimatedCEFR || "B1";
+    const origTgt = user?.targetLevel || user?.profile?.targetLevel || "B2";
+    const origMinutes = Number(user?.dailyGoalMinutes || user?.profile?.dailyGoalMinutes) || 15;
     const origAvatar = user?.profileImage || user?.avatar || "";
     const origLevel = user?.level || "Intermediate B2";
 
@@ -122,10 +193,30 @@ export default function SettingsPage() {
       phoneNumber !== origPhone ||
       country !== origCountry ||
       timezone !== origTimezone ||
+      nativeLanguage !== origNative ||
+      learningGoals.join(",") !== origGoals ||
+      estimatedCEFR !== origEst ||
+      targetLevel !== origTgt ||
+      dailyGoalMinutes !== origMinutes ||
       profileImage !== origAvatar ||
       level !== origLevel
     );
-  }, [user, firstName, lastName, bio, phoneNumber, country, timezone, profileImage, level]);
+  }, [
+    user,
+    firstName,
+    lastName,
+    bio,
+    phoneNumber,
+    country,
+    timezone,
+    nativeLanguage,
+    learningGoals,
+    estimatedCEFR,
+    targetLevel,
+    dailyGoalMinutes,
+    profileImage,
+    level,
+  ]);
 
   const initials = useMemo(() => {
     const f = firstName.trim() ? firstName.trim()[0] : "";
@@ -161,8 +252,13 @@ export default function SettingsPage() {
       phoneNumber: phoneNumber.trim() || null,
       country: country.trim() || null,
       timezone: timezone.trim() || null,
+      nativeLanguage: nativeLanguage.trim() || null,
+      learningGoals: learningGoals.length > 0 ? learningGoals.join(",") : null,
+      estimatedCEFR: estimatedCEFR || null,
+      targetLevel: targetLevel || null,
+      dailyGoalMinutes: dailyGoalMinutes || 15,
       profileImage: profileImage || null,
-      level,
+      level: targetLevel ? `${targetLevel}` : level,
     };
 
     try {
@@ -170,7 +266,7 @@ export default function SettingsPage() {
       if (result.success) {
         setStatusMessage({
           type: "success",
-          text: "Profile updated successfully! All changes have been saved.",
+          text: "Profile updated successfully! All changes have been saved to your account.",
         });
         setTimeout(() => {
           setStatusMessage(null);
@@ -697,6 +793,115 @@ export default function SettingsPage() {
                 />
               </div>
 
+              {/* Language & Learning Goals Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="nativeLanguage" className="text-xs font-semibold text-ink">
+                    Native Language
+                  </Label>
+                  <select
+                    id="nativeLanguage"
+                    value={nativeLanguage}
+                    onChange={(e) => setNativeLanguage(e.target.value)}
+                    className="flex h-11 w-full rounded-xl border border-slate-200 dark:border-white/10 bg-paper px-3.5 py-2 text-sm text-ink focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all shadow-xs cursor-pointer"
+                  >
+                    {POPULAR_LANGUAGES.map((lang) => (
+                      <option key={lang} value={lang}>
+                        🌐 {lang}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-ink">
+                    Daily Study Commitment
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    {DAILY_MINUTE_CHOICES.map((mins) => (
+                      <button
+                        key={mins}
+                        type="button"
+                        onClick={() => setDailyGoalMinutes(mins)}
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                          dailyGoalMinutes === mins
+                            ? "bg-primary text-white shadow-xs"
+                            : "bg-paper border border-slate-200 dark:border-white/10 text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        {mins}m
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Learning Goals Multi-select Pills */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-ink">
+                  Learning Goals & Focus Areas
+                </Label>
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                  {AVAILABLE_GOALS.map((goal) => {
+                    const isSelected = learningGoals.includes(goal);
+                    return (
+                      <button
+                        key={goal}
+                        type="button"
+                        onClick={() => toggleGoal(goal)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                          isSelected
+                            ? "bg-primary/15 text-primary dark:text-cyan-300 border border-primary/30 shadow-2xs scale-[1.02]"
+                            : "bg-paper border border-slate-200 dark:border-white/10 text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        {isSelected ? "✓ " : "+ "}
+                        {goal}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* CEFR Levels Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="estimatedCEFR" className="text-xs font-semibold text-ink">
+                    Current Estimated CEFR
+                  </Label>
+                  <select
+                    id="estimatedCEFR"
+                    value={estimatedCEFR}
+                    onChange={(e) => setEstimatedCEFR(e.target.value)}
+                    className="flex h-11 w-full rounded-xl border border-slate-200 dark:border-white/10 bg-paper px-3.5 py-2 text-sm text-ink focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all shadow-xs cursor-pointer"
+                  >
+                    {CEFR_CHOICES.map((c) => (
+                      <option key={c} value={c}>
+                        Level {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="targetLevel" className="text-xs font-semibold text-ink">
+                    Target Fluency Level
+                  </Label>
+                  <select
+                    id="targetLevel"
+                    value={targetLevel}
+                    onChange={(e) => setTargetLevel(e.target.value)}
+                    className="flex h-11 w-full rounded-xl border border-slate-200 dark:border-white/10 bg-paper px-3.5 py-2 text-sm text-ink focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all shadow-xs cursor-pointer"
+                  >
+                    {CEFR_CHOICES.map((c) => (
+                      <option key={c} value={c}>
+                        Target {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {/* Location & Timezone Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -886,36 +1091,130 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl">CEFR Fluency Target</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl">CEFR Fluency Target & Goals</CardTitle>
               <CardDescription>
-                Customize your English target level. Fluentia AI will adapt vocabulary complexity, grammar exercises, and conversational responses to your chosen goal.
+                Customize your target English level, estimated starting proficiency, and focus areas. Fluentia AI will adapt vocabulary complexity, grammar exercises, and conversational responses to your chosen goal.
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {FLUENCY_LEVELS.map((fl) => (
-                  <div
-                    key={fl.value}
-                    onClick={async () => {
-                      setLevel(fl.value);
-                      await updateProfile({ level: fl.value });
-                    }}
-                    className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 ${
-                      level === fl.value
-                        ? "border-primary bg-primary/10 dark:bg-cyan-500/10 shadow-sm"
-                        : "border-slate-200 dark:border-white/10 hover:border-primary/50 bg-paper-card"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-bold text-ink">{fl.label}</span>
-                      {level === fl.value && (
-                        <span className="w-2.5 h-2.5 rounded-full bg-primary dark:bg-cyan-400" />
-                      )}
-                    </div>
-                    <p className="text-[11px] text-ink-soft leading-relaxed">{fl.desc}</p>
-                  </div>
-                ))}
+            <CardContent className="space-y-6">
+              {/* Fluency Cards */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-ink">
+                  Target CEFR Level
+                </Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {FLUENCY_LEVELS.map((fl) => {
+                    const shortCode = fl.value.split(" ")[1] || fl.value;
+                    const isSelected = targetLevel === shortCode || level === fl.value;
+                    return (
+                      <div
+                        key={fl.value}
+                        onClick={async () => {
+                          setLevel(fl.value);
+                          setTargetLevel(shortCode);
+                          await updateProfile({
+                            targetLevel: shortCode,
+                            level: fl.value,
+                            nativeLanguage,
+                            learningGoals: learningGoals.join(","),
+                            estimatedCEFR,
+                            dailyGoalMinutes,
+                          });
+                        }}
+                        className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 ${
+                          isSelected
+                            ? "border-primary bg-primary/10 dark:bg-cyan-500/10 shadow-sm ring-1 ring-primary/30"
+                            : "border-slate-200 dark:border-white/10 hover:border-primary/50 bg-paper-card"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-bold text-ink">{fl.label}</span>
+                          {isSelected && (
+                            <span className="w-2.5 h-2.5 rounded-full bg-primary dark:bg-cyan-400" />
+                          )}
+                        </div>
+                        <p className="text-[11px] text-ink-soft leading-relaxed">{fl.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Learning Focus Areas */}
+              <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-3">
+                <Label className="text-xs font-semibold text-ink">
+                  Active Learning Focus Areas
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {AVAILABLE_GOALS.map((goal) => {
+                    const isSelected = learningGoals.includes(goal);
+                    return (
+                      <button
+                        key={goal}
+                        type="button"
+                        onClick={async () => {
+                          const updated = isSelected
+                            ? learningGoals.filter((g) => g !== goal)
+                            : [...learningGoals, goal];
+                          setLearningGoals(updated);
+                          await updateProfile({
+                            learningGoals: updated.join(","),
+                            targetLevel,
+                            nativeLanguage,
+                            estimatedCEFR,
+                            dailyGoalMinutes,
+                          });
+                        }}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                          isSelected
+                            ? "bg-primary text-white shadow-xs"
+                            : "bg-paper border border-slate-200 dark:border-white/10 text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        {isSelected ? "✓ " : "+ "}
+                        {goal}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Daily Goal Commitment */}
+              <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-ink">
+                    Daily AI Practice Target
+                  </Label>
+                  <span className="text-xs font-bold text-primary dark:text-cyan-400">
+                    ⏱️ {dailyGoalMinutes} Minutes / Day
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {DAILY_MINUTE_CHOICES.map((mins) => (
+                    <button
+                      key={mins}
+                      type="button"
+                      onClick={async () => {
+                        setDailyGoalMinutes(mins);
+                        await updateProfile({
+                          dailyGoalMinutes: mins,
+                          targetLevel,
+                          nativeLanguage,
+                          learningGoals: learningGoals.join(","),
+                          estimatedCEFR,
+                        });
+                      }}
+                      className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        dailyGoalMinutes === mins
+                          ? "bg-primary text-white shadow-xs"
+                          : "bg-paper border border-slate-200 dark:border-white/10 text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/5"
+                      }`}
+                    >
+                      {mins} mins
+                    </button>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -73,7 +73,7 @@ export async function fetchUserProfile(): Promise<UserProfileData | null> {
 }
 
 /**
- * Update current user profile: PATCH /users/my-profile
+ * Update current user profile: PATCH /users/my-profile (multipart/form-data)
  */
 export async function updateUserProfile(
   dto: UpdateUserProfileDto
@@ -81,8 +81,50 @@ export async function updateUserProfile(
   const token = getAuthToken();
   const baseUrl = getApiBaseUrl();
 
+  const formData = new FormData();
+  if (dto.firstName !== undefined && dto.firstName !== null) {
+    formData.append("firstName", dto.firstName);
+  }
+  if (dto.lastName !== undefined && dto.lastName !== null) {
+    formData.append("lastName", dto.lastName);
+  }
+  if (dto.bio !== undefined && dto.bio !== null) {
+    formData.append("bio", dto.bio);
+  }
+  if (dto.phoneNumber !== undefined && dto.phoneNumber !== null) {
+    formData.append("phoneNumber", dto.phoneNumber);
+  }
+  if (dto.country !== undefined && dto.country !== null) {
+    formData.append("country", dto.country);
+  }
+  if (dto.timezone !== undefined && dto.timezone !== null) {
+    formData.append("timezone", dto.timezone);
+  }
+  if (dto.nativeLanguage !== undefined && dto.nativeLanguage !== null) {
+    formData.append("nativeLanguage", dto.nativeLanguage);
+  }
+  if (dto.learningGoals !== undefined && dto.learningGoals !== null) {
+    const goalsStr = Array.isArray(dto.learningGoals)
+      ? dto.learningGoals.join(",")
+      : dto.learningGoals;
+    formData.append("learningGoals", goalsStr);
+  }
+  if (dto.estimatedCEFR !== undefined && dto.estimatedCEFR !== null) {
+    formData.append("estimatedCEFR", dto.estimatedCEFR);
+  }
+  if (dto.targetLevel !== undefined && dto.targetLevel !== null) {
+    formData.append("targetLevel", dto.targetLevel);
+  }
+  if (dto.dailyGoalMinutes !== undefined && dto.dailyGoalMinutes !== null) {
+    formData.append("dailyGoalMinutes", String(dto.dailyGoalMinutes));
+  }
+  if (dto.profileImage instanceof File) {
+    formData.append("profileImage", dto.profileImage);
+  } else if (typeof dto.profileImage === "string") {
+    formData.append("profileImage", dto.profileImage);
+  }
+
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
     Accept: "*/*",
   };
 
@@ -97,7 +139,7 @@ export async function updateUserProfile(
     const res = await fetch(`${baseUrl}/users/my-profile`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify(dto),
+      body: formData,
     });
 
     if (res.ok) {
@@ -106,33 +148,6 @@ export async function updateUserProfile(
         return result.data;
       }
       return result as any;
-    } else if (res.status === 404 || res.status === 405) {
-      // Try PATCH /users/profile or PUT /users/my-profile
-      const resAlt = await fetch(`${baseUrl}/users/profile`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify(dto),
-      });
-
-      if (resAlt.ok) {
-        const resultAlt: UpdateUserProfileResponse = await resAlt.json();
-        if (resultAlt.data) {
-          return resultAlt.data;
-        }
-      } else {
-        const resPut = await fetch(`${baseUrl}/users/my-profile`, {
-          method: "PUT",
-          headers,
-          body: JSON.stringify(dto),
-        });
-
-        if (resPut.ok) {
-          const resultPut: UpdateUserProfileResponse = await resPut.json();
-          if (resultPut.data) {
-            return resultPut.data;
-          }
-        }
-      }
     } else {
       try {
         const errJson = await res.json();
@@ -154,21 +169,27 @@ export async function updateUserProfile(
   }
 
   // If running in development or offline simulation without backend, return updated mock
+  const imageString = typeof dto.profileImage === "string" ? dto.profileImage : null;
   return {
     id: "6a96da820a2010ee88950305",
     firstName: dto.firstName || "",
     lastName: dto.lastName || "",
     email: "user@fluentia.ai",
-    profileImage: dto.profileImage || null,
+    profileImage: imageString,
     bio: dto.bio || null,
     phoneNumber: dto.phoneNumber || null,
     country: dto.country || null,
     timezone: dto.timezone || null,
+    nativeLanguage: dto.nativeLanguage || null,
+    learningGoals: dto.learningGoals || null,
+    estimatedCEFR: dto.estimatedCEFR || null,
+    targetLevel: dto.targetLevel || null,
+    dailyGoalMinutes: dto.dailyGoalMinutes || null,
     role: "USER",
     registrationMethod: "EMAIL",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    level: dto.level || "Intermediate B2",
+    level: dto.targetLevel || dto.level || "Intermediate B2",
   };
 }
 

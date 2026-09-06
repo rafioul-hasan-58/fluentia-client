@@ -24,6 +24,11 @@ export interface User {
   phoneNumber?: string | null;
   country?: string | null;
   timezone?: string | null;
+  nativeLanguage?: string | null;
+  learningGoals?: string | string[] | null;
+  estimatedCEFR?: string | null;
+  targetLevel?: string | null;
+  dailyGoalMinutes?: number | string | null;
   role?: string;
   level?: string;
   provider?: "email" | "google";
@@ -317,6 +322,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? `${dto.firstName ?? user?.firstName ?? ""} ${dto.lastName ?? user?.lastName ?? ""}`.trim()
         : user?.name || "Learner";
 
+      const imageStr =
+        dto.profileImage instanceof File
+          ? responseData.profileImage || user?.profileImage || user?.avatar || null
+          : dto.profileImage !== undefined
+          ? dto.profileImage
+          : responseData.profileImage || user?.profileImage || user?.avatar || null;
+
       const updatedUser: User = {
         ...(user || {
           id: responseData.id || `user_${Date.now()}`,
@@ -326,13 +338,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: fullName || "Learner",
         firstName: dto.firstName !== undefined ? dto.firstName : responseData.firstName,
         lastName: dto.lastName !== undefined ? dto.lastName : responseData.lastName,
-        profileImage: dto.profileImage !== undefined ? dto.profileImage : responseData.profileImage,
-        avatar: dto.profileImage !== undefined ? dto.profileImage : (responseData.profileImage || user?.avatar || null),
+        profileImage: imageStr,
+        avatar: imageStr,
         bio: dto.bio !== undefined ? dto.bio : responseData.bio,
         phoneNumber: dto.phoneNumber !== undefined ? dto.phoneNumber : responseData.phoneNumber,
         country: dto.country !== undefined ? dto.country : responseData.country,
         timezone: dto.timezone !== undefined ? dto.timezone : responseData.timezone,
-        level: dto.level !== undefined ? dto.level : (responseData.level || user?.level),
+        nativeLanguage: dto.nativeLanguage !== undefined ? dto.nativeLanguage : responseData.nativeLanguage,
+        learningGoals: dto.learningGoals !== undefined ? dto.learningGoals : responseData.learningGoals,
+        estimatedCEFR: dto.estimatedCEFR !== undefined ? dto.estimatedCEFR : responseData.estimatedCEFR,
+        targetLevel: dto.targetLevel !== undefined ? dto.targetLevel : responseData.targetLevel,
+        dailyGoalMinutes: dto.dailyGoalMinutes !== undefined ? dto.dailyGoalMinutes : responseData.dailyGoalMinutes,
+        level: (dto.targetLevel || dto.level || responseData.level || user?.level) || "Intermediate B2",
         updatedAt: responseData.updatedAt || new Date().toISOString(),
       };
 
