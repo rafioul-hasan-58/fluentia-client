@@ -130,31 +130,101 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     try {
-      // Simulate network authentication
-      await new Promise((res) => setTimeout(res, 600));
-
       if (!email || !password) {
         return { success: false, error: "Please enter your email and password." };
       }
 
-      if (password.length < 4) {
-        return { success: false, error: "Invalid password. Must be at least 4 characters." };
+      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/auth/login`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "*/*",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        let errMessage = "Invalid credentials";
+        if (data.message) {
+          errMessage = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+        }
+        throw new Error(errMessage);
       }
 
-      const derivedName = email.split("@")[0].replace(/[._-]/g, " ");
-      const formattedName = derivedName.charAt(0).toUpperCase() + derivedName.slice(1);
+      // Extract token from backend response
+      const token =
+        data.accessToken ||
+        data.access_token ||
+        data.token ||
+        (data.data && (data.data.accessToken || data.data.token || data.data.access_token));
+
+      if (token) {
+        localStorage.setItem("fluentia_auth_token", token);
+      }
+
+      // Extract user payload
+      const userPayload = data.user || (data.data && data.data.user) || data.data || data;
+      const fName = userPayload.firstName || "";
+      const lName = userPayload.lastName || "";
+      const fullName = (fName || lName)
+        ? `${fName} ${lName}`.trim()
+        : userPayload.name || email.split("@")[0];
 
       const loggedInUser: User = {
-        id: `user_${Date.now()}`,
-        name: formattedName || "Learner",
-        email: email.toLowerCase(),
-        avatar: null,
-        level: "Intermediate B2",
-        role: "student",
-        provider: "email",
+        id: userPayload.id || `user_${Date.now()}`,
+        name: fullName || "Learner",
+        firstName: userPayload.firstName || null,
+        lastName: userPayload.lastName || null,
+        email: (userPayload.email || email).toLowerCase().trim(),
+        avatar: userPayload.profileImage || userPayload.avatar || null,
+        profileImage: userPayload.profileImage || userPayload.avatar || null,
+        bio: userPayload.bio || null,
+        phoneNumber: userPayload.phoneNumber || null,
+        country: userPayload.country || null,
+        timezone: userPayload.timezone || null,
+        nativeLanguage: userPayload.nativeLanguage || null,
+        learningGoals: userPayload.learningGoals || null,
+        estimatedCEFR: userPayload.estimatedCEFR || null,
+        targetLevel: userPayload.targetLevel || null,
+        dailyGoalMinutes: userPayload.dailyGoalMinutes || 15,
+        role: userPayload.role || "USER",
+        level: userPayload.level || userPayload.targetLevel || "Intermediate B2",
+        provider: userPayload.registrationMethod === "GOOGLE" ? "google" : "email",
+        registrationMethod: userPayload.registrationMethod || "EMAIL",
+        createdAt: userPayload.createdAt,
+        updatedAt: userPayload.updatedAt,
+        profile: userPayload.profile || null,
       };
 
       saveUserSession(loggedInUser);
+
+      // Hydrate additional profile details from /users/my-profile in the background
+      try {
+        const fullProfile = await fetchUserProfile();
+        if (fullProfile) {
+          const mergedName = (fullProfile.firstName || fullProfile.lastName)
+            ? `${fullProfile.firstName || ""} ${fullProfile.lastName || ""}`.trim()
+            : loggedInUser.name;
+
+          const mergedUser: User = {
+            ...loggedInUser,
+            ...fullProfile,
+            name: mergedName,
+            avatar: fullProfile.profileImage || loggedInUser.avatar,
+            profileImage: fullProfile.profileImage || loggedInUser.profileImage,
+          };
+          saveUserSession(mergedUser);
+        }
+      } catch {
+        // non-blocking
+      }
+
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || "Failed to log in" };
@@ -168,41 +238,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     try {
-      await new Promise((res) => setTimeout(res, 600));
-
-      let fullName = "";
       let fName = "";
       let lName = "";
 
       if ("firstName" in params) {
         fName = params.firstName.trim();
         lName = params.lastName.trim();
-        fullName = `${fName} ${lName}`.trim();
       } else {
-        fullName = params.name.trim();
-        const parts = fullName.split(" ");
+        const parts = params.name.trim().split(" ");
         fName = parts[0] || "";
         lName = parts.slice(1).join(" ") || "";
       }
 
-      if (!fullName || !params.email || !params.password) {
+      if (!fName || !params.email || !params.password) {
         return { success: false, error: "All fields are required." };
       }
 
-      const newUser: User = {
-        id: `user_${Date.now()}`,
-        name: fullName,
-        firstName: fName,
-        lastName: lName,
-        email: params.email.toLowerCase().trim(),
-        avatar: null,
-        level: "Beginner A1",
-        role: "student",
-        provider: "email",
-      };
+      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/auth/register`;
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "*/*",
+          },
+          body: JSON.stringify({
+            firstName: fName,
+            lastName: lName,
+            email: params.email.trim().toLowerCase(),
+            password: params.password,
+          }),
+        });
 
-      saveUserSession(newUser);
-      return { success: true };
+        const data = await res.json();
+
+        if (res.ok) {
+          const token =
+            data.accessToken ||
+            data.access_token ||
+            data.token ||
+            (data.data && (data.data.accessToken || data.data.token));
+
+          if (token) {
+            localStorage.setItem("fluentia_auth_token", token);
+          }
+
+          const userPayload = data.user || (data.data && data.data.user) || data.data || data;
+          const registeredUser: User = {
+            id: userPayload.id || `user_${Date.now()}`,
+            name: `${fName} ${lName}`.trim(),
+            firstName: fName,
+            lastName: lName,
+            email: params.email.toLowerCase().trim(),
+            avatar: userPayload.profileImage || userPayload.avatar || null,
+            profileImage: userPayload.profileImage || userPayload.avatar || null,
+            level: "Beginner A1",
+            role: "USER",
+            provider: "email",
+          };
+
+          saveUserSession(registeredUser);
+          return { success: true };
+        } else {
+          let errMessage = "Failed to create account";
+          if (data.message) {
+            errMessage = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+          }
+          throw new Error(errMessage);
+        }
+      } catch (apiErr: any) {
+        if (apiErr.message && apiErr.message !== "Failed to fetch") {
+          throw apiErr;
+        }
+        // Fallback local registration if server unreachable
+        const newUser: User = {
+          id: `user_${Date.now()}`,
+          name: `${fName} ${lName}`.trim(),
+          firstName: fName,
+          lastName: lName,
+          email: params.email.toLowerCase().trim(),
+          avatar: null,
+          level: "Beginner A1",
+          role: "USER",
+          provider: "email",
+        };
+        saveUserSession(newUser);
+        return { success: true };
+      }
     } catch (err: any) {
       return { success: false, error: err.message || "Failed to create account" };
     } finally {
