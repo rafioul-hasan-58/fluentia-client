@@ -45,6 +45,7 @@ export function GeneralEnglishTestView() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
+  const [showDetailedReview, setShowDetailedReview] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<"all" | "incorrect" | "correct" | "unsure">("all");
 
   // Load questions on mount
@@ -55,7 +56,7 @@ export function GeneralEnglishTestView() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchGeneralLevelTestQuestions(40);
+        const data = await fetchGeneralLevelTestQuestions(5);
         if (isMounted) {
           setQuestions(data);
         }
@@ -116,6 +117,69 @@ export function GeneralEnglishTestView() {
     }));
   };
 
+  // Submit test handler with comprehensive console logs of all answers
+  const handleSubmitTest = useCallback(() => {
+    const answeredEntries = Object.entries(selectedAnswers);
+
+    const submissionDetails = questions.map((q, idx) => {
+      const userSelected = selectedAnswers[q.id] || null;
+      const isUnsure = userSelected === DONT_KNOW_TEXT;
+      const isCorrect =
+        !isUnsure &&
+        !!userSelected &&
+        userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
+
+      return {
+        questionNumber: idx + 1,
+        questionId: q.id,
+        sectionType: q.sectionType,
+        level: q.level,
+        difficulty: q.difficulty,
+        question: q.question,
+        selectedAnswer: userSelected,
+        correctAnswer: q.answer,
+        isCorrect,
+        isUnsure,
+        explanation: q.explanation,
+      };
+    });
+
+    const correctCount = submissionDetails.filter((d) => d.isCorrect).length;
+    const unsureCount = submissionDetails.filter((d) => d.isUnsure).length;
+    const incorrectCount = submissionDetails.length - correctCount - unsureCount;
+    const accuracy = Math.round((correctCount / (questions.length || 1)) * 100);
+
+    const submissionSummary = {
+      totalQuestions: questions.length,
+      answeredQuestionsCount: answeredEntries.length,
+      correctCount,
+      unsureCount,
+      incorrectCount,
+      accuracyPercentage: `${accuracy}%`,
+      timeElapsedSeconds: elapsedSeconds,
+      formattedTime: formatTime(elapsedSeconds),
+      timestamp: new Date().toISOString(),
+    };
+
+    console.group("🎯 [Fluentia] General English Diagnostic Test Submission");
+    console.log("📊 Summary:", submissionSummary);
+    console.log("📋 All User Answers (Raw Map):", selectedAnswers);
+    console.log("📝 Detailed Evaluation for all questions:", submissionDetails);
+    console.table(
+      submissionDetails.map((item) => ({
+        "#": item.questionNumber,
+        Section: item.sectionType,
+        Level: item.level,
+        "Your Answer": item.selectedAnswer,
+        "Correct Answer": item.correctAnswer,
+        Result: item.isCorrect ? "✅ Correct" : item.isUnsure ? "🤷 Unsure" : "❌ Incorrect",
+      }))
+    );
+    console.groupEnd();
+
+    setIsCompleted(true);
+  }, [questions, selectedAnswers, elapsedSeconds]);
+
   // Navigation handlers
   const handleNext = () => {
     if (!currentQuestion || !selectedAnswers[currentQuestion.id]) {
@@ -124,7 +188,7 @@ export function GeneralEnglishTestView() {
     if (currentIndex < totalQuestions - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
-      setIsCompleted(true);
+      handleSubmitTest();
     }
   };
 
@@ -163,7 +227,7 @@ export function GeneralEnglishTestView() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex, currentQuestion, selectedAnswers, loading, isCompleted]);
+  }, [currentIndex, currentQuestion, selectedAnswers, loading, isCompleted, handleSubmitTest]);
 
   // Results calculation
   const results = useMemo(() => {
@@ -366,6 +430,20 @@ export function GeneralEnglishTestView() {
                 <span>Start Personalized AI Practice</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>
+
+              <button
+                type="button"
+                onClick={() => setShowDetailedReview((prev) => !prev)}
+                className={`w-full sm:w-auto px-6 py-3.5 rounded-2xl border text-sm font-semibold transition-all inline-flex items-center justify-center gap-2 shadow-xs ${
+                  showDetailedReview
+                    ? "bg-primary/10 border-primary text-primary dark:text-purple-300 font-bold"
+                    : "bg-white/80 dark:bg-white/10 border-slate-200 dark:border-white/15 text-ink dark:text-white hover:bg-white dark:hover:bg-white/15"
+                }`}
+              >
+                <span>📋 {showDetailedReview ? "Hide Detailed Breakdown" : "View Detailed Breakdown & Explanations"}</span>
+                <span className="text-xs">{showDetailedReview ? "▲" : "▼"}</span>
+              </button>
+
               <button
                 onClick={() => {
                   setIsCompleted(false);
@@ -373,6 +451,7 @@ export function GeneralEnglishTestView() {
                   setSelectedAnswers({});
                   setFlaggedQuestions({});
                   setElapsedSeconds(0);
+                  setShowDetailedReview(false);
                 }}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white/80 dark:bg-white/10 border border-slate-200 dark:border-white/15 text-ink dark:text-white font-semibold text-sm hover:bg-white dark:hover:bg-white/15 transition-all"
               >
@@ -381,40 +460,43 @@ export function GeneralEnglishTestView() {
             </div>
           </div>
 
-          {/* Section Breakdown */}
-          <div className="p-6 rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
-            <h3 className="font-brand text-lg font-bold text-ink dark:text-white">
-              Section Performance Breakdown
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {Object.entries(results.sectionStats).map(([section, stats]) => {
-                const secPercent =
-                  stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-                return (
-                  <div
-                    key={section}
-                    className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 space-y-2"
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-ink dark:text-slate-200">{section}</span>
-                      <span className="font-bold text-primary dark:text-purple-300">
-                        {secPercent}%
-                      </span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
+          {/* Collapsible Detailed Breakdown & Question Review */}
+          {showDetailedReview && (
+            <div className="space-y-8 animate-fadeIn">
+              {/* Section Breakdown */}
+              <div className="p-6 rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+                <h3 className="font-brand text-lg font-bold text-ink dark:text-white">
+                  Section Performance Breakdown
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {Object.entries(results.sectionStats).map(([section, stats]) => {
+                    const secPercent =
+                      stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+                    return (
                       <div
-                        className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full"
-                        style={{ width: `${secPercent}%` }}
-                      />
-                    </div>
-                    <p className="text-[11px] text-ink-soft">
-                      {stats.correct} of {stats.total} correct
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                        key={section}
+                        className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 space-y-2"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-ink dark:text-slate-200">{section}</span>
+                          <span className="font-bold text-primary dark:text-purple-300">
+                            {secPercent}%
+                          </span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full"
+                            style={{ width: `${secPercent}%` }}
+                          />
+                        </div>
+                        <p className="text-[11px] text-ink-soft">
+                          {stats.correct} of {stats.total} correct
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
           {/* Question Review Section with Filter */}
           <div className="space-y-4">
@@ -598,9 +680,11 @@ export function GeneralEnglishTestView() {
             </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
+    </div>
+  </div>
+);
+}
 
   // ==========================================
   // ONE QUESTION PER SCREEN MCQ ENGINE
@@ -839,7 +923,7 @@ export function GeneralEnglishTestView() {
               type="button"
               onClick={() => {
                 if (currentQuestion && selectedAnswers[currentQuestion.id]) {
-                  setIsCompleted(true);
+                  handleSubmitTest();
                 }
               }}
               disabled={!currentQuestion || !selectedAnswers[currentQuestion.id]}
@@ -939,7 +1023,7 @@ export function GeneralEnglishTestView() {
                 type="button"
                 onClick={() => {
                   setShowDrawer(false);
-                  setIsCompleted(true);
+                  handleSubmitTest();
                 }}
                 className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-bold text-xs shadow-md inline-flex items-center justify-center gap-1.5"
               >
