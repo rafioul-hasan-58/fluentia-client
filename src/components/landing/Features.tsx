@@ -117,7 +117,7 @@ const LEARNING_STEPS: LearningStep[] = [
 export function Features() {
   return (
     <section
-      className="py-20 lg:py-28 bg-paper dark:bg-[#070510] text-ink dark:text-white relative overflow-hidden transition-colors duration-200"
+      className="pt-6 pb-16 lg:pt-10 lg:pb-24 bg-paper dark:bg-[#070510] text-ink dark:text-white relative overflow-hidden transition-colors duration-200"
     >
       <div id="features" className="absolute -top-20" aria-hidden="true" />
       {/* Subtle Background Radial Orbs */}

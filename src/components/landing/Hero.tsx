@@ -131,7 +131,7 @@ export function Hero() {
   return (
     <section
       onClick={handleHeroClick}
-      className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200 cursor-default"
+      className="relative overflow-hidden pt-8 pb-8 lg:pt-12 lg:pb-10 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200 cursor-default"
     >
       {/* Block Square Grid Background Pattern (Blueprint / Engineering Grid) */}
       <GridBackground />
@@ -231,7 +231,7 @@ export function Hero() {
         </div>
 
         {/* Illuminated Learning Tracks Exploration Section */}
-        <div className="mt-16 pt-10 border-t border-slate-200/70 dark:border-white/10">
+        <div className="mt-10 pt-7 sm:mt-12 sm:pt-8 border-t border-slate-200/70 dark:border-white/10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
               <span className="text-xs uppercase tracking-widest font-bold text-primary dark:text-purple-300">
