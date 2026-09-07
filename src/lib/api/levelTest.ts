@@ -2,9 +2,8 @@ import { getApiBaseUrl } from "./config";
 import {
   LevelTestQuestion,
   LevelTestResponse,
-  LevelTestSubmissionItem,
-  QuestionAnswerPair,
   SubmitLevelTestPayload,
+  SubmitLevelTestResponse,
 } from "@/types/level-test";
 
 /**
@@ -84,7 +83,7 @@ const SAMPLE_FALLBACK_QUESTIONS: LevelTestQuestion[] = [
 ];
 
 /**
- * Fetches the 40-question placement test set from the Backend API
+ * Fetches the placement test set from the Backend API
  */
 export async function fetchGeneralLevelTestQuestions(
   limit: number = 40
@@ -119,24 +118,49 @@ export async function fetchGeneralLevelTestQuestions(
 
 /**
  * Submits the user's completed test answers formatted as SubmitLevelTestPayload
+ * to POST /api/v1/level-test-questions/submit
  */
 export async function submitLevelTestAnswers(
-  submissionPayload: SubmitLevelTestPayload | LevelTestSubmissionItem[] | QuestionAnswerPair[] | any,
-  endpointUrl?: string
-): Promise<any> {
-  const url = endpointUrl || `${getApiBaseUrl()}/level-test-questions/evaluate`;
+  submissionPayload: SubmitLevelTestPayload,
+  endpointUrl?: string,
+  customToken?: string
+): Promise<SubmitLevelTestResponse> {
+  const url = endpointUrl || `${getApiBaseUrl()}/level-test-questions/submit`;
+
+  const token =
+    customToken ||
+    (typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null);
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json, */*",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
+    headers,
     body: JSON.stringify(submissionPayload),
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: Failed to submit level test answers.`);
+    let errorMessage = `HTTP ${response.status}: Failed to evaluate placement test.`;
+    try {
+      const errJson = await response.json();
+      if (errJson.message) {
+        errorMessage = Array.isArray(errJson.message)
+          ? errJson.message.join(", ")
+          : errJson.message;
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
 }
+

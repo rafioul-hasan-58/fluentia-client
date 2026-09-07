@@ -3,22 +3,39 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Award,
+  TrendingUp,
+  AlertTriangle,
+  Lightbulb,
+  Compass,
+  ArrowRight,
+  BookOpen,
+  RotateCcw,
+  Target,
+  Zap,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { GoogleAuthButton } from "@/components/auth";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Loader } from "@/components/ui/loader";
 import { GridBackground } from "@/components/landing/GridBackground";
 import { CurvedUnderline } from "@/components/ui/curved-underline";
-import { fetchGeneralLevelTestQuestions } from "@/lib/api/levelTest";
+import {
+  fetchGeneralLevelTestQuestions,
+  submitLevelTestAnswers,
+} from "@/lib/api/levelTest";
 import {
   LevelTestQuestion,
   CEFRLevel,
-  LevelTestSubmissionItem,
-  LevelTestAnswerItem,
   SubmitLevelTestPayload,
-  QuestionAnswerPair,
+  LevelTestEvaluationData,
+  EvaluatedQuestion,
 } from "@/types/level-test";
 
 interface SelectedAnswerValue {
@@ -43,6 +60,161 @@ export function getQuestionOptionsWithUnsure(question: LevelTestQuestion) {
   ];
 }
 
+/**
+ * Creates a graceful local evaluation fallback in case backend API is temporarily unreachable
+ */
+function generateFallbackEvaluation(
+  questions: LevelTestQuestion[],
+  selectedAnswers: UserAnswersMap,
+  elapsedSeconds: number
+): LevelTestEvaluationData {
+  let correctCount = 0;
+  const sectionStats: Record<string, { correct: number; total: number }> = {
+    grammar: { correct: 0, total: 0 },
+    vocabulary: { correct: 0, total: 0 },
+    reading: { correct: 0, total: 0 },
+  };
+
+  const evaluatedQuestions: EvaluatedQuestion[] = questions.map((q, idx) => {
+    const selected = selectedAnswers[q.id];
+    const userSelected = selected?.content || "No Answer";
+    const isUnsure = userSelected === DONT_KNOW_TEXT || selected?.optionId?.endsWith("-dont-know");
+    const isCorrect =
+      !isUnsure &&
+      !!userSelected &&
+      userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
+
+    if (isCorrect) correctCount++;
+
+    const secKey = (q.sectionType || "grammar").toLowerCase();
+    if (!sectionStats[secKey]) {
+      sectionStats[secKey] = { correct: 0, total: 0 };
+    }
+    sectionStats[secKey].total += 1;
+    if (isCorrect) sectionStats[secKey].correct += 1;
+
+    return {
+      questionId: q.id,
+      number: idx + 1,
+      question: q.question,
+      passage: q.passage || null,
+      sectionType: q.sectionType || "GENERAL",
+      level: q.level || "B1",
+      difficulty: q.difficulty || "MEDIUM",
+      userAnswer: userSelected,
+      correctAnswer: q.answer || "",
+      isCorrect,
+      explanation: q.explanation || "Evaluation based on standard CEFR English grammar criteria.",
+    };
+  });
+
+  const total = questions.length || 1;
+  const percentage = Math.round((correctCount / total) * 100);
+
+  let estimatedLevel = "A1";
+  if (percentage >= 90) estimatedLevel = "C1";
+  else if (percentage >= 75) estimatedLevel = "B2";
+  else if (percentage >= 50) estimatedLevel = "B1";
+  else if (percentage >= 30) estimatedLevel = "A2";
+
+  return {
+    attemptId: null,
+    score: correctCount,
+    totalQuestions: questions.length,
+    percentage,
+    sectionBreakdown: {
+      grammar: {
+        correct: sectionStats.grammar?.correct || 0,
+        total: sectionStats.grammar?.total || 0,
+        percentage:
+          sectionStats.grammar?.total > 0
+            ? Math.round(((sectionStats.grammar.correct || 0) / sectionStats.grammar.total) * 100)
+            : 0,
+      },
+      vocabulary: {
+        correct: sectionStats.vocabulary?.correct || 0,
+        total: sectionStats.vocabulary?.total || 0,
+        percentage:
+          sectionStats.vocabulary?.total > 0
+            ? Math.round(((sectionStats.vocabulary.correct || 0) / sectionStats.vocabulary.total) * 100)
+            : 0,
+      },
+      reading: {
+        correct: sectionStats.reading?.correct || 0,
+        total: sectionStats.reading?.total || 0,
+        percentage:
+          sectionStats.reading?.total > 0
+            ? Math.round(((sectionStats.reading.correct || 0) / sectionStats.reading.total) * 100)
+            : 0,
+      },
+    },
+    analysis: {
+      estimatedLevel,
+      cefrScore: percentage,
+      summary: `You achieved a placement score of ${percentage}% with ${correctCount} of ${questions.length} correct answers. Your diagnostic profile indicates proficiency corresponding to CEFR Level ${estimatedLevel}.`,
+      strengths: [
+        {
+          area: "Diagnostic Consistency",
+          description: "Demonstrated strong focus in evaluating questions across targeted sections.",
+          evidence: `Completed ${questions.length} diagnostic items in ${Math.floor(elapsedSeconds / 60)} minutes.`,
+        },
+      ],
+      weaknesses:
+        percentage < 100
+          ? [
+              {
+                area: "Complex Grammatical Structures",
+                description: "Opportunities for improvement identified in intermediate/advanced structures.",
+                errorPattern: "Inaccuracies detected in selected grammar or vocabulary options.",
+                recommendation: "Engage in targeted conversational drills and structured sentence transformation exercises.",
+              },
+            ]
+          : [],
+      sectionBreakdown: {
+        grammar: {
+          level: estimatedLevel,
+          scoreText: `${sectionStats.grammar?.correct || 0}/${sectionStats.grammar?.total || 0}`,
+          analysis: "Grammar comprehension demonstrated across core evaluated concepts.",
+        },
+        vocabulary: {
+          level: estimatedLevel,
+          scoreText: `${sectionStats.vocabulary?.correct || 0}/${sectionStats.vocabulary?.total || 0}`,
+          analysis: "Contextual vocabulary understanding assessed across diagnostic options.",
+        },
+        reading: {
+          level: estimatedLevel,
+          scoreText: `${sectionStats.reading?.correct || 0}/${sectionStats.reading?.total || 0}`,
+          analysis: "Reading comprehension and information extraction evaluated.",
+        },
+      },
+      learningRoadmap: [
+        {
+          step: 1,
+          title: "Core Structural Mastery",
+          focusArea: "Grammar Foundation",
+          description: "Solidify essential tense usages, prepositions, and question formulations.",
+          suggestedSkills: ["Verb Tenses", "Subject-Verb Agreement", "Auxiliary Verbs"],
+        },
+        {
+          step: 2,
+          title: "Contextual Lexical Expansion",
+          focusArea: "Vocabulary Development",
+          description: "Expand idiomatic expressions, collocations, and contextual vocabulary.",
+          suggestedSkills: ["Phrasal Verbs", "Collocations", "Idioms"],
+        },
+        {
+          step: 3,
+          title: "Interactive AI Conversational Fluency",
+          focusArea: "Active Communication",
+          description: "Practice spontaneous responses and complex sentence construction with AI voice coaches.",
+          suggestedSkills: ["Complex Clauses", "Fluency & Coherence", "Accent & Pronunciation"],
+        },
+      ],
+    },
+    questions: evaluatedQuestions,
+  };
+}
+
 export function GeneralEnglishTestView() {
   const router = useRouter();
   const { user, isAuthenticated, login, register: authRegister } = useAuth();
@@ -57,22 +229,18 @@ export function GeneralEnglishTestView() {
   const [selectedAnswers, setSelectedAnswers] = useState<UserAnswersMap>({});
   const [flaggedQuestions, setFlaggedQuestions] = useState<{ [id: string]: boolean }>({});
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [evaluationResult, setEvaluationResult] = useState<LevelTestEvaluationData | null>(null);
 
   // Time tracking
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [showDetailedReview, setShowDetailedReview] = useState(false);
-  const [reviewFilter, setReviewFilter] = useState<"all" | "incorrect" | "correct" | "unsure">("all");
+  const [reviewFilter, setReviewFilter] = useState<"all" | "incorrect" | "correct">("all");
 
   // Inline auth gate state for unauthenticated users
-  const [authTab, setAuthTab] = useState<"signin" | "signup">("signin");
-  const [authEmail, setAuthEmail] = useState("");
-  const [authPassword, setAuthPassword] = useState("");
-  const [authFirstName, setAuthFirstName] = useState("");
-  const [authLastName, setAuthLastName] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
 
   // Restore saved session on mount if available
   useEffect(() => {
@@ -94,6 +262,9 @@ export function GeneralEnglishTestView() {
           });
           setSelectedAnswers(normalized);
           setElapsedSeconds(parsed.elapsedSeconds || 0);
+          if (parsed.evaluationResult) {
+            setEvaluationResult(parsed.evaluationResult);
+          }
           setIsCompleted(true);
         }
       }
@@ -133,14 +304,14 @@ export function GeneralEnglishTestView() {
 
   // Timer interval
   useEffect(() => {
-    if (loading || isCompleted || questions.length === 0) return;
+    if (loading || isCompleted || isEvaluating || questions.length === 0) return;
 
     const timer = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, isCompleted, questions.length]);
+  }, [loading, isCompleted, isEvaluating, questions.length]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -171,119 +342,73 @@ export function GeneralEnglishTestView() {
     }));
   };
 
-  // Submit test handler with comprehensive console logs of all answers
-  const handleSubmitTest = useCallback(() => {
-    const answeredEntries = Object.entries(selectedAnswers);
+  // Submit test handler: Calls POST /api/v1/level-test-questions/submit
+  const handleSubmitTest = useCallback(async () => {
+    setIsEvaluating(true);
 
-    const submissionDetails = questions.map((q, idx) => {
-      const selected = selectedAnswers[q.id];
-      const userSelected = selected ? selected.content : null;
-      const selectedOptId = selected ? selected.optionId : null;
-      const isUnsure = userSelected === DONT_KNOW_TEXT || selectedOptId?.endsWith("-dont-know");
-      const isCorrect =
-        !isUnsure &&
-        !!userSelected &&
-        userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
-
-      return {
-        questionNumber: idx + 1,
-        questionId: q.id,
-        selectedOptionId: selectedOptId,
-        sectionType: q.sectionType,
-        level: q.level,
-        difficulty: q.difficulty,
-        question: q.question,
-        selectedAnswer: userSelected,
-        correctAnswer: q.answer,
-        isCorrect,
-        isUnsure,
-        explanation: q.explanation,
-      };
-    });
-
-    const correctCount = submissionDetails.filter((d) => d.isCorrect).length;
-    const unsureCount = submissionDetails.filter((d) => d.isUnsure).length;
-    const incorrectCount = submissionDetails.length - correctCount - unsureCount;
-    const accuracy = Math.round((correctCount / (questions.length || 1)) * 100);
-
-    const submissionSummary = {
-      totalQuestions: questions.length,
-      answeredQuestionsCount: answeredEntries.length,
-      correctCount,
-      unsureCount,
-      incorrectCount,
-      accuracyPercentage: `${accuracy}%`,
-      timeElapsedSeconds: elapsedSeconds,
-      formattedTime: formatTime(elapsedSeconds),
-      timestamp: new Date().toISOString(),
-    };
-
-    // Formatted payload object { answers, timeSpentSeconds } as requested
-    const answerformat: SubmitLevelTestPayload = {
+    const payload: SubmitLevelTestPayload = {
       answers: questions.map((q) => {
         const selected = selectedAnswers[q.id];
-        const optId = selected?.optionId || "";
         return {
           questionId: q.id,
-          answerOptionId: optId,
-          selectedOptionId: optId,
-          userAnswer: selected?.content || "",
+          answerOptionId: selected?.optionId || "",
         };
       }),
       timeSpentSeconds: elapsedSeconds,
     };
 
-    console.log("answerformat", answerformat);
-
-    // Persist completed test state to localStorage so login redirect doesn't lose progress
     try {
-      localStorage.setItem(
-        "fluentia_level_test_session",
-        JSON.stringify({
-          selectedAnswers,
-          answerformat,
-          qaSubmissionData: answerformat,
-          elapsedSeconds,
-          isCompleted: true,
-          timestamp: Date.now(),
-        })
-      );
-    } catch (e) {
-      console.error("Failed to cache test session:", e);
-    }
+      console.log("Submitting diagnostic level test payload to backend:", payload);
+      const res = await submitLevelTestAnswers(payload);
 
-    setIsCompleted(true);
-  }, [questions, selectedAnswers, elapsedSeconds]);
+      if (res && res.success && res.data) {
+        console.log("Evaluation analysis received from backend:", res.data);
+        setEvaluationResult(res.data);
+        setIsCompleted(true);
 
-  // Inline Auth submission handler
-  const handleInlineAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-    setIsAuthSubmitting(true);
-
-    try {
-      if (authTab === "signin") {
-        const res = await login(authEmail, authPassword);
-        if (!res.success) {
-          setAuthError(res.error || "Failed to sign in. Please verify your credentials.");
+        try {
+          localStorage.setItem(
+            "fluentia_level_test_session",
+            JSON.stringify({
+              selectedAnswers,
+              answerformat: payload,
+              evaluationResult: res.data,
+              elapsedSeconds,
+              isCompleted: true,
+              timestamp: Date.now(),
+            })
+          );
+        } catch (e) {
+          console.error("Failed to cache test session:", e);
         }
       } else {
-        const res = await authRegister({
-          firstName: authFirstName,
-          lastName: authLastName,
-          email: authEmail,
-          password: authPassword,
-        });
-        if (!res.success) {
-          setAuthError(res.error || "Failed to create account. Please try again.");
-        }
+        throw new Error("Evaluation API returned incomplete response data");
       }
     } catch (err: any) {
-      setAuthError(err.message || "An unexpected authentication error occurred.");
+      console.warn("Submitting via API encountered error, utilizing local evaluation:", err);
+      const fallbackResult = generateFallbackEvaluation(questions, selectedAnswers, elapsedSeconds);
+      setEvaluationResult(fallbackResult);
+      setIsCompleted(true);
+
+      try {
+        localStorage.setItem(
+          "fluentia_level_test_session",
+          JSON.stringify({
+            selectedAnswers,
+            answerformat: payload,
+            evaluationResult: fallbackResult,
+            elapsedSeconds,
+            isCompleted: true,
+            timestamp: Date.now(),
+          })
+        );
+      } catch (e) {
+        console.error("Failed to cache fallback session:", e);
+      }
     } finally {
-      setIsAuthSubmitting(false);
+      setIsEvaluating(false);
     }
-  };
+  }, [questions, selectedAnswers, elapsedSeconds]);
 
   // Navigation handlers
   const handleNext = () => {
@@ -306,7 +431,7 @@ export function GeneralEnglishTestView() {
   // Keyboard navigation support (1-5 or A-E for options, Arrow keys for navigation)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (loading || isCompleted || !currentQuestion) return;
+      if (loading || isCompleted || isEvaluating || !currentQuestion) return;
 
       const key = e.key.toUpperCase();
       const options = getQuestionOptionsWithUnsure(currentQuestion);
@@ -332,88 +457,64 @@ export function GeneralEnglishTestView() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex, currentQuestion, selectedAnswers, loading, isCompleted, handleSubmitTest]);
+  }, [currentIndex, currentQuestion, selectedAnswers, loading, isCompleted, isEvaluating, handleSubmitTest]);
 
-  // Results calculation
-  const results = useMemo(() => {
-    if (!isCompleted || questions.length === 0) return null;
-
-    let correctCount = 0;
-    let unsureCount = 0;
-    const sectionStats: {
-      [key: string]: { total: number; correct: number };
-    } = {};
-
-    questions.forEach((q) => {
-      const selected = selectedAnswers[q.id];
-      const userSelected = selected?.content;
-      const isUnsure = userSelected === DONT_KNOW_TEXT || selected?.optionId?.endsWith("-dont-know");
-      if (isUnsure) unsureCount++;
-
-      const isCorrect =
-        !isUnsure &&
-        !!userSelected &&
-        userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
-
-      if (isCorrect) correctCount++;
-
-      const sec = q.sectionType || "GENERAL";
-      if (!sectionStats[sec]) {
-        sectionStats[sec] = { total: 0, correct: 0 };
-      }
-      sectionStats[sec].total += 1;
-      if (isCorrect) sectionStats[sec].correct += 1;
-    });
-
-    const scorePercentage = Math.round((correctCount / questions.length) * 100);
-    const incorrectCount = questions.length - correctCount - unsureCount;
-
-    // CEFR Level Determination
-    let estimatedLevel: CEFRLevel = "A1";
-    let levelTitle = "Beginner (A1)";
-    let levelDescription =
-      "You understand basic everyday expressions and phrases. With targeted practice on essential sentence structures, you will rapidly advance.";
-
-    if (scorePercentage >= 90) {
-      estimatedLevel = "C1";
-      levelTitle = "Advanced (C1)";
-      levelDescription =
-        "Exceptional fluency! You can express ideas fluently and spontaneously with a broad lexical resource and complex grammatical structures.";
-    } else if (scorePercentage >= 75) {
-      estimatedLevel = "B2";
-      levelTitle = "Upper-Intermediate (B2)";
-      levelDescription =
-        "Strong command of English! You interact with high degree of fluency and grammar accuracy with minor slips in complex structures.";
-    } else if (scorePercentage >= 55) {
-      estimatedLevel = "B1";
-      levelTitle = "Intermediate (B1)";
-      levelDescription =
-        "Good solid foundation! You can handle most everyday conversation situations and clearly convey main points on familiar matters.";
-    } else if (scorePercentage >= 35) {
-      estimatedLevel = "A2";
-      levelTitle = "Elementary (A2)";
-      levelDescription =
-        "You can communicate in simple, routine tasks and basic sentence structures. Ready to step up to intermediate grammar.";
+  // Active Evaluation Data calculation
+  const activeResult: LevelTestEvaluationData | null = useMemo(() => {
+    if (evaluationResult) return evaluationResult;
+    if (isCompleted && questions.length > 0) {
+      return generateFallbackEvaluation(questions, selectedAnswers, elapsedSeconds);
     }
+    return null;
+  }, [evaluationResult, isCompleted, questions, selectedAnswers, elapsedSeconds]);
 
-    return {
-      total: questions.length,
-      correct: correctCount,
-      unsure: unsureCount,
-      incorrect: incorrectCount,
-      percentage: scorePercentage,
-      level: estimatedLevel,
-      levelTitle,
-      levelDescription,
-      sectionStats,
-    };
-  }, [isCompleted, questions, selectedAnswers]);
-
-  // Loading State
+  // Loading State for Initial Questions Fetch
   if (loading) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6">
+      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
         <Loader size="lg" text="Loading diagnostic placement test questions..." />
+        <p className="text-xs text-ink-soft max-w-sm">
+          Preparing grammar, vocabulary, and reading comprehension test items...
+        </p>
+      </div>
+    );
+  }
+
+  // Evaluating Overlay State
+  if (isEvaluating) {
+    return (
+      <div className="relative min-h-[85vh] flex flex-col items-center justify-center p-6 text-center space-y-6 bg-paper dark:bg-[#070510] text-ink dark:text-white">
+        <GridBackground squareSize={64} showDots={true} />
+        <div className="relative z-10 max-w-md w-full p-8 rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-2xl space-y-6 animate-pulse">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-purple-600 to-fuchsia-600 flex items-center justify-center mx-auto shadow-lg shadow-purple-500/30">
+            <Sparkles className="w-8 h-8 text-white animate-spin" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-xl sm:text-2xl font-bold font-brand text-ink dark:text-white">
+              AI Diagnostic Evaluation in Progress
+            </h2>
+            <p className="text-xs sm:text-sm text-ink-soft dark:text-slate-300 leading-relaxed font-bangla">
+              আপনার উত্তরপত্র নিখুঁতভাবে পর্যালোচনা করা হচ্ছে এবং CEFR Level ও স্টাডি রোডম্যাপ তৈরি করা হচ্ছে...
+            </p>
+          </div>
+
+          {/* Evaluating Steps Indicator */}
+          <div className="space-y-2.5 text-left text-xs">
+            <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center gap-2.5 text-primary dark:text-purple-300 font-semibold">
+              <span className="animate-ping w-2 h-2 rounded-full bg-primary" />
+              <span>Analyzing Grammatical, Lexical & Reading Accuracy</span>
+            </div>
+            <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-2.5 text-ink-soft">
+              <span className="w-2 h-2 rounded-full bg-slate-400" />
+              <span>Determining CEFR Score & Proficient Band (A1-C2)</span>
+            </div>
+            <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-2.5 text-ink-soft">
+              <span className="w-2 h-2 rounded-full bg-slate-400" />
+              <span>Generating Personalized 3-Step Learning Roadmap</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -423,9 +524,9 @@ export function GeneralEnglishTestView() {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
         <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center text-2xl mx-auto">
-          ⚠️
+          <AlertTriangle className="w-8 h-8" />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-ink">
+        <h2 className="text-xl sm:text-2xl font-bold text-ink dark:text-white">
           Unable to load test questions
         </h2>
         <p className="text-sm text-ink-soft max-w-md mx-auto">
@@ -442,9 +543,9 @@ export function GeneralEnglishTestView() {
   }
 
   // ==========================================
-  // RESULTS VIEW: AUTH GATE (If user is not logged in)
+  // RESULTS VIEW: AUTH GATE (If test completed but user not authenticated)
   // ==========================================
-  if (isCompleted && results && !isAuthenticated) {
+  if (isCompleted && activeResult && !isAuthenticated) {
     return (
       <div className="relative min-h-screen py-10 sm:py-16 px-4 sm:px-6 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200 flex flex-col justify-center items-center">
         <GridBackground squareSize={64} showDots={true} />
@@ -454,7 +555,7 @@ export function GeneralEnglishTestView() {
           {/* Header */}
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold uppercase tracking-wider shadow-2xs">
-              <span>🔒 RESULT LOCKED • LOGIN REQUIRED</span>
+              <span>🔒 RESULT EVALUATED • LOGIN TO VIEW</span>
             </div>
 
             <h1 className="font-bangla text-2xl sm:text-3xl font-bold tracking-tight text-ink dark:text-white leading-tight">
@@ -465,7 +566,7 @@ export function GeneralEnglishTestView() {
             </h1>
 
             <p className="font-bangla text-xs sm:text-sm text-ink-soft dark:text-slate-300 leading-relaxed max-w-sm mx-auto">
-              আপনার টেস্ট সফলভাবে সম্পন্ন হয়েছে! আপনার নির্ধারিত <strong>CEFR Level</strong>, নির্ভুল স্কোর, দুর্বলতা বিশ্লেষণ ও AI স্টাডি প্ল্যান দেখতে Login বাটনে ক্লিক করুন।
+              আপনার টেস্ট সফলভাবে মূল্যায়ন হয়েছে! আপনার নির্ধারিত <strong>CEFR Level</strong>, বিস্তারিত দুর্বলতা বিশ্লেষণ ও AI স্টাডি রোডম্যাপ দেখতে Login করুন।
             </p>
           </div>
 
@@ -474,21 +575,21 @@ export function GeneralEnglishTestView() {
             {/* Status summary */}
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <span className="text-emerald-500 font-bold">✓</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 <span className="font-bold text-ink dark:text-white">
-                  {Object.keys(selectedAnswers).length} of {results.total} Questions Evaluated
+                  {activeResult.totalQuestions} Questions Evaluated
                 </span>
               </div>
-              <span className="font-bold text-primary dark:text-purple-300">
-                ⏱️ {formatTime(elapsedSeconds)}
+              <span className="font-bold text-primary dark:text-purple-300 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" /> {formatTime(elapsedSeconds)}
               </span>
             </div>
 
-            {/* Blurred Mockup Score */}
+            {/* Blurred Mockup Score Teaser */}
             <div className="filter blur-sm select-none pointer-events-none opacity-40 dark:opacity-25 grid grid-cols-3 gap-2 py-1">
               <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-center">
                 <span className="text-[10px] uppercase font-bold block text-ink-soft">Score</span>
-                <span className="text-base font-bold text-ink dark:text-white">?? / {results.total}</span>
+                <span className="text-base font-bold text-ink dark:text-white">?? / {activeResult.totalQuestions}</span>
               </div>
               <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-center">
                 <span className="text-[10px] uppercase font-bold block text-ink-soft">Accuracy</span>
@@ -502,7 +603,6 @@ export function GeneralEnglishTestView() {
 
             {/* Action Buttons */}
             <div className="space-y-3 pt-2">
-              {/* Go to Login Page Primary Button */}
               <Link
                 href="/login?redirect=/level-test/general"
                 className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white font-bold text-sm sm:text-base shadow-lg shadow-purple-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
@@ -518,7 +618,6 @@ export function GeneralEnglishTestView() {
                 onSuccess={() => setAuthError(null)}
               />
 
-              {/* Error Message if any */}
               {authError && (
                 <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold text-center">
                   ⚠️ {authError}
@@ -542,100 +641,93 @@ export function GeneralEnglishTestView() {
   }
 
   // ==========================================
-  // RESULTS VIEW: UNLOCKED (Once test is completed & user is authenticated)
+  // RESULTS VIEW: UNLOCKED (Comprehensive AI Placement Test Report)
   // ==========================================
-  if (isCompleted && results) {
-    const filteredQuestions = questions.filter((q) => {
-      const selected = selectedAnswers[q.id];
-      const userSelected = selected?.content;
-      const isUnsure = userSelected === DONT_KNOW_TEXT || selected?.optionId?.endsWith("-dont-know");
-      const isCorrect =
-        !isUnsure &&
-        !!userSelected &&
-        userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
+  if (isCompleted && activeResult) {
+    const analysis = activeResult.analysis;
+    const evaluatedList = activeResult.questions && activeResult.questions.length > 0
+      ? activeResult.questions
+      : [];
 
-      if (reviewFilter === "correct") return isCorrect;
-      if (reviewFilter === "incorrect") return !isCorrect && !isUnsure;
-      if (reviewFilter === "unsure") return isUnsure;
+    const filteredEvaluatedQuestions = evaluatedList.filter((q) => {
+      if (reviewFilter === "correct") return q.isCorrect;
+      if (reviewFilter === "incorrect") return !q.isCorrect;
       return true;
     });
 
+    const cefr = analysis?.estimatedLevel || "B1";
+
     return (
-      <div className="relative min-h-screen py-10 sm:py-14 px-4 sm:px-6 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200">
+      <div className="relative min-h-screen py-10 sm:py-16 px-4 sm:px-6 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200">
         <GridBackground squareSize={64} showDots={true} />
 
         <div className="max-w-4xl mx-auto space-y-8 sm:space-y-10 relative z-10">
-          {/* Top Celebration Banner */}
-          <div className="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-purple-600/15 via-primary/10 to-fuchsia-600/15 dark:from-[#0F0C20] dark:via-[#181236] dark:to-[#0F0C20] border border-slate-200 dark:border-white/10 shadow-xl relative overflow-hidden text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider">
-              <span>🎉 TEST COMPLETED SUCCESSFULLY</span>
+          {/* Top Hero Celebration Card */}
+          <div className="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-purple-600/15 via-primary/10 to-fuchsia-600/15 dark:from-[#0F0C20] dark:via-[#181236] dark:to-[#0F0C20] border border-slate-200 dark:border-white/10 shadow-xl relative overflow-hidden text-center space-y-5">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>PLACEMENT TEST EVALUATED & ANALYZED</span>
             </div>
 
-            <h1 className="font-bangla text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-              আপনার আনুমানিক Level:{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 dark:from-purple-300 dark:via-fuchsia-300 dark:to-indigo-300">
-                {results.levelTitle}
-              </span>
-            </h1>
+            <div className="space-y-2">
+              <h1 className="font-bangla text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+                আপনার আনুমানিক CEFR Level:{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 dark:from-purple-300 dark:via-fuchsia-300 dark:to-indigo-300">
+                  {cefr}
+                </span>
+              </h1>
+              <p className="font-bangla text-ink-soft dark:text-slate-300 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
+                আপনার পরীক্ষা সফলভাবে মূল্যায়ন করা হয়েছে। নিচে আপনার বিস্তারিত স্কোর, দুর্বলতা বিশ্লেষণ ও AI স্টাডি প্ল্যান দেওয়া হলো।
+              </p>
+            </div>
 
-            <p className="font-bangla text-ink-soft dark:text-slate-300 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-              {results.levelDescription}
-            </p>
-
-            {/* Score Metric Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 pt-4">
+            {/* Score Metric Badges Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-2">
               <div className="p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs">
-                <span className="text-[10px] uppercase font-bold text-ink-soft block">
+                <span className="text-[10px] uppercase font-bold text-ink-soft block mb-1">
                   Total Score
                 </span>
                 <span className="text-xl sm:text-2xl font-bold text-ink dark:text-white">
-                  {results.correct} / {results.total}
+                  {activeResult.score} / {activeResult.totalQuestions}
                 </span>
               </div>
 
               <div className="p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs">
-                <span className="text-[10px] uppercase font-bold text-ink-soft block">
+                <span className="text-[10px] uppercase font-bold text-ink-soft block mb-1">
                   Accuracy
                 </span>
                 <span className="text-xl sm:text-2xl font-bold text-primary dark:text-purple-300">
-                  {results.percentage}%
+                  {activeResult.percentage}%
                 </span>
               </div>
 
               <div className="p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs">
-                <span className="text-[10px] uppercase font-bold text-ink-soft block">
-                  Unsure (Skipped)
-                </span>
-                <span className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">
-                  {results.unsure}
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs">
-                <span className="text-[10px] uppercase font-bold text-ink-soft block">
-                  CEFR Rating
+                <span className="text-[10px] uppercase font-bold text-ink-soft block mb-1">
+                  CEFR Score
                 </span>
                 <span className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {results.level}
+                  {analysis?.cefrScore ?? activeResult.percentage} / 100
                 </span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs col-span-2 sm:col-span-1">
-                <span className="text-[10px] uppercase font-bold text-ink-soft block">
+              <div className="p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs">
+                <span className="text-[10px] uppercase font-bold text-ink-soft block mb-1">
                   Time Taken
                 </span>
-                <span className="text-xl sm:text-2xl font-bold text-ink dark:text-white">
-                  ⏱️ {formatTime(elapsedSeconds)}
+                <span className="text-xl sm:text-2xl font-bold text-ink dark:text-white flex items-center justify-center gap-1">
+                  <Clock className="w-4 h-4 text-ink-soft" />
+                  {formatTime(elapsedSeconds)}
                 </span>
               </div>
             </div>
 
             {/* CTAs */}
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/dashboard/chat"
                 className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 text-white font-bold text-sm sm:text-base shadow-lg shadow-purple-500/25 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all text-center inline-flex items-center justify-center gap-2"
               >
+                <Sparkles className="w-4 h-4" />
                 <span>Start Personalized AI Practice</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>
@@ -649,17 +741,20 @@ export function GeneralEnglishTestView() {
                     : "bg-white/80 dark:bg-white/10 border-slate-200 dark:border-white/15 text-ink dark:text-white hover:bg-white dark:hover:bg-white/15"
                 }`}
               >
-                <span>📋 {showDetailedReview ? "Hide Detailed Breakdown" : "View Detailed Breakdown & Explanations"}</span>
+                <BookOpen className="w-4 h-4" />
+                <span>{showDetailedReview ? "Hide Question Review" : "View Detailed Question Review"}</span>
                 <span className="text-xs">{showDetailedReview ? "▲" : "▼"}</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => {
                   setIsCompleted(false);
                   setCurrentIndex(0);
                   setSelectedAnswers({});
                   setFlaggedQuestions({});
                   setElapsedSeconds(0);
+                  setEvaluationResult(null);
                   setShowDetailedReview(false);
                   try {
                     localStorage.removeItem("fluentia_level_test_session");
@@ -667,152 +762,310 @@ export function GeneralEnglishTestView() {
                     console.error("Failed to clear session:", e);
                   }
                 }}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white/80 dark:bg-white/10 border border-slate-200 dark:border-white/15 text-ink dark:text-white font-semibold text-sm hover:bg-white dark:hover:bg-white/15 transition-all"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white/80 dark:bg-white/10 border border-slate-200 dark:border-white/15 text-ink dark:text-white font-semibold text-sm hover:bg-white dark:hover:bg-white/15 transition-all inline-flex items-center justify-center gap-1.5"
               >
-                Retake Placement Test
+                <RotateCcw className="w-4 h-4" />
+                <span>Retake Test</span>
               </button>
             </div>
           </div>
 
-          {/* Collapsible Detailed Breakdown & Question Review */}
-          {showDetailedReview && (
-            <div className="space-y-8 animate-fadeIn">
-              {/* Section Breakdown */}
-              <div className="p-6 rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          {/* AI Executive Summary Card */}
+          {analysis?.summary && (
+            <div className="p-6 sm:p-7 rounded-3xl bg-paper-card border border-purple-500/20 shadow-md space-y-3 relative overflow-hidden">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/15 flex items-center justify-center text-primary dark:text-purple-300">
+                  <Sparkles className="w-4 h-4" />
+                </div>
                 <h3 className="font-brand text-lg font-bold text-ink dark:text-white">
-                  Section Performance Breakdown
+                  AI Performance Summary
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {Object.entries(results.sectionStats).map(([section, stats]) => {
-                    const secPercent =
-                      stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-                    return (
-                      <div
-                        key={section}
-                        className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 space-y-2"
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-ink dark:text-slate-200">{section}</span>
-                          <span className="font-bold text-primary dark:text-purple-300">
-                            {secPercent}%
+              </div>
+              <p className="text-sm sm:text-base text-ink-soft dark:text-slate-200 leading-relaxed">
+                {analysis.summary}
+              </p>
+            </div>
+          )}
+
+          {/* Section Performance Breakdown */}
+          {analysis?.sectionBreakdown && Object.keys(analysis.sectionBreakdown).length > 0 && (
+            <div className="p-6 sm:p-7 rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary dark:text-purple-300">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <h3 className="font-brand text-lg font-bold text-ink dark:text-white">
+                  Sectional Skill Evaluation
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {Object.entries(analysis.sectionBreakdown).map(([sectionName, info]) => {
+                  const secStats = activeResult.sectionBreakdown?.[sectionName.toLowerCase()];
+                  const percent = secStats?.percentage ?? 0;
+
+                  return (
+                    <div
+                      key={sectionName}
+                      className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/5 space-y-3 flex flex-col justify-between"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-sm text-ink dark:text-white capitalize">
+                            {sectionName}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/15 text-primary dark:text-purple-300 border border-primary/20">
+                            Level {info.level || "B1"}
                           </span>
                         </div>
+
+                        <div className="flex items-center justify-between text-xs text-ink-soft">
+                          <span>Accuracy:</span>
+                          <span className="font-bold text-primary dark:text-purple-300">
+                            {info.scoreText || `${percent}%`}
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
                         <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full"
-                            style={{ width: `${secPercent}%` }}
+                            className="h-full bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full transition-all duration-500"
+                            style={{ width: `${percent}%` }}
                           />
                         </div>
-                        <p className="text-[11px] text-ink-soft">
-                          {stats.correct} of {stats.total} correct
-                        </p>
                       </div>
-                    );
-                  })}
+
+                      {info.analysis && (
+                        <p className="text-xs text-ink-soft dark:text-slate-300 leading-relaxed border-t border-slate-200/60 dark:border-white/5 pt-2">
+                          {info.analysis}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Strengths & Weaknesses 2-Column Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Strengths */}
+            {analysis?.strengths && analysis.strengths.length > 0 && (
+              <div className="p-6 sm:p-7 rounded-3xl bg-paper-card border border-emerald-500/20 shadow-sm space-y-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-brand text-lg font-bold text-ink dark:text-white">
+                    Key Strengths
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
+                  {analysis.strengths.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15 space-y-1.5"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span className="font-bold text-xs sm:text-sm text-emerald-700 dark:text-emerald-300">
+                          {item.area}
+                        </span>
+                      </div>
+                      <p className="text-xs text-ink-soft dark:text-slate-300 pl-5">
+                        {item.description}
+                      </p>
+                      {item.evidence && (
+                        <div className="pl-5 text-[11px] text-emerald-600 dark:text-emerald-400/90 font-medium italic">
+                          Evidence: {item.evidence}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Weaknesses & Focus Areas */}
+            {analysis?.weaknesses && analysis.weaknesses.length > 0 && (
+              <div className="p-6 sm:p-7 rounded-3xl bg-paper-card border border-amber-500/20 shadow-sm space-y-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                    <Target className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-brand text-lg font-bold text-ink dark:text-white">
+                    Focus Areas & Recommendations
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
+                  {analysis.weaknesses.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/15 space-y-1.5"
+                    >
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <span className="font-bold text-xs sm:text-sm text-amber-700 dark:text-amber-300">
+                          {item.area}
+                        </span>
+                      </div>
+                      <p className="text-xs text-ink-soft dark:text-slate-300 pl-5">
+                        {item.description}
+                      </p>
+                      {item.recommendation && (
+                        <div className="pl-5 p-2 rounded-xl bg-amber-500/10 text-[11px] text-amber-800 dark:text-amber-200 mt-1 flex items-start gap-1.5">
+                          <Lightbulb className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                          <span><strong>Recommendation:</strong> {item.recommendation}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Personalized 3-Step Learning Roadmap */}
+          {analysis?.learningRoadmap && analysis.learningRoadmap.length > 0 && (
+            <div className="p-6 sm:p-8 rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-md space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary dark:text-purple-300">
+                    <Compass className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-brand text-lg sm:text-xl font-bold text-ink dark:text-white">
+                      Your Personalized AI Learning Roadmap
+                    </h3>
+                    <p className="text-xs text-ink-soft dark:text-slate-400">
+                      Step-by-step strategy to advance to your next CEFR band.
+                    </p>
+                  </div>
                 </div>
               </div>
 
-          {/* Question Review Section with Filter */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="font-brand text-xl font-bold text-ink dark:text-white">
-                  Detailed Question Review & Explanations
-                </h3>
-                <p className="text-xs text-ink-soft dark:text-slate-400">
-                  Review every question, your selected answer, and the AI explanation.
-                </p>
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {analysis.learningRoadmap.map((stepItem) => (
+                  <div
+                    key={stepItem.step}
+                    className="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/5 space-y-3 flex flex-col justify-between"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="w-7 h-7 rounded-xl bg-gradient-to-tr from-purple-600 to-fuchsia-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                          {stepItem.step}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary dark:text-purple-300 border border-primary/20">
+                          {stepItem.focusArea}
+                        </span>
+                      </div>
 
-              {/* Filter Tabs */}
-              <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-xs font-semibold">
-                <button
-                  onClick={() => setReviewFilter("all")}
-                  className={`px-3 py-1 rounded-lg transition-colors ${
-                    reviewFilter === "all"
-                      ? "bg-white dark:bg-slate-800 text-ink dark:text-white shadow-xs"
-                      : "text-ink-soft hover:text-ink"
-                  }`}
-                >
-                  All ({questions.length})
-                </button>
-                <button
-                  onClick={() => setReviewFilter("incorrect")}
-                  className={`px-3 py-1 rounded-lg transition-colors ${
-                    reviewFilter === "incorrect"
-                      ? "bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 shadow-xs"
-                      : "text-ink-soft hover:text-ink"
-                  }`}
-                >
-                  Incorrect ({results.incorrect})
-                </button>
-                <button
-                  onClick={() => setReviewFilter("unsure")}
-                  className={`px-3 py-1 rounded-lg transition-colors ${
-                    reviewFilter === "unsure"
-                      ? "bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-xs"
-                      : "text-ink-soft hover:text-ink"
-                  }`}
-                >
-                  Unsure ({results.unsure})
-                </button>
-                <button
-                  onClick={() => setReviewFilter("correct")}
-                  className={`px-3 py-1 rounded-lg transition-colors ${
-                    reviewFilter === "correct"
-                      ? "bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-xs"
-                      : "text-ink-soft hover:text-ink"
-                  }`}
-                >
-                  Correct ({results.correct})
-                </button>
+                      <h4 className="font-bold text-sm text-ink dark:text-white leading-snug">
+                        {stepItem.title}
+                      </h4>
+
+                      <p className="text-xs text-ink-soft dark:text-slate-300 leading-relaxed">
+                        {stepItem.description}
+                      </p>
+                    </div>
+
+                    {stepItem.suggestedSkills && stepItem.suggestedSkills.length > 0 && (
+                      <div className="pt-2 border-t border-slate-200/60 dark:border-white/5 space-y-1.5">
+                        <span className="text-[10px] font-bold text-ink-soft uppercase block">
+                          Target Skills:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {stepItem.suggestedSkills.map((skill, sIdx) => (
+                            <span
+                              key={sIdx}
+                              className="px-2 py-0.5 rounded-md bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-[10px] font-medium text-ink dark:text-slate-200"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
+          )}
 
-            {/* List of Review Cards */}
-            <div className="space-y-4">
-              {filteredQuestions.map((q) => {
-                const selected = selectedAnswers[q.id];
-                const userSelected = selected?.content;
-                const selectedOptId = selected?.optionId;
-                const isUnsure = userSelected === DONT_KNOW_TEXT || selectedOptId?.endsWith("-dont-know");
-                const isCorrect =
-                  !isUnsure &&
-                  !!userSelected &&
-                  userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
+          {/* Detailed Question Review & Explanations Collapsible */}
+          {showDetailedReview && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-brand text-xl font-bold text-ink dark:text-white">
+                    Detailed Question Review & Explanations
+                  </h3>
+                  <p className="text-xs text-ink-soft dark:text-slate-400">
+                    Review each question, your selected answer, the correct option, and comprehensive AI explanations.
+                  </p>
+                </div>
 
-                let statusBadgeBg = "bg-rose-500/15 text-rose-600 dark:text-rose-400";
-                let statusSymbol = "✕";
-                if (isCorrect) {
-                  statusBadgeBg = "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400";
-                  statusSymbol = "✓";
-                } else if (isUnsure) {
-                  statusBadgeBg = "bg-amber-500/15 text-amber-600 dark:text-amber-400";
-                  statusSymbol = "🤷";
-                }
+                {/* Filter Tabs */}
+                <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-xs font-semibold">
+                  <button
+                    onClick={() => setReviewFilter("all")}
+                    className={`px-3 py-1 rounded-lg transition-colors ${
+                      reviewFilter === "all"
+                        ? "bg-white dark:bg-slate-800 text-ink dark:text-white shadow-xs"
+                        : "text-ink-soft hover:text-ink"
+                    }`}
+                  >
+                    All ({evaluatedList.length})
+                  </button>
+                  <button
+                    onClick={() => setReviewFilter("incorrect")}
+                    className={`px-3 py-1 rounded-lg transition-colors ${
+                      reviewFilter === "incorrect"
+                        ? "bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 shadow-xs"
+                        : "text-ink-soft hover:text-ink"
+                    }`}
+                  >
+                    Incorrect ({evaluatedList.filter((q) => !q.isCorrect).length})
+                  </button>
+                  <button
+                    onClick={() => setReviewFilter("correct")}
+                    className={`px-3 py-1 rounded-lg transition-colors ${
+                      reviewFilter === "correct"
+                        ? "bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-xs"
+                        : "text-ink-soft hover:text-ink"
+                    }`}
+                  >
+                    Correct ({evaluatedList.filter((q) => q.isCorrect).length})
+                  </button>
+                </div>
+              </div>
 
-                const reviewOptions = getQuestionOptionsWithUnsure(q);
-
-                return (
+              {/* Evaluated Questions List */}
+              <div className="space-y-4">
+                {filteredEvaluatedQuestions.map((q) => (
                   <div
-                    key={q.id}
+                    key={q.questionId || q.number}
                     className={`p-5 sm:p-6 rounded-2xl bg-paper-card border ${
-                      isCorrect
+                      q.isCorrect
                         ? "border-emerald-500/30 dark:border-emerald-500/20"
-                        : isUnsure
-                        ? "border-amber-500/30 dark:border-amber-500/20"
                         : "border-rose-500/30 dark:border-rose-500/20"
                     } shadow-xs space-y-4`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${statusBadgeBg}`}
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            q.isCorrect
+                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                              : "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                          }`}
                         >
-                          {statusSymbol}
+                          {q.isCorrect ? "✓" : "✕"}
                         </span>
                         <span className="text-xs font-bold text-ink-soft">
-                          Question {questions.indexOf(q) + 1} of {questions.length}
+                          Question {q.number} of {evaluatedList.length}
                         </span>
                       </div>
 
@@ -823,92 +1076,85 @@ export function GeneralEnglishTestView() {
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-white/10 text-ink-soft">
                           {q.level}
                         </span>
+                        {q.difficulty && (
+                          <span className="hidden sm:inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold text-ink-soft">
+                            {q.difficulty}
+                          </span>
+                        )}
                       </div>
                     </div>
+
+                    {/* Reading Passage if available */}
+                    {q.passage && (
+                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-xs text-ink leading-relaxed">
+                        <span className="font-bold text-primary dark:text-purple-300 block mb-1">
+                          📖 Passage:
+                        </span>
+                        <p>{q.passage}</p>
+                      </div>
+                    )}
 
                     {/* Question text */}
                     <p className="text-sm sm:text-base font-semibold text-ink dark:text-white">
                       {q.question}
                     </p>
 
-                    {/* Options list showing user choice and correct answer */}
+                    {/* Answer Comparison */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      {reviewOptions.map((opt) => {
-                        const isOptionCorrect =
-                          opt.content.trim().toLowerCase() === q.answer?.trim().toLowerCase();
-                        const isOptionUserSelected =
-                          selected?.optionId === opt.id ||
-                          selected?.content?.trim().toLowerCase() === opt.content.trim().toLowerCase();
-                        const isOptionDontKnow = opt.content === DONT_KNOW_TEXT;
+                      {/* User Answer */}
+                      <div
+                        className={`p-3 rounded-xl border flex items-center justify-between gap-2 ${
+                          q.isCorrect
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-semibold"
+                            : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300 line-through font-semibold"
+                        }`}
+                      >
+                        <div>
+                          <span className="text-[10px] block opacity-75">Your Answer:</span>
+                          <span>{q.userAnswer || "No Answer"}</span>
+                        </div>
+                        <span className="text-[10px] font-bold shrink-0">
+                          {q.isCorrect ? "✓ Correct" : "✕ Incorrect"}
+                        </span>
+                      </div>
 
-                        let optStyle =
-                          "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/5 text-ink-soft";
-                        if (isOptionCorrect) {
-                          optStyle =
-                            "bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-bold";
-                        } else if (isOptionUserSelected) {
-                          if (isOptionDontKnow) {
-                            optStyle =
-                              "bg-amber-500/10 border-amber-500/40 text-amber-700 dark:text-amber-300 font-semibold";
-                          } else if (!isCorrect) {
-                            optStyle =
-                              "bg-rose-500/10 border-rose-500/40 text-rose-700 dark:text-rose-300 line-through font-semibold";
-                          }
-                        }
-
-                        return (
-                          <div
-                            key={opt.id}
-                            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 ${optStyle}`}
-                          >
-                            <span>{opt.content}</span>
-                            {isOptionCorrect && (
-                              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[10px] shrink-0">
-                                Correct Answer
-                              </span>
-                            )}
-                            {isOptionUserSelected && !isOptionCorrect && (
-                              <span
-                                className={`font-bold text-[10px] shrink-0 ${
-                                  isOptionDontKnow
-                                    ? "text-amber-600 dark:text-amber-400"
-                                    : "text-rose-600 dark:text-rose-400"
-                                }`}
-                              >
-                                {isOptionDontKnow ? "Your Choice (Unsure)" : "Your Choice"}
-                              </span>
-                            )}
+                      {/* Correct Answer (if user was wrong) */}
+                      {!q.isCorrect && (
+                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] block opacity-75">Correct Answer:</span>
+                            <span>{q.correctAnswer}</span>
                           </div>
-                        );
-                      })}
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                            Key
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Explanation Box */}
                     {q.explanation && (
                       <div className="p-3.5 rounded-xl bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 text-xs text-ink-soft dark:text-purple-200 space-y-1">
-                        <span className="font-bold text-primary dark:text-purple-300 block">
-                          💡 Explanation:
+                        <span className="font-bold text-primary dark:text-purple-300 flex items-center gap-1">
+                          <Lightbulb className="w-3.5 h-3.5" /> Explanation:
                         </span>
                         <p className="leading-relaxed">{q.explanation}</p>
                       </div>
                     )}
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
-    </div>
-  </div>
-);
-}
+      </div>
+    );
+  }
 
   // ==========================================
   // ONE QUESTION PER SCREEN MCQ ENGINE
   // ==========================================
   const currentSelected = selectedAnswers[currentQuestion.id];
-  const currentSelectedOption = currentSelected?.content;
   const isFlagged = !!flaggedQuestions[currentQuestion.id];
   const currentDisplayOptions = getQuestionOptionsWithUnsure(currentQuestion);
 
@@ -948,8 +1194,9 @@ export function GeneralEnglishTestView() {
               <span className="text-[10px] uppercase font-bold text-ink-soft block">
                 Time Elapsed
               </span>
-              <span className="text-xs sm:text-sm font-bold text-ink dark:text-white">
-                ⏱️ {formatTime(elapsedSeconds)}
+              <span className="text-xs sm:text-sm font-bold text-ink dark:text-white flex items-center justify-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-ink-soft" />
+                {formatTime(elapsedSeconds)}
               </span>
             </div>
           </div>
@@ -1002,9 +1249,11 @@ export function GeneralEnglishTestView() {
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-white/10 text-ink-soft border border-slate-200 dark:border-white/10">
                 Level {currentQuestion.level}
               </span>
-              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold text-ink-soft">
-                Difficulty: {currentQuestion.difficulty}
-              </span>
+              {currentQuestion.difficulty && (
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold text-ink-soft">
+                  Difficulty: {currentQuestion.difficulty}
+                </span>
+              )}
             </div>
 
             <span className="text-xs font-medium text-ink-soft">
@@ -1089,7 +1338,7 @@ export function GeneralEnglishTestView() {
                         </span>
                         {isDontKnow && (
                           <span className="text-[11px] text-ink-soft dark:text-slate-400 font-normal">
-                            Skip if you are uncertain (will not penalize score accuracy analysis)
+                            Skip if uncertain (will evaluate diagnostic accuracy accordingly)
                           </span>
                         )}
                       </div>
@@ -1129,13 +1378,13 @@ export function GeneralEnglishTestView() {
             <span>Previous</span>
           </button>
 
-          {/* Center Question Jumper */}
+          {/* Center Question Jumper Note */}
           <div className="flex items-center gap-1.5 text-xs text-ink-soft">
-            <span className="hidden sm:inline">Use</span>
+            <span className="hidden sm:inline">Use keys</span>
             <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/10 font-mono text-[10px] border border-slate-200 dark:border-white/10">
               1-5 / A-E
             </kbd>
-            <span className="hidden sm:inline">to answer</span>
+            <span className="hidden sm:inline">to select answer</span>
           </div>
 
           {/* Next / Submit Button */}
@@ -1152,7 +1401,7 @@ export function GeneralEnglishTestView() {
               title={!selectedAnswers[currentQuestion?.id] ? "Please select an answer to finish" : "Submit Diagnostic Test"}
             >
               <span>Submit Diagnostic Test</span>
-              <span>✓</span>
+              <CheckCircle2 className="w-4 h-4" />
             </button>
           ) : (
             <button
@@ -1265,7 +1514,7 @@ export function GeneralEnglishTestView() {
               Exit Placement Test?
             </h3>
             <p className="text-xs text-ink-soft leading-relaxed">
-              Are you sure you want to leave? Your placement results won&apos;t be finalized until you submit all questions.
+              Are you sure you want to leave? Your placement results won&apos;t be finalized until you submit your answers.
             </p>
             <div className="pt-2 flex items-center gap-3">
               <button
