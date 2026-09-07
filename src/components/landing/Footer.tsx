@@ -35,8 +35,8 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-xs font-medium text-ink-soft">
               <li>
-                <Link href="#features" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
-                  Features & Tracks
+                <Link href="#how-it-works" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+                  How Fluentia Works
                 </Link>
               </li>
               <li>

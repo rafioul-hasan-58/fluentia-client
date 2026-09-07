@@ -14,7 +14,7 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-  { label: "Features", href: "#features", icon: "✨" },
+  { label: "How It Works", href: "#how-it-works", icon: "⚡" },
   { label: "Demo", href: "#demo", icon: "🎮" },
   { label: "Get Started", href: "#cta", icon: "🚀" },
   { label: "Dashboard", href: "/dashboard", icon: "📊" },
@@ -55,8 +55,8 @@ export function Navbar() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-7 lg:gap-8 text-sm font-semibold font-nav text-ink-soft dark:text-slate-300">
-            <a href="#features" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
-              Features
+            <a href="#how-it-works" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+              How It Works
             </a>
             <a href="#demo" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
               Interactive Demo
@@ -116,10 +116,10 @@ export function Navbar() {
         {/* Mobile Quick Scroll Nav Strip */}
         <div className="md:hidden flex items-center gap-2 px-4 py-2 border-t border-slate-200/70 dark:border-white/5 overflow-x-auto no-scrollbar bg-slate-50/70 dark:bg-white/[0.02] font-nav">
           <a
-            href="#features"
+            href="#how-it-works"
             className="px-3 py-1 rounded-lg text-xs font-semibold text-ink-soft hover:text-ink hover:bg-paper whitespace-nowrap transition-colors"
           >
-            ✨ Features
+            ⚡ How It Works
           </a>
           <a
             href="#demo"

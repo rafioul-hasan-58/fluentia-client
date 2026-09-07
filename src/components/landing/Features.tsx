@@ -1,90 +1,283 @@
 import React from "react";
 import Link from "next/link";
+import {
+  Compass,
+  BookOpen,
+  MessageSquare,
+  Zap,
+  CheckCheck,
+  TrendingUp,
+  Sparkles,
+  ArrowRight,
+  RotateCcw,
+} from "lucide-react";
 
-interface FeatureCard {
+interface LearningStep {
+  stepNumber: string;
+  category: string;
   title: string;
   description: string;
-  icon: string;
-  color: string;
-  badge: string;
-  href: string;
+  badgeStyle: string;
+  iconBg: string;
+  iconColor: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accentGlow: string;
+  borderColor: string;
 }
 
-const FEATURE_CARDS: FeatureCard[] = [
+const LEARNING_STEPS: LearningStep[] = [
   {
-    title: "Grammar Master",
-    description: "Get real-time sentence restructuring and grammatical corrections with clear, friendly rules.",
-    icon: "✍️",
-    color: "bg-blue-500/10 border-blue-500/30 text-primary dark:text-blue-300",
-    badge: "Grammar AI",
-    href: "/dashboard/chat",
+    stepNumber: "01",
+    category: "ASSESS",
+    title: "Find Your Level",
+    description:
+      "Start with a quick assessment that reveals your current level, strengths, grammar gaps, and vocabulary needs.",
+    badgeStyle:
+      "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    iconBg: "bg-blue-500/10 dark:bg-blue-500/20",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    icon: Compass,
+    accentGlow: "from-blue-500/20 to-transparent",
+    borderColor: "hover:border-blue-500/50 dark:hover:border-blue-400/40",
   },
   {
-    title: "Active Speaking",
-    description: "Talk to our patient AI persona, check your pronunciation, and gain fluid confidence.",
-    icon: "🗣️",
-    color: "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-300",
-    badge: "Speaking",
-    href: "/dashboard/chat",
+    stepNumber: "02",
+    category: "LEARN",
+    title: "Learn What You Need",
+    description:
+      "Get focused lessons for the grammar, vocabulary, pronunciation, and language patterns you actually need.",
+    badgeStyle:
+      "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
+    iconBg: "bg-indigo-500/10 dark:bg-indigo-500/20",
+    iconColor: "text-indigo-600 dark:text-indigo-400",
+    icon: BookOpen,
+    accentGlow: "from-indigo-500/20 to-transparent",
+    borderColor: "hover:border-indigo-500/50 dark:hover:border-indigo-400/40",
   },
   {
-    title: "IELTS Preparation",
-    description: "Simulate speaking and writing tests and receive instant band evaluations based on official criteria.",
-    icon: "🎯",
-    color: "bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-300",
-    badge: "IELTS 8.0+",
-    href: "/dashboard/chat",
+    stepNumber: "03",
+    category: "APPLY",
+    title: "Use It in Context",
+    description:
+      "Take what you learn into reading, listening, speaking, and writing instead of simply memorizing rules.",
+    badgeStyle:
+      "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+    iconBg: "bg-cyan-500/10 dark:bg-cyan-500/20",
+    iconColor: "text-cyan-600 dark:text-cyan-400",
+    icon: MessageSquare,
+    accentGlow: "from-cyan-500/20 to-transparent",
+    borderColor: "hover:border-cyan-500/50 dark:hover:border-cyan-400/40",
   },
   {
-    title: "Vocabulary Builder",
-    description: "Learn idioms, collocations, and vocabulary that fit naturally into your own conversations.",
-    icon: "📚",
-    color: "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-300",
-    badge: "Vocabulary",
-    href: "/dashboard/vocabulary",
+    stepNumber: "04",
+    category: "PRACTICE",
+    title: "Practice With Purpose",
+    description:
+      "Complete personalized exercises designed around your mistakes and target skills.",
+    badgeStyle:
+      "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    iconBg: "bg-amber-500/10 dark:bg-amber-500/20",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    icon: Zap,
+    accentGlow: "from-amber-500/20 to-transparent",
+    borderColor: "hover:border-amber-500/50 dark:hover:border-amber-400/40",
+  },
+  {
+    stepNumber: "05",
+    category: "CORRECT",
+    title: "Understand Your Mistakes",
+    description:
+      "Get clear AI feedback that explains why your answer was wrong and how to improve it.",
+    badgeStyle:
+      "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
+    iconBg: "bg-rose-500/10 dark:bg-rose-500/20",
+    iconColor: "text-rose-600 dark:text-rose-400",
+    icon: CheckCheck,
+    accentGlow: "from-rose-500/20 to-transparent",
+    borderColor: "hover:border-rose-500/50 dark:hover:border-rose-400/40",
+  },
+  {
+    stepNumber: "06",
+    category: "IMPROVE",
+    title: "Repeat & Progress",
+    description:
+      "Fluentia remembers your weak areas and adapts your next practice session so you keep improving.",
+    badgeStyle:
+      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    iconBg: "bg-emerald-500/10 dark:bg-emerald-500/20",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    icon: TrendingUp,
+    accentGlow: "from-emerald-500/20 to-transparent",
+    borderColor: "hover:border-emerald-500/50 dark:hover:border-emerald-400/40",
   },
 ];
 
 export function Features() {
   return (
-    <section id="features" className="py-24 border-t border-slate-200 dark:border-white/10 bg-paper dark:bg-[#060b19] text-ink transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-          <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-ink">
-            Personalized practice for every skill
+    <section
+      id="how-it-works"
+      className="py-20 sm:py-28 border-t border-slate-200 dark:border-white/10 bg-paper dark:bg-[#030712] text-ink transition-colors duration-200 relative overflow-hidden scroll-mt-16"
+    >
+      <div id="features" className="absolute -top-20" aria-hidden="true" />
+      {/* Subtle Background Radial Orbs */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-primary/5 dark:bg-blue-600/10 rounded-full blur-[140px] pointer-events-none -z-0" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-500/5 dark:bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none -z-0" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 space-y-12 sm:space-y-16">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30 text-primary dark:text-cyan-300 text-xs font-bold uppercase tracking-wider shadow-2xs">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>The Adaptive Learning Loop</span>
+          </div>
+
+          <h2 className="font-brand text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ink leading-[1.18]">
+            Learn what you need.{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-600 to-cyan-500 dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-300">
+              Practice what you learn.
+            </span>
           </h2>
-          <p className="text-ink-soft text-sm sm:text-base leading-relaxed">
-            Fluentia covers all aspects of language acquisition. We provide structured learning and analytical corrections so you never repeat the same mistakes twice.
+
+          <p className="text-ink-soft text-sm sm:text-base lg:text-lg leading-relaxed pt-1 max-w-2xl mx-auto">
+            Fluentia finds your weaknesses, teaches you the right concepts, and
+            helps you apply them in real English — so every practice session
+            moves you forward.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {FEATURE_CARDS.map((card, i) => (
-            <Link
-              key={i}
-              href={card.href}
-              className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-6 hover:shadow-lg dark:hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:border-primary transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5 group"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-3xl group-hover:scale-110 transition-transform duration-200">{card.icon}</div>
-                  <span className={`text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-md border ${card.color}`}>
-                    {card.badge}
-                  </span>
+        {/* 6-Step Connected Workflow Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 relative">
+          {LEARNING_STEPS.map((step, idx) => {
+            const Icon = step.icon;
+            const isLast = idx === LEARNING_STEPS.length - 1;
+
+            return (
+              <div
+                key={idx}
+                className={`group relative bg-paper-card border border-slate-200 dark:border-white/10 ${step.borderColor} rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-xs hover:shadow-xl dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between overflow-hidden`}
+              >
+                {/* Subtle Ambient Hover Glow */}
+                <div
+                  className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${step.accentGlow} rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
+                />
+
+                <div className="space-y-4 sm:space-y-5 relative z-10">
+                  {/* Top Bar: Step Number, Category Pill & Icon */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <span className="font-mono text-2xl sm:text-3xl font-black text-ink/20 dark:text-white/20 group-hover:text-primary dark:group-hover:text-cyan-400 transition-colors duration-300">
+                        {step.stepNumber}
+                      </span>
+                      <span
+                        className={`text-[10px] sm:text-[11px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full border ${step.badgeStyle}`}
+                      >
+                        {step.category}
+                      </span>
+                    </div>
+
+                    <div
+                      className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl ${step.iconBg} ${step.iconColor} flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform duration-300 shrink-0`}
+                    >
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
+                  </div>
+
+                  {/* Title & Description */}
+                  <div className="space-y-2">
+                    <h3 className="font-brand text-lg sm:text-xl font-bold text-ink group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors">
+                      {step.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-ink-soft leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="font-display text-xl font-bold text-ink group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors">
-                  {card.title}
-                </h3>
-                <p className="text-sm text-ink-soft leading-relaxed">
-                  {card.description}
+
+                {/* Bottom Step Indicator & Flow Arrow */}
+                <div className="pt-5 mt-4 border-t border-slate-200/80 dark:border-white/5 flex items-center justify-between text-xs font-semibold text-ink-soft group-hover:text-ink relative z-10 transition-colors">
+                  <span className="text-[11px] tracking-wide text-ink-soft/80 font-mono">
+                    Step {idx + 1} of 6
+                  </span>
+
+                  {isLast ? (
+                    <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+                      <span>Loops to Step 01</span>
+                      <RotateCcw className="w-3.5 h-3.5 animate-spin-slow" />
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-primary dark:text-cyan-400 text-[11px] font-semibold transform group-hover:translate-x-1 transition-transform">
+                      <span>Next Step</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Continuous Adaptive Loop Footer Banner */}
+        <div className="p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm relative overflow-hidden backdrop-blur-md">
+          {/* Subtle Accent Edge Glow */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 opacity-60" />
+
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 relative z-10">
+            {/* Workflow Concept Description */}
+            <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 max-w-xl">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20 shadow-xs">
+                <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 animate-spin-slow" />
+              </div>
+              <div className="space-y-0.5">
+                <h4 className="text-sm sm:text-base font-brand font-bold text-ink flex items-center gap-2">
+                  <span>Continuous Adaptive Feedback Loop</span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    Active System
+                  </span>
+                </h4>
+                <p className="text-xs sm:text-sm text-ink-soft leading-relaxed">
+                  Fluentia never puts you on a rigid, static track. Every practice
+                  session automatically recalibrates around your real mistakes.
                 </p>
               </div>
-              <div className="pt-4 border-t border-slate-200 dark:border-white/5 flex items-center justify-between text-xs font-semibold text-primary dark:text-blue-400 group-hover:text-primary-dark dark:group-hover:text-cyan-300">
-                <span>Explore Module</span>
-                <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+
+            {/* Workflow Pipeline Ribbon & CTA Link */}
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-ink-soft w-full lg:w-auto justify-start lg:justify-end">
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/5 overflow-x-auto max-w-full text-[11px] font-mono font-bold">
+                <span className="px-2 py-1 rounded-lg bg-paper-card text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-white/10 shrink-0">
+                  ASSESS
+                </span>
+                <span className="text-slate-400">→</span>
+                <span className="px-2 py-1 rounded-lg bg-paper-card text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-white/10 shrink-0">
+                  LEARN
+                </span>
+                <span className="text-slate-400">→</span>
+                <span className="px-2 py-1 rounded-lg bg-paper-card text-cyan-600 dark:text-cyan-400 border border-slate-200 dark:border-white/10 shrink-0">
+                  APPLY
+                </span>
+                <span className="text-slate-400">→</span>
+                <span className="px-2 py-1 rounded-lg bg-paper-card text-amber-600 dark:text-amber-400 border border-slate-200 dark:border-white/10 shrink-0">
+                  PRACTICE
+                </span>
+                <span className="text-slate-400">→</span>
+                <span className="px-2 py-1 rounded-lg bg-paper-card text-rose-600 dark:text-rose-400 border border-slate-200 dark:border-white/10 shrink-0">
+                  CORRECT
+                </span>
+                <span className="text-slate-400">→</span>
+                <span className="px-2 py-1 rounded-lg bg-emerald-600 text-white shadow-xs shrink-0 flex items-center gap-1">
+                  <span>IMPROVE</span>
+                  <span className="text-[9px]">↻</span>
+                </span>
               </div>
-            </Link>
-          ))}
+
+              <Link
+                href="/register"
+                className="ml-auto lg:ml-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-xs shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/40 transition-all hover:scale-[1.02] active:scale-95 text-center shrink-0"
+              >
+                Experience The Loop →
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>
