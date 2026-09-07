@@ -1,5 +1,11 @@
 import { getApiBaseUrl } from "./config";
-import { LevelTestQuestion, LevelTestResponse } from "@/types/level-test";
+import {
+  LevelTestQuestion,
+  LevelTestResponse,
+  LevelTestSubmissionItem,
+  QuestionAnswerPair,
+  SubmitLevelTestPayload,
+} from "@/types/level-test";
 
 /**
  * Fallback questions in case the backend has zero seeded records or server is offline
@@ -109,4 +115,28 @@ export async function fetchGeneralLevelTestQuestions(
     // Return sample questions on network failure so user can still test UI
     return SAMPLE_FALLBACK_QUESTIONS;
   }
+}
+
+/**
+ * Submits the user's completed test answers formatted as SubmitLevelTestPayload
+ */
+export async function submitLevelTestAnswers(
+  submissionPayload: SubmitLevelTestPayload | LevelTestSubmissionItem[] | QuestionAnswerPair[] | any,
+  endpointUrl?: string
+): Promise<any> {
+  const url = endpointUrl || `${getApiBaseUrl()}/level-test-questions/evaluate`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(submissionPayload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: Failed to submit level test answers.`);
+  }
+
+  return response.json();
 }

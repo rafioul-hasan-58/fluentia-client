@@ -34,3 +34,27 @@ export interface UserAnswerRecord {
   isCorrect: boolean;
   timeSpentSeconds: number;
 }
+
+export interface QuestionAnswerPair {
+  question: string;
+  answer: string;
+}
+
+export interface LevelTestSubmissionItem {
+  questionId: string;
+  answerOptionId: string;
+  selectedOptionId?: string;
+  userAnswer?: string;
+}
+
+export interface LevelTestAnswerItem {
+  questionId: string;
+  answerOptionId: string;
+  selectedOptionId: string;
+  userAnswer: string;
+}
+
+export interface SubmitLevelTestPayload {
+  answers: LevelTestAnswerItem[];
+  timeSpentSeconds: number;
+}

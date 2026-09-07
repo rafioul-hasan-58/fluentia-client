@@ -12,10 +12,22 @@ import { Loader } from "@/components/ui/loader";
 import { GridBackground } from "@/components/landing/GridBackground";
 import { CurvedUnderline } from "@/components/ui/curved-underline";
 import { fetchGeneralLevelTestQuestions } from "@/lib/api/levelTest";
-import { LevelTestQuestion, CEFRLevel } from "@/types/level-test";
+import {
+  LevelTestQuestion,
+  CEFRLevel,
+  LevelTestSubmissionItem,
+  LevelTestAnswerItem,
+  SubmitLevelTestPayload,
+  QuestionAnswerPair,
+} from "@/types/level-test";
+
+interface SelectedAnswerValue {
+  optionId: string;
+  content: string;
+}
 
 interface UserAnswersMap {
-  [questionId: string]: string; // questionId -> selectedOptionContent
+  [questionId: string]: SelectedAnswerValue;
 }
 
 export const DONT_KNOW_TEXT = "I don't know";
@@ -69,7 +81,18 @@ export function GeneralEnglishTestView() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.selectedAnswers && parsed.isCompleted) {
-          setSelectedAnswers(parsed.selectedAnswers);
+          const normalized: UserAnswersMap = {};
+          Object.entries(parsed.selectedAnswers).forEach(([k, v]: [string, any]) => {
+            if (typeof v === "string") {
+              normalized[k] = { optionId: v, content: v };
+            } else if (v && typeof v === "object") {
+              normalized[k] = {
+                optionId: v.optionId || v.content || "",
+                content: v.content || v.optionId || "",
+              };
+            }
+          });
+          setSelectedAnswers(normalized);
           setElapsedSeconds(parsed.elapsedSeconds || 0);
           setIsCompleted(true);
         }
@@ -130,12 +153,12 @@ export function GeneralEnglishTestView() {
   const answeredCount = Object.keys(selectedAnswers).length;
   const progressPercent = totalQuestions > 0 ? ((currentIndex + 1) / totalQuestions) * 100 : 0;
 
-  // Handle option select
-  const handleSelectOption = (content: string) => {
+  // Handle option select (stores both optionId and content)
+  const handleSelectOption = (optionId: string, content: string) => {
     if (!currentQuestion) return;
     setSelectedAnswers((prev) => ({
       ...prev,
-      [currentQuestion.id]: content,
+      [currentQuestion.id]: { optionId, content },
     }));
   };
 
@@ -153,8 +176,10 @@ export function GeneralEnglishTestView() {
     const answeredEntries = Object.entries(selectedAnswers);
 
     const submissionDetails = questions.map((q, idx) => {
-      const userSelected = selectedAnswers[q.id] || null;
-      const isUnsure = userSelected === DONT_KNOW_TEXT;
+      const selected = selectedAnswers[q.id];
+      const userSelected = selected ? selected.content : null;
+      const selectedOptId = selected ? selected.optionId : null;
+      const isUnsure = userSelected === DONT_KNOW_TEXT || selectedOptId?.endsWith("-dont-know");
       const isCorrect =
         !isUnsure &&
         !!userSelected &&
@@ -163,6 +188,7 @@ export function GeneralEnglishTestView() {
       return {
         questionNumber: idx + 1,
         questionId: q.id,
+        selectedOptionId: selectedOptId,
         sectionType: q.sectionType,
         level: q.level,
         difficulty: q.difficulty,
@@ -192,21 +218,22 @@ export function GeneralEnglishTestView() {
       timestamp: new Date().toISOString(),
     };
 
-    console.group("🎯 [Fluentia] General English Diagnostic Test Submission");
-    console.log("📊 Summary:", submissionSummary);
-    console.log("📋 All User Answers (Raw Map):", selectedAnswers);
-    console.log("📝 Detailed Evaluation for all questions:", submissionDetails);
-    console.table(
-      submissionDetails.map((item) => ({
-        "#": item.questionNumber,
-        Section: item.sectionType,
-        Level: item.level,
-        "Your Answer": item.selectedAnswer,
-        "Correct Answer": item.correctAnswer,
-        Result: item.isCorrect ? "✅ Correct" : item.isUnsure ? "🤷 Unsure" : "❌ Incorrect",
-      }))
-    );
-    console.groupEnd();
+    // Formatted payload object { answers, timeSpentSeconds } as requested
+    const answerformat: SubmitLevelTestPayload = {
+      answers: questions.map((q) => {
+        const selected = selectedAnswers[q.id];
+        const optId = selected?.optionId || "";
+        return {
+          questionId: q.id,
+          answerOptionId: optId,
+          selectedOptionId: optId,
+          userAnswer: selected?.content || "",
+        };
+      }),
+      timeSpentSeconds: elapsedSeconds,
+    };
+
+    console.log("answerformat", answerformat);
 
     // Persist completed test state to localStorage so login redirect doesn't lose progress
     try {
@@ -214,6 +241,8 @@ export function GeneralEnglishTestView() {
         "fluentia_level_test_session",
         JSON.stringify({
           selectedAnswers,
+          answerformat,
+          qaSubmissionData: answerformat,
           elapsedSeconds,
           isCompleted: true,
           timestamp: Date.now(),
@@ -283,15 +312,15 @@ export function GeneralEnglishTestView() {
       const options = getQuestionOptionsWithUnsure(currentQuestion);
 
       if (key === "1" || key === "A") {
-        if (options[0]) handleSelectOption(options[0].content);
+        if (options[0]) handleSelectOption(options[0].id, options[0].content);
       } else if (key === "2" || key === "B") {
-        if (options[1]) handleSelectOption(options[1].content);
+        if (options[1]) handleSelectOption(options[1].id, options[1].content);
       } else if (key === "3" || key === "C") {
-        if (options[2]) handleSelectOption(options[2].content);
+        if (options[2]) handleSelectOption(options[2].id, options[2].content);
       } else if (key === "4" || key === "D") {
-        if (options[3]) handleSelectOption(options[3].content);
+        if (options[3]) handleSelectOption(options[3].id, options[3].content);
       } else if (key === "5" || key === "E") {
-        if (options[4]) handleSelectOption(options[4].content);
+        if (options[4]) handleSelectOption(options[4].id, options[4].content);
       } else if (e.key === "ArrowRight" || e.key === "Enter") {
         if (selectedAnswers[currentQuestion.id]) {
           handleNext();
@@ -316,13 +345,15 @@ export function GeneralEnglishTestView() {
     } = {};
 
     questions.forEach((q) => {
-      const userSelected = selectedAnswers[q.id];
-      const isUnsure = userSelected === DONT_KNOW_TEXT;
+      const selected = selectedAnswers[q.id];
+      const userSelected = selected?.content;
+      const isUnsure = userSelected === DONT_KNOW_TEXT || selected?.optionId?.endsWith("-dont-know");
       if (isUnsure) unsureCount++;
 
       const isCorrect =
         !isUnsure &&
-        userSelected?.trim().toLowerCase() === q.answer?.trim().toLowerCase();
+        !!userSelected &&
+        userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
 
       if (isCorrect) correctCount++;
 
@@ -515,11 +546,13 @@ export function GeneralEnglishTestView() {
   // ==========================================
   if (isCompleted && results) {
     const filteredQuestions = questions.filter((q) => {
-      const userSelected = selectedAnswers[q.id];
-      const isUnsure = userSelected === DONT_KNOW_TEXT;
+      const selected = selectedAnswers[q.id];
+      const userSelected = selected?.content;
+      const isUnsure = userSelected === DONT_KNOW_TEXT || selected?.optionId?.endsWith("-dont-know");
       const isCorrect =
         !isUnsure &&
-        userSelected?.trim().toLowerCase() === q.answer?.trim().toLowerCase();
+        !!userSelected &&
+        userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
 
       if (reviewFilter === "correct") return isCorrect;
       if (reviewFilter === "incorrect") return !isCorrect && !isUnsure;
@@ -739,11 +772,14 @@ export function GeneralEnglishTestView() {
             {/* List of Review Cards */}
             <div className="space-y-4">
               {filteredQuestions.map((q) => {
-                const userSelected = selectedAnswers[q.id];
-                const isUnsure = userSelected === DONT_KNOW_TEXT;
+                const selected = selectedAnswers[q.id];
+                const userSelected = selected?.content;
+                const selectedOptId = selected?.optionId;
+                const isUnsure = userSelected === DONT_KNOW_TEXT || selectedOptId?.endsWith("-dont-know");
                 const isCorrect =
                   !isUnsure &&
-                  userSelected?.trim().toLowerCase() === q.answer?.trim().toLowerCase();
+                  !!userSelected &&
+                  userSelected.trim().toLowerCase() === q.answer?.trim().toLowerCase();
 
                 let statusBadgeBg = "bg-rose-500/15 text-rose-600 dark:text-rose-400";
                 let statusSymbol = "✕";
@@ -801,7 +837,8 @@ export function GeneralEnglishTestView() {
                         const isOptionCorrect =
                           opt.content.trim().toLowerCase() === q.answer?.trim().toLowerCase();
                         const isOptionUserSelected =
-                          opt.content.trim().toLowerCase() === userSelected?.trim().toLowerCase();
+                          selected?.optionId === opt.id ||
+                          selected?.content?.trim().toLowerCase() === opt.content.trim().toLowerCase();
                         const isOptionDontKnow = opt.content === DONT_KNOW_TEXT;
 
                         let optStyle =
@@ -870,7 +907,8 @@ export function GeneralEnglishTestView() {
   // ==========================================
   // ONE QUESTION PER SCREEN MCQ ENGINE
   // ==========================================
-  const currentSelectedOption = selectedAnswers[currentQuestion.id];
+  const currentSelected = selectedAnswers[currentQuestion.id];
+  const currentSelectedOption = currentSelected?.content;
   const isFlagged = !!flaggedQuestions[currentQuestion.id];
   const currentDisplayOptions = getQuestionOptionsWithUnsure(currentQuestion);
 
@@ -995,7 +1033,9 @@ export function GeneralEnglishTestView() {
             {/* MCQ Options (A, B, C, D, E) */}
             <div className="grid grid-cols-1 gap-3 pt-2">
               {currentDisplayOptions.map((option, idx) => {
-                const isSelected = currentSelectedOption === option.content;
+                const isSelected =
+                  currentSelected?.optionId === option.id ||
+                  currentSelected?.content === option.content;
                 const isDontKnow = option.content === DONT_KNOW_TEXT;
                 const optionLetters = ["A", "B", "C", "D", "E", "F"];
                 const letter = optionLetters[idx] || String(idx + 1);
@@ -1015,7 +1055,7 @@ export function GeneralEnglishTestView() {
                   <button
                     key={option.id}
                     type="button"
-                    onClick={() => handleSelectOption(option.content)}
+                    onClick={() => handleSelectOption(option.id, option.content)}
                     className={`w-full p-4 sm:p-5 rounded-2xl border text-left transition-all duration-200 flex items-center justify-between gap-3 group relative cursor-pointer active:scale-[0.99] ${containerStyle}`}
                   >
                     <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
