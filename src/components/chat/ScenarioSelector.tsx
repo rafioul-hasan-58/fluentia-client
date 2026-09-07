@@ -60,8 +60,8 @@ export function ScenarioSelector({
             onClick={() => onSelectScenario(sc.id)}
             className={`p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between ${
               isActive
-                ? "bg-primary/10 dark:bg-blue-950/60 border-primary dark:border-cyan-400 shadow-sm dark:shadow-[0_0_20px_rgba(37,99,235,0.3)]"
-                : "bg-paper-card border-slate-200 dark:border-white/10 hover:border-primary/40 dark:hover:border-white/20"
+                ? "bg-primary/10 dark:bg-purple-950/60 border-primary dark:border-purple-400 shadow-sm dark:shadow-[0_0_20px_rgba(124,58,237,0.3)]"
+                : "bg-paper-card border border-slate-200 dark:border-white/10 hover:border-primary/40 dark:hover:border-white/20"
             }`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -69,7 +69,7 @@ export function ScenarioSelector({
               <span
                 className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                   isActive
-                    ? "bg-primary text-white dark:bg-cyan-500/20 dark:text-cyan-300 dark:border dark:border-cyan-500/40"
+                    ? "bg-primary text-white dark:bg-purple-500/20 dark:text-purple-300 dark:border dark:border-purple-500/40"
                     : "bg-slate-100 dark:bg-white/5 text-ink-soft dark:text-slate-400"
                 }`}
               >
@@ -78,7 +78,7 @@ export function ScenarioSelector({
             </div>
 
             <div>
-              <h4 className={`text-xs font-bold ${isActive ? "text-primary dark:text-cyan-300" : "text-ink"}`}>
+              <h4 className={`text-xs font-bold ${isActive ? "text-primary dark:text-purple-300" : "text-ink"}`}>
                 {sc.title}
               </h4>
               <p className="text-[11px] text-ink-soft mt-0.5 line-clamp-1">

@@ -66,24 +66,24 @@ export const themeConfig = {
    */
   colors: {
     primary: {
-      DEFAULT: "#2563EB", // Vibrant Royal Blue
-      dark: "#1D4ED8",    // Deeper Blue for hover/active states
-      light: "#EFF6FF",   // Soft Blue tint
-      glow: "rgba(37, 99, 235, 0.35)",
+      DEFAULT: "#7C3AED", // Vibrant Royal Purple / Violet
+      dark: "#6D28D9",    // Deeper Purple for hover/active states
+      light: "#F5F3FF",   // Soft Purple tint
+      glow: "rgba(124, 58, 237, 0.35)",
       foreground: "#FFFFFF",
     },
     secondary: {
-      DEFAULT: "#4F46E5", // Indigo / Secondary Accent
-      dark: "#4338CA",
-      light: "#EEF2FF",
-      glow: "rgba(79, 70, 229, 0.35)",
+      DEFAULT: "#A855F7", // Bright Orchid / Secondary Accent
+      dark: "#9333EA",
+      light: "#FAF5FF",
+      glow: "rgba(168, 85, 247, 0.35)",
       foreground: "#FFFFFF",
     },
     accent: {
-      DEFAULT: "#06B6D4", // Cyan / Sky
-      dark: "#0891B2",
-      light: "#ECFEFF",
-      glow: "rgba(6, 182, 212, 0.35)",
+      DEFAULT: "#EC4899", // Fuchsia / Pink Accent
+      dark: "#DB2777",
+      light: "#FDF2F8",
+      glow: "rgba(236, 72, 153, 0.35)",
     },
     amber: {
       DEFAULT: "#F59E0B", // Warm Gold / Warning / Streaks
@@ -112,37 +112,37 @@ export const themeConfig = {
    */
   modes: {
     light: {
-      background: "#f8fafc",                  // Clean soft slate background
+      background: "#faf5ff",                  // Clean soft violet-tinted background
       surface: "#ffffff",                     // Pure white cards & containers
-      surfaceHover: "#f1f5f9",                // Subtle hover tint
+      surfaceHover: "#f5f3ff",                // Subtle hover tint
       border: "rgba(15, 23, 42, 0.08)",      // Gentle divider border
       text: "#0f172a",                        // High contrast deep slate ink
       textSoft: "#475569",                    // Medium slate secondary text
-      primary: "#2563eb",
-      primaryDark: "#1d4ed8",
-      primaryLight: "#eff6ff",
-      secondary: "#4f46e5",
-      secondaryDark: "#4338ca",
-      secondaryLight: "#eef2ff",
+      primary: "#7c3aed",
+      primaryDark: "#6d28d9",
+      primaryLight: "#f5f3ff",
+      secondary: "#a855f7",
+      secondaryDark: "#9333ea",
+      secondaryLight: "#faf5ff",
       card: "#ffffff",
-      cardHover: "#f8fafc",
+      cardHover: "#f5f3ff",
     } as ModeTokens,
 
     dark: {
-      background: "#030712",                  // Deep rich void canvas
-      surface: "#0b132b",                     // Elevated midnight card surface
-      surfaceHover: "#101d42",                // Interactive hover state
+      background: "#070510",                  // Deep rich cosmic violet canvas
+      surface: "#0f0c20",                     // Elevated midnight violet card surface
+      surfaceHover: "#181236",                // Interactive hover state
       border: "rgba(255, 255, 255, 0.1)",     // Subtle luminescent border
       text: "#f8fafc",                        // Crisp white text
       textSoft: "#94a3b8",                    // Muted silver text
-      primary: "#2563eb",
-      primaryDark: "#1d4ed8",
-      primaryLight: "rgba(37, 99, 235, 0.18)",
-      secondary: "#38bdf8",
-      secondaryDark: "#0284c7",
-      secondaryLight: "rgba(56, 189, 248, 0.15)",
-      card: "#0b132b",
-      cardHover: "#101d42",
+      primary: "#8b5cf6",
+      primaryDark: "#7c3aed",
+      primaryLight: "rgba(139, 92, 246, 0.18)",
+      secondary: "#c084fc",
+      secondaryDark: "#a855f7",
+      secondaryLight: "rgba(192, 132, 252, 0.15)",
+      card: "#0f0c20",
+      cardHover: "#181236",
     } as ModeTokens,
   },
 
@@ -151,27 +151,27 @@ export const themeConfig = {
    */
   gradients: {
     // Primary Action Button & CTA Gradient
-    primary: "linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%)",
-    primaryHover: "linear-gradient(135deg, #1d4ed8 0%, #4338ca 50%, #6d28d9 100%)",
+    primary: "linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%)",
+    primaryHover: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #9333ea 100%)",
 
     // Secondary Accent Gradient
-    secondary: "linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)",
+    secondary: "linear-gradient(135deg, #a855f7 0%, #ec4899 100%)",
 
     // Hero Bilingual Headline Gradient (Light mode)
-    hero: "linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #4f46e5 100%)",
+    hero: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)",
     // Hero Bilingual Headline Gradient (Dark mode)
-    heroDark: "linear-gradient(135deg, #38bdf8 0%, #60a5fa 50%, #818cf8 100%)",
+    heroDark: "linear-gradient(135deg, #c084fc 0%, #e879f9 50%, #818cf8 100%)",
 
     // Warm Accent Gradient
-    accent: "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)",
+    accent: "linear-gradient(135deg, #f59e0b 0%, #ec4899 100%)",
 
     // Card Top Highlight Border
-    cardBorder: "linear-gradient(90deg, #2563eb 0%, #6366f1 50%, #8b5cf6 100%)",
+    cardBorder: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)",
 
     // Ambient Floating Glow Orbs Gradients
-    orb1: "radial-gradient(circle, rgba(99, 102, 241, 0.7), rgba(139, 92, 246, 0.4))",
-    orb2: "radial-gradient(circle, rgba(6, 182, 212, 0.7), rgba(59, 130, 246, 0.4))",
-    orb3: "radial-gradient(circle, rgba(236, 72, 153, 0.6), rgba(168, 85, 247, 0.4))",
+    orb1: "radial-gradient(circle, rgba(124, 58, 237, 0.65), rgba(168, 85, 247, 0.35))",
+    orb2: "radial-gradient(circle, rgba(147, 51, 234, 0.65), rgba(217, 70, 239, 0.35))",
+    orb3: "radial-gradient(circle, rgba(236, 72, 153, 0.55), rgba(139, 92, 246, 0.35))",
   } as GradientTokens,
 };
 

@@ -4,86 +4,86 @@
 
 :root {
   /* Core Surface & Text Tokens (Synced with src/config/theme.ts) */
-  --background: #f8fafc;
+  --background: #faf5ff;
   --surface: #ffffff;
-  --surface-hover: #f1f5f9;
+  --surface-hover: #f5f3ff;
   --border: rgba(15, 23, 42, 0.08);
   --text: #0f172a;
   --text-soft: #475569;
 
   /* Primary Brand Tokens */
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-light: #eff6ff;
+  --primary: #7c3aed;
+  --primary-dark: #6d28d9;
+  --primary-light: #f5f3ff;
 
   /* Secondary & Accent Tokens */
-  --secondary: #4f46e5;
-  --secondary-dark: #4338ca;
-  --secondary-light: #eef2ff;
+  --secondary: #a855f7;
+  --secondary-dark: #9333ea;
+  --secondary-light: #faf5ff;
   --amber: #f59e0b;
   --amber-light: rgba(245, 158, 11, 0.15);
   --emerald: #10b981;
   --emerald-light: rgba(16, 185, 129, 0.15);
   --rose: #e11d48;
   --rose-light: rgba(225, 29, 72, 0.15);
-  --cyan: #06b6d4;
-  --cyan-light: #ecfeff;
+  --cyan: #ec4899;
+  --cyan-light: #fdf2f8;
   --purple: #8b5cf6;
   --purple-light: rgba(139, 92, 246, 0.15);
 
   /* Predefined Gradients */
-  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
-  --gradient-primary-hover: linear-gradient(135deg, #1d4ed8 0%, #4338ca 50%, #6d28d9 100%);
-  --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-  --gradient-hero: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #4f46e5 100%);
-  --gradient-hero-dark: linear-gradient(135deg, #38bdf8 0%, #60a5fa 50%, #818cf8 100%);
-  --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-  --gradient-card-border: linear-gradient(90deg, #2563eb 0%, #6366f1 50%, #8b5cf6 100%);
-  --gradient-orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.7), rgba(139, 92, 246, 0.4));
-  --gradient-orb-2: radial-gradient(circle, rgba(6, 182, 212, 0.7), rgba(59, 130, 246, 0.4));
-  --gradient-orb-3: radial-gradient(circle, rgba(236, 72, 153, 0.6), rgba(168, 85, 247, 0.4));
+  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #9333ea 100%);
+  --gradient-secondary: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --gradient-hero: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+  --gradient-hero-dark: linear-gradient(135deg, #c084fc 0%, #e879f9 50%, #818cf8 100%);
+  --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+  --gradient-card-border: linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+  --gradient-orb-1: radial-gradient(circle, rgba(124, 58, 237, 0.65), rgba(168, 85, 247, 0.35));
+  --gradient-orb-2: radial-gradient(circle, rgba(147, 51, 234, 0.65), rgba(217, 70, 239, 0.35));
+  --gradient-orb-3: radial-gradient(circle, rgba(236, 72, 153, 0.55), rgba(139, 92, 246, 0.35));
 }
 
 .dark {
   /* Core Surface & Text Tokens (Synced with src/config/theme.ts) */
-  --background: #030712;
-  --surface: #0b132b;
-  --surface-hover: #101d42;
+  --background: #070510;
+  --surface: #0f0c20;
+  --surface-hover: #181236;
   --border: rgba(255, 255, 255, 0.1);
   --text: #f8fafc;
   --text-soft: #94a3b8;
 
   /* Primary Brand Tokens */
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-light: rgba(37, 99, 235, 0.18);
+  --primary: #8b5cf6;
+  --primary-dark: #7c3aed;
+  --primary-light: rgba(139, 92, 246, 0.18);
 
   /* Secondary & Accent Tokens */
-  --secondary: #38bdf8;
-  --secondary-dark: #0284c7;
-  --secondary-light: rgba(56, 189, 248, 0.15);
+  --secondary: #c084fc;
+  --secondary-dark: #a855f7;
+  --secondary-light: rgba(192, 132, 252, 0.15);
   --amber: #f59e0b;
   --amber-light: rgba(245, 158, 11, 0.15);
   --emerald: #10b981;
   --emerald-light: rgba(16, 185, 129, 0.15);
   --rose: #e11d48;
   --rose-light: rgba(225, 29, 72, 0.15);
-  --cyan: #38bdf8;
-  --cyan-light: rgba(56, 189, 248, 0.15);
+  --cyan: #ec4899;
+  --cyan-light: rgba(236, 72, 153, 0.15);
   --purple: #8b5cf6;
   --purple-light: rgba(139, 92, 246, 0.15);
 
   /* Predefined Gradients */
-  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
-  --gradient-primary-hover: linear-gradient(135deg, #1d4ed8 0%, #4338ca 50%, #6d28d9 100%);
-  --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-  --gradient-hero: linear-gradient(135deg, #38bdf8 0%, #60a5fa 50%, #818cf8 100%);
-  --gradient-hero-dark: linear-gradient(135deg, #38bdf8 0%, #60a5fa 50%, #818cf8 100%);
-  --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-  --gradient-card-border: linear-gradient(90deg, #2563eb 0%, #6366f1 50%, #8b5cf6 100%);
-  --gradient-orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.7), rgba(139, 92, 246, 0.4));
-  --gradient-orb-2: radial-gradient(circle, rgba(6, 182, 212, 0.7), rgba(59, 130, 246, 0.4));
-  --gradient-orb-3: radial-gradient(circle, rgba(236, 72, 153, 0.6), rgba(168, 85, 247, 0.4));
+  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #9333ea 100%);
+  --gradient-secondary: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --gradient-hero: linear-gradient(135deg, #c084fc 0%, #e879f9 50%, #818cf8 100%);
+  --gradient-hero-dark: linear-gradient(135deg, #c084fc 0%, #e879f9 50%, #818cf8 100%);
+  --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+  --gradient-card-border: linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+  --gradient-orb-1: radial-gradient(circle, rgba(124, 58, 237, 0.65), rgba(168, 85, 247, 0.35));
+  --gradient-orb-2: radial-gradient(circle, rgba(147, 51, 234, 0.65), rgba(217, 70, 239, 0.35));
+  --gradient-orb-3: radial-gradient(circle, rgba(236, 72, 153, 0.55), rgba(139, 92, 246, 0.35));
 }
 
 body {

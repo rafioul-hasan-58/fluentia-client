@@ -33,12 +33,12 @@ const LEARNING_STEPS: LearningStep[] = [
     description:
       "Start with a quick assessment that reveals your current level, strengths, grammar gaps, and vocabulary needs.",
     badgeStyle:
-      "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-    iconBg: "bg-blue-500/10 dark:bg-blue-500/20",
-    iconColor: "text-blue-600 dark:text-blue-400",
+      "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    iconBg: "bg-purple-500/10 dark:bg-purple-500/20",
+    iconColor: "text-purple-600 dark:text-purple-400",
     icon: Compass,
-    accentGlow: "from-blue-500/20 to-transparent",
-    borderColor: "hover:border-blue-500/50 dark:hover:border-blue-400/40",
+    accentGlow: "from-purple-500/20 to-transparent",
+    borderColor: "hover:border-purple-500/50 dark:hover:border-purple-400/40",
   },
   {
     stepNumber: "02",
@@ -59,81 +59,80 @@ const LEARNING_STEPS: LearningStep[] = [
     category: "APPLY",
     title: "Use It in Context",
     description:
-      "Take what you learn into reading, listening, speaking, and writing instead of simply memorizing rules.",
+      "Practice immediately in conversations, roleplays, sentence generation, and real-life tasks.",
     badgeStyle:
-      "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
-    iconBg: "bg-cyan-500/10 dark:bg-cyan-500/20",
-    iconColor: "text-cyan-600 dark:text-cyan-400",
+      "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/20",
+    iconBg: "bg-fuchsia-500/10 dark:bg-fuchsia-500/20",
+    iconColor: "text-fuchsia-600 dark:text-fuchsia-400",
     icon: MessageSquare,
-    accentGlow: "from-cyan-500/20 to-transparent",
-    borderColor: "hover:border-cyan-500/50 dark:hover:border-cyan-400/40",
+    accentGlow: "from-fuchsia-500/20 to-transparent",
+    borderColor: "hover:border-fuchsia-500/50 dark:hover:border-fuchsia-400/40",
   },
   {
     stepNumber: "04",
-    category: "PRACTICE",
-    title: "Practice With Purpose",
+    category: "FEEDBACK",
+    title: "Instant Diagnostic Feedback",
     description:
-      "Complete personalized exercises designed around your mistakes and target skills.",
-    badgeStyle:
-      "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-    iconBg: "bg-amber-500/10 dark:bg-amber-500/20",
-    iconColor: "text-amber-600 dark:text-amber-400",
-    icon: Zap,
-    accentGlow: "from-amber-500/20 to-transparent",
-    borderColor: "hover:border-amber-500/50 dark:hover:border-amber-400/40",
-  },
-  {
-    stepNumber: "05",
-    category: "CORRECT",
-    title: "Understand Your Mistakes",
-    description:
-      "Get clear AI feedback that explains why your answer was wrong and how to improve it.",
+      "Receive real-time correction for grammatical slips, unnatural phrasing, and word-choice errors.",
     badgeStyle:
       "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
     iconBg: "bg-rose-500/10 dark:bg-rose-500/20",
     iconColor: "text-rose-600 dark:text-rose-400",
-    icon: CheckCheck,
+    icon: Zap,
     accentGlow: "from-rose-500/20 to-transparent",
     borderColor: "hover:border-rose-500/50 dark:hover:border-rose-400/40",
   },
   {
-    stepNumber: "06",
-    category: "IMPROVE",
-    title: "Repeat & Progress",
+    stepNumber: "05",
+    category: "RETAIN",
+    title: "Mastery Tracking",
     description:
-      "Fluentia remembers your weak areas and adapts your next practice session so you keep improving.",
+      "Every mistake is recorded into your personalized error profile and tracked until full mastery.",
     badgeStyle:
       "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     iconBg: "bg-emerald-500/10 dark:bg-emerald-500/20",
     iconColor: "text-emerald-600 dark:text-emerald-400",
-    icon: TrendingUp,
+    icon: CheckCheck,
     accentGlow: "from-emerald-500/20 to-transparent",
     borderColor: "hover:border-emerald-500/50 dark:hover:border-emerald-400/40",
+  },
+  {
+    stepNumber: "06",
+    category: "PRACTICE",
+    title: "Targeted Weakness Drills",
+    description:
+      "Generate custom follow-up exercises focused exactly on the gaps you struggled with before.",
+    badgeStyle:
+      "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    iconBg: "bg-amber-500/10 dark:bg-amber-500/20",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    icon: TrendingUp,
+    accentGlow: "from-amber-500/20 to-transparent",
+    borderColor: "hover:border-amber-500/50 dark:hover:border-amber-400/40",
   },
 ];
 
 export function Features() {
   return (
     <section
-      id="how-it-works"
-      className="py-20 sm:py-28 border-t border-slate-200 dark:border-white/10 bg-paper dark:bg-[#030712] text-ink transition-colors duration-200 relative overflow-hidden scroll-mt-16"
+      className="py-20 lg:py-28 bg-paper dark:bg-[#070510] text-ink dark:text-white relative overflow-hidden transition-colors duration-200"
     >
       <div id="features" className="absolute -top-20" aria-hidden="true" />
       {/* Subtle Background Radial Orbs */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-primary/5 dark:bg-blue-600/10 rounded-full blur-[140px] pointer-events-none -z-0" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-500/5 dark:bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none -z-0" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-primary/5 dark:bg-purple-600/10 rounded-full blur-[140px] pointer-events-none -z-0" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-fuchsia-500/5 dark:bg-fuchsia-500/10 rounded-full blur-[120px] pointer-events-none -z-0" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 space-y-12 sm:space-y-16">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30 text-primary dark:text-cyan-300 text-xs font-bold uppercase tracking-wider shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30 text-primary dark:text-purple-300 text-xs font-bold uppercase tracking-wider shadow-2xs">
             <Sparkles className="w-3.5 h-3.5" />
             <span>The Adaptive Learning Loop</span>
           </div>
 
           <h2 className="font-brand text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ink leading-[1.18]">
             Learn what you need.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-600 to-cyan-500 dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-300">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-600 to-fuchsia-500 dark:from-purple-400 dark:via-fuchsia-300 dark:to-indigo-300">
               Practice what you learn.
             </span>
           </h2>
@@ -165,7 +164,7 @@ export function Features() {
                   {/* Top Bar: Step Number, Category Pill & Icon */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-2xl sm:text-3xl font-black text-ink/20 dark:text-white/20 group-hover:text-primary dark:group-hover:text-cyan-400 transition-colors duration-300">
+                      <span className="font-mono text-2xl sm:text-3xl font-black text-ink/20 dark:text-white/20 group-hover:text-primary dark:group-hover:text-purple-300 transition-colors duration-300">
                         {step.stepNumber}
                       </span>
                       <span
@@ -184,7 +183,7 @@ export function Features() {
 
                   {/* Title & Description */}
                   <div className="space-y-2">
-                    <h3 className="font-brand text-lg sm:text-xl font-bold text-ink group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors">
+                    <h3 className="font-brand text-lg sm:text-xl font-bold text-ink group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
                       {step.title}
                     </h3>
                     <p className="text-xs sm:text-sm text-ink-soft leading-relaxed">
@@ -205,7 +204,7 @@ export function Features() {
                       <RotateCcw className="w-3.5 h-3.5 animate-spin-slow" />
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-primary dark:text-cyan-400 text-[11px] font-semibold transform group-hover:translate-x-1 transition-transform">
+                    <span className="inline-flex items-center gap-1 text-primary dark:text-purple-300 text-[11px] font-semibold transform group-hover:translate-x-1 transition-transform">
                       <span>Next Step</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </span>
@@ -219,7 +218,7 @@ export function Features() {
         {/* Continuous Adaptive Loop Footer Banner */}
         <div className="p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm relative overflow-hidden backdrop-blur-md">
           {/* Subtle Accent Edge Glow */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 opacity-60" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-purple-500 via-indigo-500 to-fuchsia-500 opacity-60" />
 
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 relative z-10">
             {/* Workflow Concept Description */}
@@ -244,7 +243,7 @@ export function Features() {
             {/* Workflow Pipeline Ribbon & CTA Link */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-ink-soft w-full lg:w-auto justify-start lg:justify-end">
               <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/5 overflow-x-auto max-w-full text-[11px] font-mono font-bold">
-                <span className="px-2 py-1 rounded-lg bg-paper-card text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-white/10 shrink-0">
+                <span className="px-2 py-1 rounded-lg bg-paper-card text-purple-600 dark:text-purple-400 border border-slate-200 dark:border-white/10 shrink-0">
                   ASSESS
                 </span>
                 <span className="text-slate-400">→</span>
@@ -252,7 +251,7 @@ export function Features() {
                   LEARN
                 </span>
                 <span className="text-slate-400">→</span>
-                <span className="px-2 py-1 rounded-lg bg-paper-card text-cyan-600 dark:text-cyan-400 border border-slate-200 dark:border-white/10 shrink-0">
+                <span className="px-2 py-1 rounded-lg bg-paper-card text-fuchsia-600 dark:text-fuchsia-400 border border-slate-200 dark:border-white/10 shrink-0">
                   APPLY
                 </span>
                 <span className="text-slate-400">→</span>

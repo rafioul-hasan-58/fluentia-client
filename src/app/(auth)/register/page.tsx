@@ -48,7 +48,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-paper flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden text-ink transition-colors duration-200">
       {/* Background glow orbs */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/10 dark:bg-blue-600/15 rounded-full blur-[120px] -z-10" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/10 dark:bg-purple-600/15 rounded-full blur-[120px] -z-10" />
 
       {/* Brand Header */}
       <div className="mb-8 text-center">
@@ -193,7 +193,7 @@ export default function RegisterPage() {
             Already have an account?{" "}
             <Link
               href="/login"
-              className="font-bold text-primary dark:text-cyan-300 hover:underline ml-1"
+              className="font-bold text-primary dark:text-purple-300 hover:underline ml-1"
             >
               Login
             </Link>

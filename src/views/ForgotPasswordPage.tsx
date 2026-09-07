@@ -327,7 +327,7 @@ export default function ForgotPasswordPage({
   return (
     <div className="min-h-screen bg-paper flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden text-ink transition-colors duration-200">
       {/* Background glow orbs */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/10 dark:bg-blue-600/15 rounded-full blur-[120px] -z-10" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/10 dark:bg-purple-600/15 rounded-full blur-[120px] -z-10" />
 
       {/* Brand Header */}
       <div className="mb-6 text-center">
@@ -398,7 +398,7 @@ export default function ForgotPasswordPage({
         {step === "email" && (
           <>
             <CardHeader className="text-center space-y-1.5">
-              <div className="mx-auto w-12 h-12 rounded-2xl bg-primary/10 dark:bg-primary/20 text-primary dark:text-cyan-400 flex items-center justify-center mb-1">
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-primary/10 dark:bg-primary/20 text-primary dark:text-purple-300 flex items-center justify-center mb-1">
                 <Mail className="w-6 h-6" />
               </div>
               <CardTitle>Forgot Password?</CardTitle>
@@ -454,7 +454,7 @@ export default function ForgotPasswordPage({
             <CardFooter className="justify-center text-center mt-2 py-4">
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-ink-soft hover:text-primary dark:hover:text-cyan-300 transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-ink-soft hover:text-primary dark:hover:text-purple-300 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Sign In</span>
@@ -519,7 +519,7 @@ export default function ForgotPasswordPage({
                         disabled={isSubmitting}
                         className={`w-12 sm:w-14 h-13 sm:h-14 text-center text-xl font-bold rounded-xl border bg-paper transition-all focus:outline-none focus:ring-2 ${
                           digit
-                            ? "border-primary ring-2 ring-primary/20 text-primary dark:text-cyan-300"
+                            ? "border-primary ring-2 ring-primary/20 text-primary dark:text-purple-300"
                             : "border-slate-200 dark:border-white/10 text-ink focus:border-primary focus:ring-primary/20"
                         }`}
                       />
@@ -535,7 +535,7 @@ export default function ForgotPasswordPage({
                       setError(null);
                       setStep("email");
                     }}
-                    className="text-ink-soft hover:text-primary dark:hover:text-cyan-300 transition-colors font-medium flex items-center gap-1"
+                    className="text-ink-soft hover:text-primary dark:hover:text-purple-300 transition-colors font-medium flex items-center gap-1"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     Change email
@@ -552,7 +552,7 @@ export default function ForgotPasswordPage({
                         type="button"
                         onClick={handleResendOtp}
                         disabled={isSubmitting}
-                        className="text-primary dark:text-cyan-300 font-bold hover:underline flex items-center gap-1"
+                        className="text-primary dark:text-purple-300 font-bold hover:underline flex items-center gap-1"
                       >
                         <RefreshCw className="w-3 h-3" />
                         Resend Code
@@ -778,7 +778,7 @@ export default function ForgotPasswordPage({
             <CardContent className="space-y-4 pt-2">
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 text-center text-xs text-ink-soft">
                 <span>Automatically redirecting to login in </span>
-                <span className="font-bold text-primary dark:text-cyan-300">
+                <span className="font-bold text-primary dark:text-purple-300">
                   {redirectCountdown}s
                 </span>
                 ...
@@ -799,7 +799,7 @@ export default function ForgotPasswordPage({
                 Need help? Contact{" "}
                 <a
                   href="mailto:support@fluentia.ai"
-                  className="font-semibold text-primary dark:text-cyan-300 hover:underline"
+                  className="font-semibold text-primary dark:text-purple-300 hover:underline"
                 >
                   support@fluentia.ai
                 </a>

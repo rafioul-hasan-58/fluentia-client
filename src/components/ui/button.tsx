@@ -30,7 +30,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       link:
         "text-primary underline-offset-4 hover:underline p-0 h-auto",
       gradient:
-        "bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40",
+        "bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40",
     };
 
     const sizeStyles = {

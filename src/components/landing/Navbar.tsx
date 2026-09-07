@@ -34,7 +34,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-paper/90 dark:bg-[#030712]/90 backdrop-blur-md border-b border-slate-200 dark:border-white/10 transition-colors duration-200">
+      <header className="sticky top-0 z-40 bg-paper/90 dark:bg-[#070510]/90 backdrop-blur-md border-b border-slate-200 dark:border-white/10 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 sm:gap-3.5 group">
@@ -55,16 +55,16 @@ export function Navbar() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-7 lg:gap-8 text-sm font-semibold font-nav text-ink-soft dark:text-slate-300">
-            <a href="#how-it-works" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+            <a href="#how-it-works" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
               How It Works
             </a>
-            <a href="#demo" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+            <a href="#demo" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
               Interactive Demo
             </a>
-            <a href="#cta" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+            <a href="#cta" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
               Get Started
             </a>
-            <Link href="/dashboard" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+            <Link href="/dashboard" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
               Dashboard
             </Link>
           </nav>
@@ -88,7 +88,7 @@ export function Navbar() {
 
                 <Link
                   href="/dashboard/chat"
-                  className="inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-xs sm:text-sm font-bold transition-all duration-200 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-95"
+                  className="inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold transition-all duration-200 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-95"
                 >
                   Start Practice
                 </Link>
@@ -135,13 +135,13 @@ export function Navbar() {
           </a>
           <Link
             href="/dashboard"
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-primary dark:text-cyan-300 hover:bg-paper whitespace-nowrap transition-colors"
+            className="px-3 py-1 rounded-lg text-xs font-semibold text-primary dark:text-purple-300 hover:bg-paper whitespace-nowrap transition-colors"
           >
             📊 Dashboard
           </Link>
           <Link
             href="/dashboard/chat"
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-primary dark:text-cyan-300 hover:bg-paper whitespace-nowrap transition-colors"
+            className="px-3 py-1 rounded-lg text-xs font-semibold text-primary dark:text-purple-300 hover:bg-paper whitespace-nowrap transition-colors"
           >
             💬 AI Chat
           </Link>
@@ -159,12 +159,12 @@ export function Navbar() {
 
       {/* Mobile Slide-Down Full Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 z-50 border-b border-slate-200 dark:border-white/10 bg-paper dark:bg-[#030712] p-5 space-y-4 shadow-2xl animate-fadeIn max-h-[85vh] overflow-y-auto">
+        <div className="md:hidden fixed top-16 left-0 right-0 z-50 border-b border-slate-200 dark:border-white/10 bg-paper dark:bg-[#070510] p-5 space-y-4 shadow-2xl animate-fadeIn max-h-[85vh] overflow-y-auto">
           {/* User Status Bar if logged in */}
           {isAuthenticated && user && (
-            <div className="p-3.5 rounded-2xl bg-primary/10 dark:bg-cyan-500/10 border border-primary/20 dark:border-cyan-500/20 flex items-center justify-between">
+            <div className="p-3.5 rounded-2xl bg-primary/10 dark:bg-purple-500/10 border border-primary/20 dark:border-purple-500/20 flex items-center justify-between">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs">
                   {user.name.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -203,7 +203,7 @@ export function Navbar() {
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="bg-primary/15 text-primary dark:text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-full font-brand">
+                    <span className="bg-primary/15 text-primary dark:text-purple-300 text-[10px] font-bold px-2 py-0.5 rounded-full font-brand">
                       {item.badge}
                     </span>
                   )}
@@ -246,7 +246,7 @@ export function Navbar() {
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full flex items-center justify-center py-3 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-sm font-bold shadow-md shadow-blue-500/25 active:scale-98 transition-all"
+                  className="w-full flex items-center justify-center py-3 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-sm font-bold shadow-md shadow-purple-500/25 active:scale-98 transition-all"
                 >
                   Create Free Account →
                 </Link>
@@ -255,7 +255,7 @@ export function Navbar() {
               <Link
                 href="/dashboard/chat"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center py-3 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-sm font-bold shadow-md shadow-blue-500/25 active:scale-98 transition-all"
+                className="w-full flex items-center justify-center py-3 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-sm font-bold shadow-md shadow-purple-500/25 active:scale-98 transition-all"
               >
                 Resume AI Coaching →
               </Link>

@@ -209,7 +209,7 @@ export function Sidebar() {
               <span className="font-brand text-lg font-bold tracking-tight text-ink">
                 Fluentia
               </span>
-              <span className="text-[10px] text-primary dark:text-cyan-300 font-semibold font-brand -mt-1">
+              <span className="text-[10px] text-primary dark:text-purple-300 font-semibold font-brand -mt-1">
                 Learning Hub
               </span>
             </div>
@@ -250,7 +250,7 @@ export function Sidebar() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group ${
                       isActive
-                        ? "bg-primary text-white shadow-sm dark:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+                        ? "bg-primary text-white shadow-sm dark:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
                         : "text-ink-soft hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-ink"
                     }`}
                   >
@@ -259,7 +259,7 @@ export function Sidebar() {
                         className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
                           isActive
                             ? "text-white"
-                            : "text-ink-soft group-hover:text-primary dark:group-hover:text-cyan-300"
+                            : "text-ink-soft group-hover:text-primary dark:group-hover:text-purple-300"
                         }`}
                       />
                       <span>{item.name}</span>
@@ -300,7 +300,7 @@ export function Sidebar() {
                     className="w-8 h-8 shrink-0 group-hover:scale-105 transition-transform"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-ink truncate group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors">
+                    <p className="text-xs font-semibold text-ink truncate group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
                       {user.name}
                     </p>
                     <p className="text-[10px] text-ink-soft truncate">{user.level || "Intermediate"}</p>

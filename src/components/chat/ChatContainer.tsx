@@ -227,7 +227,7 @@ export function ChatContainer() {
       {/* Top Header & Skill Selector Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-5 bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm">
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-md shadow-blue-500/25 shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-600 via-primary to-fuchsia-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-md shadow-purple-500/25 shrink-0">
             ✨
           </div>
           <div>
@@ -291,7 +291,7 @@ export function ChatContainer() {
       {activePreset && activePreset.samplePrompts?.length > 0 && (
         <div className="bg-paper-card/60 border border-slate-200/80 dark:border-white/5 rounded-2xl p-3 sm:p-3.5 space-y-2">
           <div className="flex items-center justify-between text-[11px] sm:text-xs text-ink-soft font-semibold">
-            <span className="flex items-center gap-1.5 text-primary dark:text-cyan-300">
+            <span className="flex items-center gap-1.5 text-primary dark:text-purple-300">
               <span>💡</span>
               <span className="line-clamp-1">Quick Prompts for {activePreset.name}:</span>
             </span>
@@ -304,7 +304,7 @@ export function ChatContainer() {
                 type="button"
                 onClick={() => handlePromptChipClick(prompt)}
                 disabled={isTyping}
-                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-paper border border-slate-200 dark:border-white/10 hover:border-primary/50 dark:hover:border-cyan-400/50 hover:bg-primary/5 dark:hover:bg-cyan-500/10 text-[11px] sm:text-xs font-medium text-ink transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 text-left shadow-2xs leading-snug"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-paper border border-slate-200 dark:border-white/10 hover:border-primary/50 dark:hover:border-purple-400/50 hover:bg-primary/5 dark:hover:bg-purple-500/10 text-[11px] sm:text-xs font-medium text-ink transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 text-left shadow-2xs leading-snug"
               >
                 &ldquo;{prompt}&rdquo;
               </button>
@@ -359,7 +359,7 @@ export function ChatContainer() {
                   <div
                     className={`max-w-[90%] sm:max-w-[78%] rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm leading-relaxed ${
                       isUser
-                        ? "bg-gradient-to-r from-blue-600 via-primary to-indigo-600 text-white rounded-tr-none shadow-sm shadow-blue-500/20"
+                        ? "bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 text-white rounded-tr-none shadow-sm shadow-purple-500/20"
                         : msg.isError
                         ? "bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 rounded-tl-none"
                         : "bg-paper border border-slate-200 dark:border-white/10 text-ink rounded-tl-none shadow-2xs"
@@ -385,7 +385,7 @@ export function ChatContainer() {
                     className="object-contain w-full h-full"
                   />
                 </div>
-                <span className="text-primary dark:text-cyan-300 font-semibold font-brand">
+                <span className="text-primary dark:text-purple-300 font-semibold font-brand">
                   Fluentia AI is generating your lesson...
                 </span>
               </div>
@@ -447,7 +447,7 @@ export function ChatContainer() {
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isTyping}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-slate-200 disabled:to-slate-300 dark:disabled:from-white/10 dark:disabled:to-white/5 disabled:text-ink-soft text-white flex items-center justify-center font-bold transition-all duration-200 active:scale-90 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 disabled:from-slate-200 disabled:to-slate-300 dark:disabled:from-white/10 dark:disabled:to-white/5 disabled:text-ink-soft text-white flex items-center justify-center font-bold transition-all duration-200 active:scale-90 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40"
                 aria-label="Send prompt to AI"
               >
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

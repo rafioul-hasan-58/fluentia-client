@@ -5,11 +5,11 @@ const DashboardPage = () => {
   return (
     <div className="space-y-6 sm:space-y-8 text-ink">
       {/* Welcome Banner */}
-      <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-blue-600/10 via-primary/5 to-indigo-600/10 dark:from-[#0B132B] dark:via-[#101d42] dark:to-[#0B132B] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl relative overflow-hidden">
+      <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-purple-600/15 via-primary/10 to-fuchsia-600/15 dark:from-[#0F0C20] dark:via-[#181236] dark:to-[#0F0C20] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-primary/10 dark:bg-primary/20 rounded-full blur-3xl -z-0" />
         
         <div className="relative z-10 space-y-3 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-primary/10 dark:bg-cyan-500/20 border border-primary/20 dark:border-cyan-500/30 text-primary dark:text-cyan-300 text-[11px] sm:text-xs font-semibold">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-primary/10 dark:bg-purple-500/20 border border-primary/20 dark:border-purple-500/30 text-primary dark:text-purple-300 text-[11px] sm:text-xs font-semibold">
             <span>🔥</span>
             <span>Day 5 Streak: Master Fluency</span>
           </div>
@@ -22,7 +22,7 @@ const DashboardPage = () => {
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <Link
               href="/dashboard/chat"
-              className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 dark:shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:scale-[1.02] active:scale-95 text-center"
+              className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40 dark:shadow-[0_0_20px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-95 text-center"
             >
               Resume AI Conversation →
             </Link>
@@ -41,7 +41,7 @@ const DashboardPage = () => {
         <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2">
           <span className="text-[10px] sm:text-xs uppercase tracking-wider text-ink-soft font-semibold">Active Streak</span>
           <h3 className="text-xl sm:text-2xl font-bold text-ink">🔥 5 Days</h3>
-          <p className="text-[10px] sm:text-[11px] text-primary dark:text-cyan-300 font-medium line-clamp-1">Top 15% this week</p>
+          <p className="text-[10px] sm:text-[11px] text-primary dark:text-purple-300 font-medium line-clamp-1">Top 15% this week</p>
         </div>
 
         <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2">
@@ -58,7 +58,7 @@ const DashboardPage = () => {
 
         <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2">
           <span className="text-[10px] sm:text-xs uppercase tracking-wider text-ink-soft font-semibold">IELTS Est.</span>
-          <h3 className="text-xl sm:text-2xl font-bold text-primary dark:text-cyan-300">⭐ Band 7.5</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-primary dark:text-purple-300">⭐ Band 7.5</h3>
           <p className="text-[10px] sm:text-[11px] text-ink-soft font-medium line-clamp-1">Target: Band 8.0</p>
         </div>
       </div>

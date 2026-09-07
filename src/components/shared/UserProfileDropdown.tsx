@@ -53,7 +53,7 @@ export function UserProfileDropdown() {
         </div>
 
         <div className="hidden sm:flex flex-col text-left pr-1 font-nav">
-          <span className="text-xs font-bold font-brand text-ink leading-tight group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors truncate max-w-[120px]">
+          <span className="text-xs font-bold font-brand text-ink leading-tight group-hover:text-primary dark:group-hover:text-purple-300 transition-colors truncate max-w-[120px]">
             {user.name}
           </span>
           <span className="text-[10px] text-ink-soft leading-tight truncate">
@@ -88,7 +88,7 @@ export function UserProfileDropdown() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold font-brand text-ink truncate">{user.name}</p>
                 <p className="text-[11px] text-ink-soft truncate">{user.email}</p>
-                <span className="inline-block mt-1 bg-primary/10 dark:bg-cyan-500/20 text-primary dark:text-cyan-300 text-[9px] font-bold px-2 py-0.5 rounded-md border border-primary/20 dark:border-cyan-500/30 font-brand">
+                <span className="inline-block mt-1 bg-primary/10 dark:bg-purple-500/20 text-primary dark:text-purple-300 text-[9px] font-bold px-2 py-0.5 rounded-md border border-primary/20 dark:border-purple-500/30 font-brand">
                   {user.level || "Intermediate B2"}
                 </span>
               </div>

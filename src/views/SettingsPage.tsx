@@ -374,7 +374,7 @@ export default function SettingsPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-5">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary dark:text-cyan-400 mb-1">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary dark:text-purple-300 mb-1">
             <span>⚙️ Account Settings</span>
             <span>•</span>
             <span>Personal Profile</span>
@@ -424,7 +424,7 @@ export default function SettingsPage() {
       )}
 
       {/* Hero Profile Overview Card */}
-      <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-r from-blue-600/10 via-primary/5 to-indigo-600/10 dark:from-[#0B132B] dark:via-[#101d42] dark:to-[#0B132B] border border-slate-200 dark:border-white/10 shadow-sm relative overflow-hidden">
+      <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-r from-purple-600/15 via-primary/10 to-fuchsia-600/15 dark:from-[#0F0C20] dark:via-[#181236] dark:to-[#0F0C20] border border-slate-200 dark:border-white/10 shadow-sm relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6 text-center sm:text-left">
             <div className="relative group shrink-0">
@@ -474,7 +474,7 @@ export default function SettingsPage() {
                     ? `${firstName} ${lastName}`.trim()
                     : user?.name || "Learner"}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary dark:bg-cyan-500/20 dark:text-cyan-300 border border-primary/20 dark:border-cyan-500/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary dark:bg-purple-500/20 dark:text-purple-300 border border-primary/20 dark:border-purple-500/30">
                   {user?.role || "STUDENT"}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
@@ -517,7 +517,7 @@ export default function SettingsPage() {
               User Identifier (UID)
             </span>
             <div className="flex items-center gap-2">
-              <code className="text-xs font-mono font-semibold text-primary dark:text-cyan-300 bg-primary/10 dark:bg-cyan-500/10 px-2 py-1 rounded-lg">
+              <code className="text-xs font-mono font-semibold text-primary dark:text-purple-300 bg-primary/10 dark:bg-purple-500/10 px-2 py-1 rounded-lg">
                 {user?.id ? `${user.id.slice(0, 10)}...${user.id.slice(-6)}` : "6a96da820a2010ee88950305"}
               </code>
               <button
@@ -851,7 +851,7 @@ export default function SettingsPage() {
                         onClick={() => toggleGoal(goal)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                           isSelected
-                            ? "bg-primary/15 text-primary dark:text-cyan-300 border border-primary/30 shadow-2xs scale-[1.02]"
+                            ? "bg-primary/15 text-primary dark:text-purple-300 border border-primary/30 shadow-2xs scale-[1.02]"
                             : "bg-paper border border-slate-200 dark:border-white/10 text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/5"
                         }`}
                       >
@@ -1009,7 +1009,7 @@ export default function SettingsPage() {
                     Account Role
                   </span>
                   <div className="flex items-center gap-2 pt-1">
-                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary dark:bg-cyan-500/20 dark:text-cyan-300 border border-primary/20">
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary dark:bg-purple-500/20 dark:text-purple-300 border border-primary/20">
                       {user?.role || "USER"}
                     </span>
                     <span className="text-xs text-ink-soft">Standard Student</span>
@@ -1076,7 +1076,7 @@ export default function SettingsPage() {
                       <p className="text-[11px] text-ink-soft">Enhance your Fluentia learning account security</p>
                     </div>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary dark:text-cyan-400 bg-primary/10 px-2.5 py-1 rounded-lg">
+                  <span className="text-[11px] font-semibold text-primary dark:text-purple-300 bg-primary/10 px-2.5 py-1 rounded-lg">
                     Active
                   </span>
                 </div>
@@ -1124,14 +1124,14 @@ export default function SettingsPage() {
                         }}
                         className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 ${
                           isSelected
-                            ? "border-primary bg-primary/10 dark:bg-cyan-500/10 shadow-sm ring-1 ring-primary/30"
+                            ? "border-primary bg-primary/10 dark:bg-purple-500/10 shadow-sm ring-1 ring-primary/30"
                             : "border-slate-200 dark:border-white/10 hover:border-primary/50 bg-paper-card"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="text-xs font-bold text-ink">{fl.label}</span>
                           {isSelected && (
-                            <span className="w-2.5 h-2.5 rounded-full bg-primary dark:bg-cyan-400" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-primary dark:bg-purple-400" />
                           )}
                         </div>
                         <p className="text-[11px] text-ink-soft leading-relaxed">{fl.desc}</p>
@@ -1186,7 +1186,7 @@ export default function SettingsPage() {
                   <Label className="text-xs font-semibold text-ink">
                     Daily AI Practice Target
                   </Label>
-                  <span className="text-xs font-bold text-primary dark:text-cyan-400">
+                  <span className="text-xs font-bold text-primary dark:text-purple-300">
                     ⏱️ {dailyGoalMinutes} Minutes / Day
                   </span>
                 </div>

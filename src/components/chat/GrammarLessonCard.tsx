@@ -62,15 +62,15 @@ export function GrammarLessonCard({ data, onActionSelect }: GrammarLessonCardPro
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-white/10 pb-3.5 sm:pb-4">
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-sm shadow-blue-500/20 shrink-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-sm shadow-purple-500/20 shrink-0">
             📖
           </div>
           <div>
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-primary dark:text-cyan-300">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-primary dark:text-purple-300">
                 Grammar Masterclass
               </span>
-              <span className="bg-primary/10 dark:bg-cyan-500/20 text-primary dark:text-cyan-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary/20 dark:border-cyan-500/30">
+              <span className="bg-primary/10 dark:bg-purple-500/20 text-primary dark:text-purple-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary/20 dark:border-purple-500/30">
                 {skill.name}
               </span>
             </div>
@@ -134,8 +134,8 @@ export function GrammarLessonCard({ data, onActionSelect }: GrammarLessonCardPro
       </div>
 
       {/* Core Rule Section */}
-      <div className="bg-primary/5 dark:bg-blue-950/40 border border-primary/20 dark:border-blue-500/30 rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-        <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold text-primary dark:text-cyan-300 uppercase tracking-wider">
+      <div className="bg-primary/5 dark:bg-purple-950/40 border border-primary/20 dark:border-purple-500/30 rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold text-primary dark:text-purple-300 uppercase tracking-wider">
           <span>💡</span>
           <span>Core Rule & Structure</span>
         </div>
@@ -162,11 +162,11 @@ export function GrammarLessonCard({ data, onActionSelect }: GrammarLessonCardPro
             return (
               <div
                 key={idx}
-                className="group p-3 sm:p-3.5 rounded-xl bg-paper-card border border-slate-200/80 dark:border-white/5 hover:border-primary/40 dark:hover:border-blue-500/30 transition-all space-y-1.5"
+                className="group p-3 sm:p-3.5 rounded-xl bg-paper-card border border-slate-200/80 dark:border-white/5 hover:border-primary/40 dark:hover:border-purple-500/30 transition-all space-y-1.5"
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-xs sm:text-sm font-semibold text-ink font-sans tracking-wide leading-relaxed">
-                    &ldquo;<span className="text-primary dark:text-cyan-300 font-bold">{item.sentence}</span>&rdquo;
+                    &ldquo;<span className="text-primary dark:text-purple-300 font-bold">{item.sentence}</span>&rdquo;
                   </p>
 
                   <div className="flex items-center gap-1 shrink-0">
@@ -218,7 +218,7 @@ export function GrammarLessonCard({ data, onActionSelect }: GrammarLessonCardPro
 
                 {/* Explanatory Note */}
                 <div className="flex items-start gap-1.5 text-[11px] sm:text-xs text-ink-soft dark:text-slate-300">
-                  <span className="text-primary dark:text-cyan-400 font-bold text-[10px] mt-0.5">➜</span>
+                  <span className="text-primary dark:text-purple-300 font-bold text-[10px] mt-0.5">➜</span>
                   <span className="italic leading-relaxed">{item.note}</span>
                 </div>
               </div>

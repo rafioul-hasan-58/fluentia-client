@@ -35,22 +35,22 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-xs font-medium text-ink-soft">
               <li>
-                <Link href="#how-it-works" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+                <Link href="#how-it-works" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
                   How Fluentia Works
                 </Link>
               </li>
               <li>
-                <Link href="#demo" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+                <Link href="#demo" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
                   Interactive AI Demo
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+                <Link href="/dashboard" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
                   Learning Console
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/chat" className="hover:text-primary dark:hover:text-cyan-300 transition-colors">
+                <Link href="/dashboard/chat" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
                   AI Practice Coach
                 </Link>
               </li>
@@ -59,14 +59,14 @@ export function Footer() {
 
           {/* Developer Info Card */}
           <div className="md:col-span-5">
-            <div className="p-4 sm:p-5 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none hover:border-primary/40 dark:hover:border-blue-500/40 transition-all duration-300 relative overflow-hidden group">
+            <div className="p-4 sm:p-5 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none hover:border-primary/40 dark:hover:border-purple-500/40 transition-all duration-300 relative overflow-hidden group">
               {/* Subtle background glow */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-indigo-500/5 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500 -z-0" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/5 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500 -z-0" />
 
               <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-3.5 sm:gap-4">
                 {/* Developer Photo */}
                 <div className="relative shrink-0">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden p-0.5 bg-gradient-to-tr from-blue-600 via-primary to-indigo-500 shadow-md">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden p-0.5 bg-gradient-to-tr from-purple-600 via-primary to-fuchsia-500 shadow-md">
                     <div className="w-full h-full rounded-[14px] overflow-hidden relative bg-slate-100 dark:bg-slate-800">
                       <Image
                         src="/developer.jpg"
@@ -87,7 +87,7 @@ export function Footer() {
                 {/* Developer Details */}
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 dark:bg-cyan-500/15 text-primary dark:text-cyan-300 border border-primary/20 dark:border-cyan-500/30">
+                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 dark:bg-purple-500/15 text-primary dark:text-purple-300 border border-primary/20 dark:border-purple-500/30">
                       Lead Engineer & Creator
                     </span>
                   </div>
@@ -104,7 +104,7 @@ export function Footer() {
                       href="https://github.com/rafioul-hasan-58"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-primary dark:hover:text-cyan-300 font-medium transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-primary dark:hover:text-purple-300 font-medium transition-colors"
                       aria-label="GitHub Profile"
                     >
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -117,7 +117,7 @@ export function Footer() {
 
                     <a
                       href="mailto:rafioulhasan2@gmail.com"
-                      className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-primary dark:hover:text-cyan-300 font-medium transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-primary dark:hover:text-purple-300 font-medium transition-colors"
                       aria-label="Email Developer"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +142,7 @@ export function Footer() {
             <span>•</span>
             <span className="hover:text-ink transition-colors cursor-pointer">Terms of Service</span>
             <span>•</span>
-            <span className="text-primary dark:text-cyan-300 font-medium">All Rights Reserved</span>
+            <span className="text-primary dark:text-purple-300 font-medium">All Rights Reserved</span>
           </div>
         </div>
       </div>

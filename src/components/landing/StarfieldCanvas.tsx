@@ -98,18 +98,18 @@ export function StarfieldCanvas() {
 
     // Color choices for constellation nodes
     const darkColors = [
-      "rgba(99, 102, 241,", // Indigo
-      "rgba(6, 182, 212,",  // Cyan
+      "rgba(124, 58, 237,", // Violet
       "rgba(168, 85, 247,", // Purple
-      "rgba(56, 189, 248,", // Sky
-      "rgba(52, 211, 153,", // Emerald
+      "rgba(217, 70, 239,", // Fuchsia
+      "rgba(192, 132, 252,", // Lavender
+      "rgba(99, 102, 241,", // Indigo
     ];
 
     const lightColors = [
-      "rgba(37, 99, 235,",  // Blue
-      "rgba(6, 182, 212,",  // Cyan
-      "rgba(99, 102, 241,", // Indigo
-      "rgba(16, 185, 129,", // Emerald
+      "rgba(124, 58, 237,", // Violet
+      "rgba(147, 51, 234,", // Purple
+      "rgba(168, 85, 247,", // Orchid
+      "rgba(217, 70, 239,", // Fuchsia
     ];
 
     let particles: ParticleNode[] = [];
@@ -139,14 +139,14 @@ export function StarfieldCanvas() {
       size: Math.random() * 1.5 + 0.4,
       opacity: Math.random() * 0.8 + 0.2,
       speed: Math.random() * 0.05 + 0.01,
-      twinkleSpeed: Math.random() * 0.02 + 0.005,
+      twinkleSpeed: Math.random() * 0.03 + 0.01,
     }));
 
-    // Meteors / Shooting lights
-    const meteors: Meteor[] = Array.from({ length: 3 }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * (height * 0.4),
-      length: Math.random() * 70 + 45,
+    // Generate Shooting Stars / Meteors
+    const meteors: Meteor[] = Array.from({ length: 2 }, () => ({
+      x: 0,
+      y: 0,
+      length: Math.random() * 60 + 80,
       speed: Math.random() * 6 + 6,
       angle: Math.PI / 4,
       opacity: 0,
@@ -174,15 +174,15 @@ export function StarfieldCanvas() {
       // Sky Background Gradient (Dark Space vs Daylight Sky)
       const spaceGrad = ctx.createLinearGradient(0, 0, 0, height);
       if (isDark) {
-        spaceGrad.addColorStop(0, "#030712");
-        spaceGrad.addColorStop(0.4, "#0b132b");
-        spaceGrad.addColorStop(0.85, "#101d42");
-        spaceGrad.addColorStop(1, "#030712");
+        spaceGrad.addColorStop(0, "#070510");
+        spaceGrad.addColorStop(0.4, "#0f0c20");
+        spaceGrad.addColorStop(0.85, "#181236");
+        spaceGrad.addColorStop(1, "#070510");
       } else {
-        spaceGrad.addColorStop(0, "#F8FAFC");
-        spaceGrad.addColorStop(0.4, "#EFF6FF");
-        spaceGrad.addColorStop(0.85, "#DBEAFE");
-        spaceGrad.addColorStop(1, "#F8FAFC");
+        spaceGrad.addColorStop(0, "#FAF5FF");
+        spaceGrad.addColorStop(0.4, "#F5F3FF");
+        spaceGrad.addColorStop(0.85, "#EDE9FE");
+        spaceGrad.addColorStop(1, "#FAF5FF");
       }
       ctx.fillStyle = spaceGrad;
       ctx.fillRect(0, 0, width, height);
@@ -198,7 +198,7 @@ export function StarfieldCanvas() {
           ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
           ctx.fill();
         } else {
-          ctx.fillStyle = `rgba(37, 99, 235, ${currentOpacity * 0.2})`;
+          ctx.fillStyle = `rgba(124, 58, 237, ${currentOpacity * 0.2})`;
           ctx.beginPath();
           ctx.arc(star.x, star.y, star.size * 1.1, 0, Math.PI * 2);
           ctx.fill();
@@ -243,7 +243,7 @@ export function StarfieldCanvas() {
           ctx.arc(p.x, p.y, p.radius * 2, 0, Math.PI * 2);
           ctx.fillStyle = isDark
             ? `${p.baseColor} 0.15)`
-            : `${p.baseColor} 0.1)`;
+            : `${p.baseColor} 0.1)`
           ctx.fill();
         }
 
@@ -261,8 +261,8 @@ export function StarfieldCanvas() {
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
             ctx.strokeStyle = isDark
-              ? `rgba(147, 197, 253, ${opacity})`
-              : `rgba(37, 99, 235, ${opacity})`;
+              ? `rgba(192, 132, 252, ${opacity})`
+              : `rgba(124, 58, 237, ${opacity})`;
             ctx.lineWidth = isDark ? 0.8 : 0.7;
             ctx.stroke();
           }
@@ -280,8 +280,8 @@ export function StarfieldCanvas() {
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(mouse.x, mouse.y);
             ctx.strokeStyle = isDark
-              ? `rgba(56, 189, 248, ${opacity})`
-              : `rgba(37, 99, 235, ${opacity})`;
+              ? `rgba(217, 70, 239, ${opacity})`
+              : `rgba(147, 51, 234, ${opacity})`;
             ctx.lineWidth = 1;
             ctx.stroke();
           }

@@ -25,9 +25,9 @@ const LEARNING_TRACKS: TrackCard[] = [
     title: "Grammar Doctor",
     subtitle: "Clauses & Verb Tenses",
     icon: "🔬",
-    glowColor: "from-sky-600/20 to-indigo-500/10",
-    borderColor: "hover:border-sky-500/60",
-    badgeColor: "bg-sky-500/15 text-sky-600 dark:text-sky-300 border-sky-500/30",
+    glowColor: "from-purple-600/20 to-indigo-500/10",
+    borderColor: "hover:border-purple-500/60",
+    badgeColor: "bg-purple-500/15 text-purple-600 dark:text-purple-300 border-purple-500/30",
     href: "/dashboard/chat",
   },
   {
@@ -36,9 +36,9 @@ const LEARNING_TRACKS: TrackCard[] = [
     title: "IELTS Prep",
     subtitle: "Speaking & Writing Tasks",
     icon: "🎯",
-    glowColor: "from-indigo-600/20 to-blue-500/10",
-    borderColor: "hover:border-blue-500/60",
-    badgeColor: "bg-blue-500/15 text-primary dark:text-blue-300 border-blue-500/30",
+    glowColor: "from-fuchsia-600/20 to-purple-500/10",
+    borderColor: "hover:border-fuchsia-500/60",
+    badgeColor: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300 border-fuchsia-500/30",
     href: "/dashboard/chat",
   },
   {
@@ -47,9 +47,9 @@ const LEARNING_TRACKS: TrackCard[] = [
     title: "Speaking AI",
     subtitle: "Real-time Pronunciation",
     icon: "🗣️",
-    glowColor: "from-blue-600/20 to-cyan-500/10",
-    borderColor: "hover:border-cyan-500/60",
-    badgeColor: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border-cyan-500/30",
+    glowColor: "from-violet-600/20 to-purple-500/10",
+    borderColor: "hover:border-violet-500/60",
+    badgeColor: "bg-violet-500/15 text-violet-600 dark:text-violet-300 border-violet-500/30",
     href: "/dashboard/chat",
   },
   {
@@ -80,7 +80,7 @@ const LEARNING_TRACKS: TrackCard[] = [
     title: "Listening Pro",
     subtitle: "Native Accents & Speed",
     icon: "🎧",
-    glowColor: "from-purple-600/20 to-blue-500/10",
+    glowColor: "from-purple-600/20 to-pink-500/10",
     borderColor: "hover:border-purple-500/60",
     badgeColor: "bg-purple-500/15 text-purple-600 dark:text-purple-300 border-purple-500/30",
     href: "/dashboard/listening",
@@ -105,7 +105,7 @@ export function Hero() {
       return;
     }
 
-    const colors = ["#818cf8", "#c084fc", "#38bdf8", "#34d399", "#f472b6", "#60a5fa"];
+    const colors = ["#a855f7", "#c084fc", "#ec4899", "#8b5cf6", "#e879f9", "#7c3aed"];
     const sparkCount = 8;
     for (let i = 0; i < sparkCount; i++) {
       const spark = document.createElement("div");
@@ -129,7 +129,7 @@ export function Hero() {
   return (
     <section
       onClick={handleHeroClick}
-      className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24 bg-paper dark:bg-[#030712] text-ink dark:text-white transition-colors duration-200 cursor-default"
+      className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200 cursor-default"
     >
       {/* Animated Sky & Constellation Canvas with Interactive Mouse Physics */}
       <StarfieldCanvas />
@@ -145,10 +145,10 @@ export function Hero() {
           {/* Left Column: Educational Framing, Bangla Messaging & CTAs */}
           <div className="lg:col-span-6 space-y-6 text-left">
             {/* Top Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 dark:bg-emerald-500/10 border border-blue-500/20 dark:border-emerald-500/25 backdrop-blur-md text-xs font-semibold tracking-wide text-primary dark:text-emerald-300 shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/20 dark:border-purple-500/30 backdrop-blur-md text-xs font-semibold tracking-wide text-primary dark:text-purple-300 shadow-xs">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 dark:bg-emerald-400" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500 dark:bg-purple-400" />
               </span>
               <span>✨ AI-POWERED ENGLISH & IELTS LEARNING</span>
             </div>
@@ -156,13 +156,13 @@ export function Hero() {
             {/* Primary Bilingual Headline */}
             <h1 className="font-bangla text-3xl sm:text-4xl lg:text-[40px] xl:text-[45px] font-bold text-ink dark:text-white leading-[1.38] sm:leading-[1.38] lg:leading-[1.36] tracking-normal">
               Grammar বুঝছেন,{" "}
-              <span className="block mt-2 sm:mt-2.5 pb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-primary to-indigo-600 dark:from-cyan-300 dark:via-blue-400 dark:to-indigo-300 drop-shadow-[0_0_25px_rgba(56,189,248,0.25)] leading-[1.38] sm:leading-[1.38] lg:leading-[1.36]">
+              <span className="block mt-2 sm:mt-2.5 pb-1 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 dark:from-purple-300 dark:via-fuchsia-300 dark:to-indigo-300 drop-shadow-[0_0_25px_rgba(168,85,247,0.35)] leading-[1.38] sm:leading-[1.38] lg:leading-[1.36]">
                 কিন্তু English-এ ব্যবহার করতে পারছেন না?
               </span>
             </h1>
 
             {/* Supporting Core Bangla Statement Callout */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 shadow-sm backdrop-blur-md space-y-2 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-gradient-to-b before:from-blue-500 before:to-indigo-600">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 shadow-sm backdrop-blur-md space-y-2 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-gradient-to-b before:from-purple-500 before:to-fuchsia-600">
               <p className="font-bangla text-base sm:text-lg text-ink dark:text-white font-bold leading-relaxed">
                 &ldquo;IELTS প্রস্তুতি হোক বা Everyday English — আপনার শেখার পথ হবে আপনার জন্যই।&rdquo;
               </p>
@@ -188,7 +188,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
               <Link
                 href="/dashboard/chat"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white font-bold text-base transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40 dark:shadow-[0_0_30px_rgba(37,99,235,0.45)] hover:scale-[1.02] active:scale-95 text-center"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white font-bold text-base transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/40 dark:shadow-[0_0_30px_rgba(124,58,237,0.45)] hover:scale-[1.02] active:scale-95 text-center"
               >
                 <span className="font-bangla text-lg font-bold">শেখা শুরু করুন</span>
               </Link>
@@ -228,7 +228,7 @@ export function Hero() {
         <div className="mt-16 pt-10 border-t border-slate-200/70 dark:border-white/10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
-              <span className="text-xs uppercase tracking-widest font-bold text-primary dark:text-cyan-300">
+              <span className="text-xs uppercase tracking-widest font-bold text-primary dark:text-purple-300">
                 EXPLORE LEARNING TRACKS
               </span>
               <h3 className="font-bangla text-base sm:text-lg font-bold text-ink dark:text-white mt-0.5">
@@ -245,7 +245,7 @@ export function Hero() {
               <Link
                 key={track.id}
                 href={track.href}
-                className={`group relative p-4 rounded-2xl bg-white/85 dark:bg-white/[0.04] hover:bg-white dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/10 ${track.borderColor} backdrop-blur-md transition-all duration-300 hover:-translate-y-1.5 shadow-sm dark:shadow-none hover:shadow-lg dark:hover:shadow-[0_10px_25px_rgba(0,0,0,0.5)] flex flex-col justify-between overflow-hidden before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-gradient-to-r before:from-blue-500 before:via-indigo-500 before:to-purple-500 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
+                className={`group relative p-4 rounded-2xl bg-white/85 dark:bg-white/[0.04] hover:bg-white dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/10 ${track.borderColor} backdrop-blur-md transition-all duration-300 hover:-translate-y-1.5 shadow-sm dark:shadow-none hover:shadow-lg dark:hover:shadow-[0_10px_25px_rgba(0,0,0,0.5)] flex flex-col justify-between overflow-hidden before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-gradient-to-r before:from-purple-500 before:via-violet-500 before:to-fuchsia-500 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
               >
                 {/* Glow Backdrop Pill */}
                 <div
@@ -265,7 +265,7 @@ export function Hero() {
                   </div>
 
                   <div>
-                    <h4 className="font-display text-sm font-bold text-ink dark:text-white group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors">
+                    <h4 className="font-display text-sm font-bold text-ink dark:text-white group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
                       {track.title}
                     </h4>
                     <p className="text-[11px] text-ink-soft dark:text-slate-400 mt-0.5">
@@ -274,7 +274,7 @@ export function Hero() {
                   </div>
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] font-semibold text-primary dark:text-blue-400 group-hover:text-primary-dark dark:group-hover:text-cyan-300 transition-colors relative z-10">
+                <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] font-semibold text-primary dark:text-purple-400 group-hover:text-primary-dark dark:group-hover:text-purple-300 transition-colors relative z-10">
                   <span>Start Practice</span>
                   <span className="transform group-hover:translate-x-1 transition-transform">→</span>
                 </div>

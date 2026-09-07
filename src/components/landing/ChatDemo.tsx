@@ -46,7 +46,7 @@ export function ChatDemo() {
   return (
     <div id="demo" className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden max-w-lg mx-auto transform hover:translate-y-[-2px] transition-all duration-300 backdrop-blur-xl text-ink">
       {/* Chat Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-900 dark:to-indigo-900 px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-white/10 text-white">
+      <div className="bg-gradient-to-r from-purple-600 via-primary to-indigo-600 dark:from-purple-950 dark:via-primary-dark dark:to-indigo-950 px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-white/10 text-white">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-white/20 p-1 flex items-center justify-center backdrop-blur-md border border-white/20">
@@ -58,11 +58,11 @@ export function ChatDemo() {
                 className="object-contain w-full h-full"
               />
             </div>
-            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-cyan-400 ring-2 ring-blue-700 animate-pulse" />
+            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-fuchsia-400 ring-2 ring-purple-700 animate-pulse" />
           </div>
           <div>
             <div className="text-sm font-semibold font-brand text-white leading-tight">Fluentia Coach</div>
-            <div className="text-[11px] text-cyan-200/90">Online & Ready to teach</div>
+            <div className="text-[11px] text-purple-200/90">Online & Ready to teach</div>
           </div>
         </div>
         <span className="text-[11px] font-semibold bg-white/20 px-2.5 py-1 rounded-full text-white border border-white/20">
@@ -96,7 +96,7 @@ export function ChatDemo() {
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                 msg.sender === "user"
-                  ? "bg-primary text-white rounded-tr-none shadow-sm dark:shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+                  ? "bg-primary text-white rounded-tr-none shadow-sm dark:shadow-[0_0_15px_rgba(124,58,237,0.3)]"
                   : "bg-paper-card border border-slate-200 dark:border-white/10 text-ink rounded-tl-none shadow-sm"
               }`}
             >
@@ -116,12 +116,12 @@ export function ChatDemo() {
                   className="object-contain w-full h-full"
                 />
               </div>
-              <span className="font-brand font-semibold text-primary dark:text-cyan-300">Fluentia Tutor</span>
+              <span className="font-brand font-semibold text-primary dark:text-purple-300">Fluentia Tutor</span>
             </div>
             <div className="bg-paper-card border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-sm flex gap-1.5 items-center">
-              <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-2 h-2 bg-primary dark:bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <span className="w-2 h-2 bg-primary dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-2 h-2 bg-primary dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-2 h-2 bg-primary dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
             </div>
           </div>
         )}
