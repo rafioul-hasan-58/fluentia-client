@@ -41,7 +41,17 @@ export function GoogleAuthButton({
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push("/dashboard");
+        let target = "/dashboard";
+        if (typeof window !== "undefined") {
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirectParam = urlParams.get("redirect");
+          if (redirectParam) {
+            target = redirectParam;
+          } else if (localStorage.getItem("fluentia_level_test_session")) {
+            target = "/level-test/general";
+          }
+        }
+        router.push(target);
       }
     } else {
       const defaultErrMsg =

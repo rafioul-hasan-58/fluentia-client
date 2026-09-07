@@ -39,7 +39,17 @@ export default function RegisterPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      router.push("/dashboard");
+      let target = "/dashboard";
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectParam = urlParams.get("redirect");
+        if (redirectParam) {
+          target = redirectParam;
+        } else if (localStorage.getItem("fluentia_level_test_session")) {
+          target = "/level-test/general";
+        }
+      }
+      router.push(target);
     } else {
       setError(result.error || "Failed to create account. Please try again.");
     }

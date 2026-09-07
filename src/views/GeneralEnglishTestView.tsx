@@ -4,6 +4,10 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { GoogleAuthButton } from "@/components/auth";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Loader } from "@/components/ui/loader";
 import { GridBackground } from "@/components/landing/GridBackground";
 import { CurvedUnderline } from "@/components/ui/curved-underline";
@@ -29,6 +33,7 @@ export function getQuestionOptionsWithUnsure(question: LevelTestQuestion) {
 
 export function GeneralEnglishTestView() {
   const router = useRouter();
+  const { user, isAuthenticated, login, register: authRegister } = useAuth();
 
   // Test data & lifecycle states
   const [questions, setQuestions] = useState<LevelTestQuestion[]>([]);
@@ -47,6 +52,32 @@ export function GeneralEnglishTestView() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [showDetailedReview, setShowDetailedReview] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<"all" | "incorrect" | "correct" | "unsure">("all");
+
+  // Inline auth gate state for unauthenticated users
+  const [authTab, setAuthTab] = useState<"signin" | "signup">("signin");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authFirstName, setAuthFirstName] = useState("");
+  const [authLastName, setAuthLastName] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
+
+  // Restore saved session on mount if available
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("fluentia_level_test_session");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.selectedAnswers && parsed.isCompleted) {
+          setSelectedAnswers(parsed.selectedAnswers);
+          setElapsedSeconds(parsed.elapsedSeconds || 0);
+          setIsCompleted(true);
+        }
+      }
+    } catch (e) {
+      console.error("Error restoring saved level test session:", e);
+    }
+  }, []);
 
   // Load questions on mount
   useEffect(() => {
@@ -177,8 +208,53 @@ export function GeneralEnglishTestView() {
     );
     console.groupEnd();
 
+    // Persist completed test state to localStorage so login redirect doesn't lose progress
+    try {
+      localStorage.setItem(
+        "fluentia_level_test_session",
+        JSON.stringify({
+          selectedAnswers,
+          elapsedSeconds,
+          isCompleted: true,
+          timestamp: Date.now(),
+        })
+      );
+    } catch (e) {
+      console.error("Failed to cache test session:", e);
+    }
+
     setIsCompleted(true);
   }, [questions, selectedAnswers, elapsedSeconds]);
+
+  // Inline Auth submission handler
+  const handleInlineAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setIsAuthSubmitting(true);
+
+    try {
+      if (authTab === "signin") {
+        const res = await login(authEmail, authPassword);
+        if (!res.success) {
+          setAuthError(res.error || "Failed to sign in. Please verify your credentials.");
+        }
+      } else {
+        const res = await authRegister({
+          firstName: authFirstName,
+          lastName: authLastName,
+          email: authEmail,
+          password: authPassword,
+        });
+        if (!res.success) {
+          setAuthError(res.error || "Failed to create account. Please try again.");
+        }
+      }
+    } catch (err: any) {
+      setAuthError(err.message || "An unexpected authentication error occurred.");
+    } finally {
+      setIsAuthSubmitting(false);
+    }
+  };
 
   // Navigation handlers
   const handleNext = () => {
@@ -335,7 +411,107 @@ export function GeneralEnglishTestView() {
   }
 
   // ==========================================
-  // RESULTS VIEW (Once test is completed)
+  // RESULTS VIEW: AUTH GATE (If user is not logged in)
+  // ==========================================
+  if (isCompleted && results && !isAuthenticated) {
+    return (
+      <div className="relative min-h-screen py-10 sm:py-16 px-4 sm:px-6 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200 flex flex-col justify-center items-center">
+        <GridBackground squareSize={64} showDots={true} />
+        <div className="glow-orb orb-1 opacity-20 dark:opacity-30 pointer-events-none" />
+
+        <div className="max-w-md w-full mx-auto space-y-6 sm:space-y-8 relative z-10 text-center">
+          {/* Header */}
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold uppercase tracking-wider shadow-2xs">
+              <span>🔒 RESULT LOCKED • LOGIN REQUIRED</span>
+            </div>
+
+            <h1 className="font-bangla text-2xl sm:text-3xl font-bold tracking-tight text-ink dark:text-white leading-tight">
+              আপনার রেজাল্ট দেখতে{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 dark:from-purple-300 dark:via-fuchsia-300 dark:to-indigo-300">
+                Login করুন
+              </span>
+            </h1>
+
+            <p className="font-bangla text-xs sm:text-sm text-ink-soft dark:text-slate-300 leading-relaxed max-w-sm mx-auto">
+              আপনার টেস্ট সফলভাবে সম্পন্ন হয়েছে! আপনার নির্ধারিত <strong>CEFR Level</strong>, নির্ভুল স্কোর, দুর্বলতা বিশ্লেষণ ও AI স্টাডি প্ল্যান দেখতে Login বাটনে ক্লিক করুন।
+            </p>
+          </div>
+
+          {/* Locked Preview Card */}
+          <div className="relative rounded-3xl p-6 sm:p-7 bg-paper-card border border-slate-200 dark:border-white/10 shadow-xl space-y-5 overflow-hidden text-left">
+            {/* Status summary */}
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-500 font-bold">✓</span>
+                <span className="font-bold text-ink dark:text-white">
+                  {Object.keys(selectedAnswers).length} of {results.total} Questions Evaluated
+                </span>
+              </div>
+              <span className="font-bold text-primary dark:text-purple-300">
+                ⏱️ {formatTime(elapsedSeconds)}
+              </span>
+            </div>
+
+            {/* Blurred Mockup Score */}
+            <div className="filter blur-sm select-none pointer-events-none opacity-40 dark:opacity-25 grid grid-cols-3 gap-2 py-1">
+              <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-center">
+                <span className="text-[10px] uppercase font-bold block text-ink-soft">Score</span>
+                <span className="text-base font-bold text-ink dark:text-white">?? / {results.total}</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-center">
+                <span className="text-[10px] uppercase font-bold block text-ink-soft">Accuracy</span>
+                <span className="text-base font-bold text-primary">??%</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-center">
+                <span className="text-[10px] uppercase font-bold block text-ink-soft">CEFR</span>
+                <span className="text-base font-bold text-emerald-600">??</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3 pt-2">
+              {/* Go to Login Page Primary Button */}
+              <Link
+                href="/login?redirect=/level-test/general"
+                className="w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white font-bold text-sm sm:text-base shadow-lg shadow-purple-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+              >
+                <span>Go to Login Page</span>
+                <ChevronRight className="w-5 h-5" />
+              </Link>
+
+              {/* Google One-Click Auth */}
+              <GoogleAuthButton
+                mode="signin"
+                onError={(err) => setAuthError(err)}
+                onSuccess={() => setAuthError(null)}
+              />
+
+              {/* Error Message if any */}
+              {authError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold text-center">
+                  ⚠️ {authError}
+                </div>
+              )}
+
+              {/* Create Free Account Link */}
+              <div className="text-center pt-2 border-t border-slate-200/60 dark:border-white/5">
+                <Link
+                  href="/register?redirect=/level-test/general"
+                  className="text-xs font-semibold text-ink-soft hover:text-primary dark:hover:text-purple-300 transition-colors"
+                >
+                  Don&apos;t have an account? <span className="underline font-bold text-primary dark:text-purple-300">Create Free Account</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // RESULTS VIEW: UNLOCKED (Once test is completed & user is authenticated)
   // ==========================================
   if (isCompleted && results) {
     const filteredQuestions = questions.filter((q) => {
@@ -452,6 +628,11 @@ export function GeneralEnglishTestView() {
                   setFlaggedQuestions({});
                   setElapsedSeconds(0);
                   setShowDetailedReview(false);
+                  try {
+                    localStorage.removeItem("fluentia_level_test_session");
+                  } catch (e) {
+                    console.error("Failed to clear session:", e);
+                  }
                 }}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white/80 dark:bg-white/10 border border-slate-200 dark:border-white/15 text-ink dark:text-white font-semibold text-sm hover:bg-white dark:hover:bg-white/15 transition-all"
               >
