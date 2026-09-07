@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { StarfieldCanvas } from "./StarfieldCanvas";
 import { ChatDemo } from "./ChatDemo";
@@ -89,17 +89,54 @@ const LEARNING_TRACKS: TrackCard[] = [
 export function Hero() {
   const [showDemoModal, setShowDemoModal] = useState(false);
 
+  // Interactive spark particle burst on click
+  const handleHeroClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const target = e.target as HTMLElement;
+    // Prevent triggering on buttons or anchor links so user clicks stay focused
+    if (target.closest("button") || target.closest("a") || target.closest("input")) {
+      return;
+    }
+
+    const colors = ["#818cf8", "#c084fc", "#38bdf8", "#34d399", "#f472b6", "#60a5fa"];
+    const sparkCount = 8;
+    for (let i = 0; i < sparkCount; i++) {
+      const spark = document.createElement("div");
+      spark.className = "spark";
+      spark.style.left = `${e.clientX}px`;
+      spark.style.top = `${e.clientY}px`;
+      const angle = ((Math.PI * 2) / sparkCount) * i + (Math.random() - 0.5) * 0.5;
+      const dist = 32 + Math.random() * 40;
+      spark.style.setProperty("--tx", `${Math.cos(angle) * dist}px`);
+      spark.style.setProperty("--ty", `${Math.sin(angle) * dist}px`);
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      spark.style.backgroundColor = color;
+      spark.style.boxShadow = `0 0 10px ${color}`;
+      document.body.appendChild(spark);
+      setTimeout(() => {
+        if (spark.parentNode) spark.remove();
+      }, 800);
+    }
+  }, []);
+
   return (
-    <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 bg-paper dark:bg-[#030712] text-ink dark:text-white transition-colors duration-200">
-      {/* Animated Sky Canvas with Twinkling Stars & Glowing Horizon Arc */}
+    <section
+      onClick={handleHeroClick}
+      className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 bg-paper dark:bg-[#030712] text-ink dark:text-white transition-colors duration-200 cursor-default"
+    >
+      {/* Animated Sky & Constellation Canvas with Interactive Mouse Physics */}
       <StarfieldCanvas />
+
+      {/* Ambient Floating Glow Orbs */}
+      <div className="glow-orb orb-1 opacity-20 dark:opacity-30" />
+      <div className="glow-orb orb-2 opacity-20 dark:opacity-30" />
+      <div className="glow-orb orb-3 opacity-15 dark:opacity-25" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Top Announcement Tag */}
         <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 dark:bg-white/5 border border-primary/20 dark:border-white/10 backdrop-blur-md text-xs font-semibold tracking-wide text-primary dark:text-blue-200 shadow-xs">
-            <span className="flex h-2 w-2 rounded-full bg-primary dark:bg-cyan-400 animate-ping" />
-            <span className="text-primary dark:text-cyan-300">✨ NEXT-GEN AI LANGUAGE COACH</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 dark:bg-emerald-500/10 border border-primary/20 dark:border-emerald-500/25 backdrop-blur-md text-xs font-semibold tracking-wide text-primary dark:text-emerald-300 shadow-xs">
+            <span className="flex h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
+            <span className="text-primary dark:text-emerald-300">✨ NEXT-GEN AI LANGUAGE COACH</span>
             <span className="text-ink-soft/40 dark:text-white/40">•</span>
             <span className="text-ink-soft dark:text-white/80">Real-time Pronunciation & Grammar</span>
           </div>
@@ -139,13 +176,13 @@ export function Hero() {
           {/* Trust Checkmarks */}
           <div className="flex flex-wrap items-center justify-center gap-6 pt-3 text-xs text-ink-soft dark:text-slate-400">
             <div className="flex items-center gap-1.5">
-              <span className="text-primary dark:text-cyan-400 font-bold">✓</span> No credit card required
+              <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span> No credit card required
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-primary dark:text-cyan-400 font-bold">✓</span> Instant sentence diagnosis
+              <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span> Instant sentence diagnosis
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-primary dark:text-cyan-400 font-bold">✓</span> IELTS Band 8.0+ Benchmarks
+              <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span> IELTS Band 8.0+ Benchmarks
             </div>
           </div>
         </div>
@@ -163,7 +200,7 @@ export function Hero() {
               <Link
                 key={track.id}
                 href={track.href}
-                className={`group relative p-4 rounded-2xl bg-white/85 dark:bg-white/[0.04] hover:bg-white dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/10 ${track.borderColor} backdrop-blur-md transition-all duration-300 hover:-translate-y-1.5 shadow-sm dark:shadow-none hover:shadow-lg dark:hover:shadow-[0_10px_25px_rgba(0,0,0,0.5)] flex flex-col justify-between overflow-hidden`}
+                className={`group relative p-4 rounded-2xl bg-white/85 dark:bg-white/[0.04] hover:bg-white dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/10 ${track.borderColor} backdrop-blur-md transition-all duration-300 hover:-translate-y-1.5 shadow-sm dark:shadow-none hover:shadow-lg dark:hover:shadow-[0_10px_25px_rgba(0,0,0,0.5)] flex flex-col justify-between overflow-hidden before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px] before:bg-gradient-to-r before:from-blue-500 before:via-indigo-500 before:to-purple-500 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300`}
               >
                 {/* Glow Backdrop Pill */}
                 <div
@@ -219,3 +256,4 @@ export function Hero() {
     </section>
   );
 }
+

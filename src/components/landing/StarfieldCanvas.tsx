@@ -21,6 +21,15 @@ interface Meteor {
   active: boolean;
 }
 
+interface ParticleNode {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  baseColor: string;
+}
+
 export function StarfieldCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -33,12 +42,13 @@ export function StarfieldCanvas() {
 
     let animationFrameId: number;
     let width = (canvas.width = canvas.parentElement?.offsetWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement?.offsetHeight || 750);
+    let height = (canvas.height = canvas.parentElement?.offsetHeight || 800);
 
     const handleResize = () => {
       if (!canvas.parentElement) return;
       width = canvas.width = canvas.parentElement.offsetWidth;
       height = canvas.height = canvas.parentElement.offsetHeight;
+      initParticles();
     };
 
     window.addEventListener("resize", handleResize);
@@ -55,12 +65,78 @@ export function StarfieldCanvas() {
       attributeFilter: ["class"],
     });
 
-    // Generate Stars / Sparkles
-    const starCount = Math.floor((width * height) / 4500);
-    const stars: Star[] = Array.from({ length: Math.max(starCount, 120) }, () => ({
+    // Mouse coordinates tracking relative to canvas
+    const mouse: { x: number | null; y: number | null; radius: number } = {
+      x: null,
+      y: null,
+      radius: 140,
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      ) {
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+      } else {
+        mouse.x = null;
+        mouse.y = null;
+      }
+    };
+
+    const handleMouseLeave = () => {
+      mouse.x = null;
+      mouse.y = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeave);
+
+    // Color choices for constellation nodes
+    const darkColors = [
+      "rgba(99, 102, 241,", // Indigo
+      "rgba(6, 182, 212,",  // Cyan
+      "rgba(168, 85, 247,", // Purple
+      "rgba(56, 189, 248,", // Sky
+      "rgba(52, 211, 153,", // Emerald
+    ];
+
+    const lightColors = [
+      "rgba(37, 99, 235,",  // Blue
+      "rgba(6, 182, 212,",  // Cyan
+      "rgba(99, 102, 241,", // Indigo
+      "rgba(16, 185, 129,", // Emerald
+    ];
+
+    let particles: ParticleNode[] = [];
+
+    const initParticles = () => {
+      const count = Math.min(Math.max(Math.floor((width * height) / 13000), 38), 75);
+      particles = Array.from({ length: count }, () => {
+        const colors = isDark ? darkColors : lightColors;
+        return {
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          radius: Math.random() * 2 + 1.2,
+          baseColor: colors[Math.floor(Math.random() * colors.length)],
+        };
+      });
+    };
+
+    initParticles();
+
+    // Generate Ambient Stars / Sparkles
+    const starCount = Math.floor((width * height) / 6000);
+    const stars: Star[] = Array.from({ length: Math.max(starCount, 70) }, () => ({
       x: Math.random() * width,
       y: Math.random() * height * 0.85,
-      size: Math.random() * 1.8 + 0.5,
+      size: Math.random() * 1.5 + 0.4,
       opacity: Math.random() * 0.8 + 0.2,
       speed: Math.random() * 0.05 + 0.01,
       twinkleSpeed: Math.random() * 0.02 + 0.005,
@@ -69,9 +145,9 @@ export function StarfieldCanvas() {
     // Meteors / Shooting lights
     const meteors: Meteor[] = Array.from({ length: 3 }, () => ({
       x: Math.random() * width,
-      y: Math.random() * (height * 0.5),
-      length: Math.random() * 80 + 50,
-      speed: Math.random() * 6 + 7,
+      y: Math.random() * (height * 0.4),
+      length: Math.random() * 70 + 45,
+      speed: Math.random() * 6 + 6,
       angle: Math.PI / 4,
       opacity: 0,
       active: false,
@@ -81,13 +157,13 @@ export function StarfieldCanvas() {
       const inactive = meteors.find((m) => !m.active);
       if (inactive) {
         inactive.x = Math.random() * (width * 0.8) + width * 0.1;
-        inactive.y = Math.random() * (height * 0.3);
+        inactive.y = Math.random() * (height * 0.25);
         inactive.opacity = 1;
         inactive.active = true;
       }
     };
 
-    const meteorInterval = setInterval(triggerMeteor, 3500);
+    const meteorInterval = setInterval(triggerMeteor, 4000);
 
     let tick = 0;
 
@@ -99,7 +175,7 @@ export function StarfieldCanvas() {
       const spaceGrad = ctx.createLinearGradient(0, 0, 0, height);
       if (isDark) {
         spaceGrad.addColorStop(0, "#030712");
-        spaceGrad.addColorStop(0.5, "#0b132b");
+        spaceGrad.addColorStop(0.4, "#0b132b");
         spaceGrad.addColorStop(0.85, "#101d42");
         spaceGrad.addColorStop(1, "#030712");
       } else {
@@ -111,31 +187,106 @@ export function StarfieldCanvas() {
       ctx.fillStyle = spaceGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // Draw Twinkling Stars (in Dark) or Soft Shimmer Sparkles (in Light)
+      // Ambient Twinkling Stars
       stars.forEach((star) => {
         star.opacity += Math.sin(tick * star.twinkleSpeed) * 0.015;
-        const currentOpacity = Math.max(0.15, Math.min(1, star.opacity));
+        const currentOpacity = Math.max(0.12, Math.min(0.9, star.opacity));
 
         if (isDark) {
-          ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
+          ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity * 0.7})`;
           ctx.beginPath();
           ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
           ctx.fill();
-
-          if (star.size > 1.4) {
-            ctx.fillStyle = `rgba(147, 197, 253, ${currentOpacity * 0.4})`;
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.size * 2.2, 0, Math.PI * 2);
-            ctx.fill();
-          }
         } else {
-          // Daylight shimmer particles
-          ctx.fillStyle = `rgba(37, 99, 235, ${currentOpacity * 0.25})`;
+          ctx.fillStyle = `rgba(37, 99, 235, ${currentOpacity * 0.2})`;
           ctx.beginPath();
-          ctx.arc(star.x, star.y, star.size * 1.2, 0, Math.PI * 2);
+          ctx.arc(star.x, star.y, star.size * 1.1, 0, Math.PI * 2);
           ctx.fill();
         }
       });
+
+      // Update & Draw Interactive Particles
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+
+        // Physics movement
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Bounce from boundaries
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+        // Mouse repulsion physics
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = mouse.x - p.x;
+          const dy = mouse.y - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mouse.radius && dist > 0) {
+            const force = (mouse.radius - dist) / mouse.radius;
+            p.x -= (dx / dist) * force * 3.2;
+            p.y -= (dy / dist) * force * 3.2;
+          }
+        }
+
+        // Draw particle node
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = isDark
+          ? `${p.baseColor} 0.75)`
+          : `${p.baseColor} 0.55)`;
+        ctx.fill();
+
+        // Node subtle halo
+        if (p.radius > 1.8) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius * 2, 0, Math.PI * 2);
+          ctx.fillStyle = isDark
+            ? `${p.baseColor} 0.15)`
+            : `${p.baseColor} 0.1)`;
+          ctx.fill();
+        }
+
+        // Connective Lines between nearby particles
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          const maxDist = 115;
+          if (dist < maxDist) {
+            const opacity = (1 - dist / maxDist) * (isDark ? 0.3 : 0.18);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = isDark
+              ? `rgba(147, 197, 253, ${opacity})`
+              : `rgba(37, 99, 235, ${opacity})`;
+            ctx.lineWidth = isDark ? 0.8 : 0.7;
+            ctx.stroke();
+          }
+        }
+
+        // Mouse Cursor dynamic tether connection
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = mouse.x - p.x;
+          const dy = mouse.y - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < mouse.radius) {
+            const opacity = (1 - dist / mouse.radius) * (isDark ? 0.45 : 0.28);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = isDark
+              ? `rgba(56, 189, 248, ${opacity})`
+              : `rgba(37, 99, 235, ${opacity})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
 
       // Draw Meteors (Shooting Stars)
       meteors.forEach((m) => {
@@ -173,8 +324,8 @@ export function StarfieldCanvas() {
       });
 
       // Luminous Planetary Horizon Arc
-      const horizonY = height * 0.58;
-      const arcHeight = height * 0.22;
+      const horizonY = height * 0.62;
+      const arcHeight = height * 0.2;
 
       // Atmospheric Glow
       const glowGrad = ctx.createRadialGradient(
@@ -187,14 +338,14 @@ export function StarfieldCanvas() {
       );
 
       if (isDark) {
-        glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.45)");
-        glowGrad.addColorStop(0.3, "rgba(59, 130, 246, 0.25)");
-        glowGrad.addColorStop(0.65, "rgba(14, 165, 233, 0.12)");
+        glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.4)");
+        glowGrad.addColorStop(0.3, "rgba(59, 130, 246, 0.2)");
+        glowGrad.addColorStop(0.65, "rgba(14, 165, 233, 0.08)");
         glowGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
       } else {
-        glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.22)");
-        glowGrad.addColorStop(0.3, "rgba(59, 130, 246, 0.12)");
-        glowGrad.addColorStop(0.65, "rgba(14, 165, 233, 0.05)");
+        glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.18)");
+        glowGrad.addColorStop(0.3, "rgba(59, 130, 246, 0.09)");
+        glowGrad.addColorStop(0.65, "rgba(14, 165, 233, 0.04)");
         glowGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
       }
 
@@ -205,31 +356,31 @@ export function StarfieldCanvas() {
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(0, horizonY + arcHeight);
-      ctx.quadraticCurveTo(width / 2, horizonY - 40, width, horizonY + arcHeight);
+      ctx.quadraticCurveTo(width / 2, horizonY - 30, width, horizonY + arcHeight);
 
       if (isDark) {
-        ctx.strokeStyle = "rgba(147, 197, 253, 0.85)";
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "rgba(147, 197, 253, 0.75)";
+        ctx.lineWidth = 2;
         ctx.shadowColor = "#38bdf8";
-        ctx.shadowBlur = 24;
+        ctx.shadowBlur = 20;
         ctx.stroke();
 
-        ctx.strokeStyle = "rgba(37, 99, 235, 0.6)";
-        ctx.lineWidth = 6;
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.5)";
+        ctx.lineWidth = 5;
         ctx.shadowColor = "#2563eb";
-        ctx.shadowBlur = 35;
+        ctx.shadowBlur = 30;
         ctx.stroke();
       } else {
-        ctx.strokeStyle = "rgba(37, 99, 235, 0.5)";
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.4)";
+        ctx.lineWidth = 2;
         ctx.shadowColor = "#2563eb";
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 15;
         ctx.stroke();
 
-        ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
-        ctx.lineWidth = 6;
+        ctx.strokeStyle = "rgba(59, 130, 246, 0.25)";
+        ctx.lineWidth = 5;
         ctx.shadowColor = "#38bdf8";
-        ctx.shadowBlur = 25;
+        ctx.shadowBlur = 20;
         ctx.stroke();
       }
       ctx.restore();
@@ -242,6 +393,8 @@ export function StarfieldCanvas() {
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseleave", handleMouseLeave);
       clearInterval(meteorInterval);
       cancelAnimationFrame(animationFrameId);
     };
@@ -254,3 +407,4 @@ export function StarfieldCanvas() {
     />
   );
 }
+
