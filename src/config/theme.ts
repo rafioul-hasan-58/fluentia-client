@@ -130,19 +130,19 @@ export const themeConfig = {
 
     dark: {
       background: "#070510",                  // Deep rich cosmic violet canvas
-      surface: "#0f0c20",                     // Elevated midnight violet card surface
-      surfaceHover: "#181236",                // Interactive hover state
-      border: "rgba(255, 255, 255, 0.1)",     // Subtle luminescent border
+      surface: "#1c1638",                     // Elevated midnight violet card surface
+      surfaceHover: "#28204e",                // Interactive hover state
+      border: "rgba(255, 255, 255, 0.2)",     // Subtle luminescent border
       text: "#f8fafc",                        // Crisp white text
-      textSoft: "#94a3b8",                    // Muted silver text
+      textSoft: "#cbd5e1",                    // Muted silver text
       primary: "#8b5cf6",
       primaryDark: "#7c3aed",
       primaryLight: "rgba(139, 92, 246, 0.18)",
       secondary: "#c084fc",
       secondaryDark: "#a855f7",
       secondaryLight: "rgba(192, 132, 252, 0.15)",
-      card: "#0f0c20",
-      cardHover: "#181236",
+      card: "#1c1638",
+      cardHover: "#28204e",
     } as ModeTokens,
   },
 
