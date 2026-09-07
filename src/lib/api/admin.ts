@@ -49,11 +49,12 @@ export interface AdminUserRecord {
   name: string;
   email: string;
   avatar?: string | null;
-  role: "ADMIN" | "USER" | "STUDENT" | "TEACHER";
+  role: "ADMIN" | "USER";
   level: string;
   targetLevel?: string | null;
   provider: "email" | "google";
   testsTaken: number;
+  isSuspended: boolean;
   lastActive: string;
   createdAt: string;
 }
@@ -175,6 +176,7 @@ export const MOCK_ADMIN_USERS: AdminUserRecord[] = [
     targetLevel: "C2",
     provider: "google",
     testsTaken: 2,
+    isSuspended: false,
     lastActive: "Just now",
     createdAt: "2026-09-01T10:00:00Z",
   },
@@ -188,6 +190,7 @@ export const MOCK_ADMIN_USERS: AdminUserRecord[] = [
     targetLevel: "B2",
     provider: "email",
     testsTaken: 1,
+    isSuspended: false,
     lastActive: "15m ago",
     createdAt: "2026-09-07T18:00:00Z",
   },
@@ -196,11 +199,12 @@ export const MOCK_ADMIN_USERS: AdminUserRecord[] = [
     name: "Foysal Islam",
     email: "foysalislam5547@gmail.com",
     avatar: null,
-    role: "STUDENT",
+    role: "USER",
     level: "A1 Beginner",
     targetLevel: "B1",
     provider: "email",
     testsTaken: 1,
+    isSuspended: false,
     lastActive: "40m ago",
     createdAt: "2026-09-07T17:30:00Z",
   },
@@ -214,6 +218,7 @@ export const MOCK_ADMIN_USERS: AdminUserRecord[] = [
     targetLevel: "C2",
     provider: "email",
     testsTaken: 10,
+    isSuspended: false,
     lastActive: "Just now",
     createdAt: "2026-09-01T00:00:00Z",
   },
