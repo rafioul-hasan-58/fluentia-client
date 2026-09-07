@@ -213,9 +213,54 @@ body {
   .animate-float-slow,
   .animate-float-delayed,
   .glow-orb,
-  .spark {
+  .spark,
+  .animate-logo-breathe,
+  .fluentia-loader-bar {
     animation: none !important;
   }
 }
+
+/* Fluentia Horizontal Progress Bar Animation */
+@keyframes fluentiaSlide {
+  0% {
+    left: -40%;
+    width: 35%;
+  }
+  50% {
+    left: 25%;
+    width: 50%;
+  }
+  100% {
+    left: 100%;
+    width: 35%;
+  }
+}
+
+.fluentia-loader-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  will-change: left, width;
+  animation: fluentiaSlide 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Subtle Breathing Animation for Logo */
+@keyframes logoBreathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+.animate-logo-breathe {
+  animation: logoBreathe 2.4s ease-in-out infinite;
+}
+
+
 
 
