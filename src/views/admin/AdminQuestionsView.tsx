@@ -9,6 +9,7 @@ import { LevelTestQuestion } from "@/types/level-test";
 import {
   fetchAdminLevelTestQuestions,
   createAdminQuestionApi,
+  updateAdminQuestionApi,
   deleteAdminQuestionApi,
   CreateLevelTestQuestionDto,
   MOCK_LEVEL_TEST_QUESTIONS,
@@ -34,13 +35,15 @@ export function AdminQuestionsView() {
   const [totalCount, setTotalCount] = useState(40);
   const [totalPages, setTotalPages] = useState(2);
 
+  // Modals & Active items
   const [previewQuestion, setPreviewQuestion] = useState<LevelTestQuestion | null>(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<LevelTestQuestion | null>(null);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [actionAlert, setActionAlert] = useState<{ message: string; type: "success" | "warn" } | null>(null);
 
-  // New question form state
+  // Question form state
   const [newSection, setNewSection] = useState<string>("GRAMMAR");
   const [newLevel, setNewLevel] = useState<string>("B1");
   const [newDifficulty, setNewDifficulty] = useState<string>("MEDIUM");
@@ -112,6 +115,7 @@ export function AdminQuestionsView() {
   };
 
   const resetForm = () => {
+    setEditingQuestion(null);
     setNewSection("GRAMMAR");
     setNewLevel("B1");
     setNewDifficulty("MEDIUM");
@@ -125,6 +129,44 @@ export function AdminQuestionsView() {
       { id: "opt-3", content: "" },
       { id: "opt-4", content: "" },
     ]);
+  };
+
+  const handleOpenAddModal = () => {
+    resetForm();
+    setIsFormModalOpen(true);
+  };
+
+  const handleOpenEditModal = (q: LevelTestQuestion, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingQuestion(q);
+    setNewSection(q.sectionType || "GRAMMAR");
+    setNewLevel(q.level || "B1");
+    setNewDifficulty(q.difficulty || "MEDIUM");
+    setNewPrompt(q.question || "");
+    setNewPassage(q.passage || "");
+    setNewExplanation(q.explanation || "");
+
+    const existingOpts = Array.isArray(q.questionOptions) && q.questionOptions.length > 0
+      ? q.questionOptions.map((opt) => ({
+          id: opt.id || `opt-${Math.random()}`,
+          content: opt.content || "",
+        }))
+      : [
+          { id: "opt-1", content: "" },
+          { id: "opt-2", content: "" },
+          { id: "opt-3", content: "" },
+          { id: "opt-4", content: "" },
+        ];
+
+    setFormOptions(existingOpts);
+
+    // Find matching correct answer index
+    const correctIdx = existingOpts.findIndex(
+      (opt) => opt.content === q.answer || opt.id === q.answer
+    );
+    setCorrectOptionIdx(correctIdx >= 0 ? correctIdx : 0);
+
+    setIsFormModalOpen(true);
   };
 
   const handleOptionChange = (idx: number, val: string) => {
@@ -147,7 +189,7 @@ export function AdminQuestionsView() {
     }
   };
 
-  const handleCreateQuestion = async (e: React.FormEvent) => {
+  const handleSubmitQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const trimmedPrompt = newPrompt.trim();
@@ -195,14 +237,31 @@ export function AdminQuestionsView() {
 
     setIsSubmitting(true);
     try {
-      const res = await createAdminQuestionApi(payload);
-      if (res.success) {
-        triggerAlert(res.message || "New evaluation question added to repository!", "success");
-        setIsAddModalOpen(false);
-        resetForm();
-        await loadQuestions();
+      if (editingQuestion) {
+        // UPDATE Existing Question
+        const res = await updateAdminQuestionApi(editingQuestion.id, payload);
+        if (res.success) {
+          triggerAlert(res.message || "Question updated successfully!", "success");
+          setIsFormModalOpen(false);
+          resetForm();
+          await loadQuestions();
+          if (previewQuestion?.id === editingQuestion.id && res.data) {
+            setPreviewQuestion(res.data);
+          }
+        } else {
+          triggerAlert(res.message || "Failed to update question on server.", "warn");
+        }
       } else {
-        triggerAlert(res.message || "Failed to create question on server.", "warn");
+        // CREATE New Question
+        const res = await createAdminQuestionApi(payload);
+        if (res.success) {
+          triggerAlert(res.message || "New evaluation question added to repository!", "success");
+          setIsFormModalOpen(false);
+          resetForm();
+          await loadQuestions();
+        } else {
+          triggerAlert(res.message || "Failed to create question on server.", "warn");
+        }
       }
     } catch (err: any) {
       triggerAlert(err.message || "Network error occurred while saving question.", "warn");
@@ -383,7 +442,7 @@ export function AdminQuestionsView() {
             <Button
               variant="gradient"
               size="sm"
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={handleOpenAddModal}
               className="text-xs font-bold shadow-sm"
             >
               <span>➕</span>
@@ -622,10 +681,18 @@ export function AdminQuestionsView() {
 
               {/* Card Footer */}
               <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
-                <span className="text-[10px] text-ink-soft font-mono truncate max-w-[140px]" title={q.id}>
+                <span className="text-[10px] text-ink-soft font-mono truncate max-w-[120px]" title={q.id}>
                   ID: {q.id}
                 </span>
                 <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenEditModal(q, e)}
+                    className="p-1.5 text-ink-soft hover:text-primary hover:bg-primary/10 rounded-lg transition-colors text-xs"
+                    title="Edit Question"
+                  >
+                    ✏️
+                  </button>
                   <button
                     type="button"
                     onClick={(e) => handleDeleteQuestion(q.id, e)}
@@ -640,7 +707,7 @@ export function AdminQuestionsView() {
                     onClick={() => setPreviewQuestion(q)}
                     className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-primary hover:text-white dark:hover:bg-primary font-semibold transition-colors"
                   >
-                    Inspect Question →
+                    Inspect →
                   </button>
                 </div>
               </div>
@@ -658,7 +725,7 @@ export function AdminQuestionsView() {
                 <th className="py-2.5 px-3">Level</th>
                 <th className="py-2.5 px-3">Difficulty</th>
                 <th className="py-2.5 px-3">Correct Answer</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
+                <th className="py-2.5 px-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -685,6 +752,14 @@ export function AdminQuestionsView() {
                   </td>
                   <td className="py-3 px-3 text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenEditModal(q, e)}
+                        className="p-1 text-ink-soft hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+                        title="Edit Question"
+                      >
+                        ✏️
+                      </button>
                       <button
                         type="button"
                         onClick={(e) => handleDeleteQuestion(q.id, e)}
@@ -784,14 +859,28 @@ export function AdminQuestionsView() {
             )}
 
             <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/10">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDeleteQuestion(previewQuestion.id)}
-                className="text-rose-500 hover:text-rose-600 border-rose-500/30 hover:bg-rose-500/10 text-xs"
-              >
-                🗑️ Delete Question
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const q = previewQuestion;
+                    setPreviewQuestion(null);
+                    handleOpenEditModal(q);
+                  }}
+                  className="text-primary hover:bg-primary/10 border-primary/30 text-xs font-semibold"
+                >
+                  ✏️ Edit Question
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteQuestion(previewQuestion.id)}
+                  className="text-rose-500 hover:text-rose-600 border-rose-500/30 hover:bg-rose-500/10 text-xs"
+                >
+                  🗑️ Delete
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -805,25 +894,31 @@ export function AdminQuestionsView() {
         </div>
       )}
 
-      {/* Add Question Modal */}
-      {isAddModalOpen && (
+      {/* Create / Edit Question Modal */}
+      {isFormModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
           <div className="w-full max-w-xl bg-paper-card border border-slate-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
               <div>
-                <h3 className="font-brand text-lg font-bold text-ink">Add New Question</h3>
-                <p className="text-xs text-ink-soft">Create and publish a diagnostic test question to the question bank.</p>
+                <h3 className="font-brand text-lg font-bold text-ink">
+                  {editingQuestion ? "Edit Question" : "Add New Question"}
+                </h3>
+                <p className="text-xs text-ink-soft">
+                  {editingQuestion
+                    ? `Update question prompt, passage context, answer choices, or explanation (ID: ${editingQuestion.id})`
+                    : "Create and publish a diagnostic test question to the question bank."}
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => setIsAddModalOpen(false)}
+                onClick={() => setIsFormModalOpen(false)}
                 className="p-1 text-ink-soft hover:text-ink text-sm"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateQuestion} className="space-y-4">
+            <form onSubmit={handleSubmitQuestion} className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="sec" className="text-xs font-semibold">Section</Label>
@@ -976,7 +1071,7 @@ export function AdminQuestionsView() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={() => setIsFormModalOpen(false)}
                   disabled={isSubmitting}
                   className="text-xs"
                 >
@@ -992,8 +1087,10 @@ export function AdminQuestionsView() {
                   {isSubmitting ? (
                     <>
                       <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5" />
-                      Saving to Bank...
+                      {editingQuestion ? "Updating Question..." : "Saving to Bank..."}
                     </>
+                  ) : editingQuestion ? (
+                    "Save Changes"
                   ) : (
                     "Save Question"
                   )}

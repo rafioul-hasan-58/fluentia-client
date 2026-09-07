@@ -1322,6 +1322,50 @@ export async function createAdminQuestionApi(
 }
 
 /**
+ * Updates an existing question in the question bank via live backend PATCH /level-test-questions/:id
+ */
+export async function updateAdminQuestionApi(
+  questionId: string,
+  dto: Partial<CreateLevelTestQuestionDto>
+): Promise<{ success: boolean; data?: LevelTestQuestion; message?: string }> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/${questionId}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(dto),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      const updatedItem = json.data || json;
+      return {
+        success: true,
+        data: updatedItem ? normalizeQuestionItem(updatedItem) : undefined,
+        message: json.message || "Question updated successfully.",
+      };
+    }
+
+    return {
+      success: false,
+      message: json.message || `Failed to update question (Status: ${res.status})`,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Network error while updating question.",
+    };
+  }
+}
+
+/**
  * Deletes a question from the repository via DELETE /level-test-questions/:id
  */
 export async function deleteAdminQuestionApi(
@@ -1347,3 +1391,4 @@ export async function deleteAdminQuestionApi(
     return { success: false, message: err.message || "Network error while deleting question." };
   }
 }
+
