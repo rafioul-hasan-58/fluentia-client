@@ -28,10 +28,10 @@ export function CallToAction() {
 
         <div className="pt-3">
           <Link
-            href="/dashboard/level-test"
+            href="/level-test"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white font-bold text-base transition-all duration-300 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 dark:shadow-[0_0_30px_rgba(124,58,237,0.5)] hover:scale-[1.03] active:scale-95"
           >
-            <span>Take the Level Test</span>
+            <span>Take the Level Test →</span>
           </Link>
         </div>
       </div>
