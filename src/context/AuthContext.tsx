@@ -50,9 +50,9 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (params: RegisterParams | { name: string; email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
-  loginWithGoogle: (googleCredential: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; user?: User; error?: string }>;
+  register: (params: RegisterParams | { name: string; email: string; password: string }) => Promise<{ success: boolean; user?: User; error?: string }>;
+  loginWithGoogle: (googleCredential: string) => Promise<{ success: boolean; user?: User; error?: string }>;
   updateUser: (userData: Partial<User>) => void;
   updateProfile: (dto: UpdateUserProfileDto) => Promise<{ success: boolean; data?: User; error?: string }>;
   uploadAvatar: (file: File) => Promise<{ success: boolean; profileImageUrl?: string; error?: string }>;
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> => {
     setIsLoading(true);
     try {
       if (!email || !password) {
@@ -177,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? `${fName} ${lName}`.trim()
         : userPayload.name || email.split("@")[0];
 
-      const loggedInUser: User = {
+      let loggedInUser: User = {
         id: userPayload.id || `user_${Date.now()}`,
         name: fullName || "Learner",
         firstName: userPayload.firstName || null,
@@ -213,20 +213,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ? `${fullProfile.firstName || ""} ${fullProfile.lastName || ""}`.trim()
             : loggedInUser.name;
 
-          const mergedUser: User = {
+          loggedInUser = {
             ...loggedInUser,
             ...fullProfile,
             name: mergedName,
             avatar: fullProfile.profileImage || loggedInUser.avatar,
             profileImage: fullProfile.profileImage || loggedInUser.profileImage,
           };
-          saveUserSession(mergedUser);
+          saveUserSession(loggedInUser);
         }
       } catch {
         // non-blocking
       }
 
-      return { success: true };
+      return { success: true, user: loggedInUser };
     } catch (err: any) {
       return { success: false, error: err.message || "Failed to log in" };
     } finally {
@@ -236,7 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (
     params: RegisterParams | { name: string; email: string; password: string }
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; user?: User; error?: string }> => {
     setIsLoading(true);
     try {
       let fName = "";
@@ -288,7 +288,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           const userPayload = data.user || (data.data && data.data.user) || data.data || data;
-          const registeredUser: User = {
+          let registeredUser: User = {
             id: userPayload.id || `user_${Date.now()}`,
             name: `${fName} ${lName}`.trim(),
             firstName: fName,
@@ -307,17 +307,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           try {
             const fullProfile = await fetchUserProfile();
             if (fullProfile) {
-              saveUserSession({
+              registeredUser = {
                 ...registeredUser,
                 ...fullProfile,
                 name: `${fullProfile.firstName || fName} ${fullProfile.lastName || lName}`.trim(),
-              });
+              };
+              saveUserSession(registeredUser);
             }
           } catch {
             // non-blocking
           }
 
-          return { success: true };
+          return { success: true, user: registeredUser };
         } else {
           let errMessage = "Failed to create account";
           if (data.message) {
@@ -342,7 +343,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           provider: "email",
         };
         saveUserSession(newUser);
-        return { success: true };
+        return { success: true, user: newUser };
       }
     } catch (err: any) {
       return { success: false, error: err.message || "Failed to create account" };
@@ -351,7 +352,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async (googleCredential: string): Promise<{ success: boolean; error?: string }> => {
+  const loginWithGoogle = async (googleCredential: string): Promise<{ success: boolean; user?: User; error?: string }> => {
     setIsLoading(true);
     try {
       const url = `${getApiBaseUrl()}/auth/google-login`;
@@ -388,7 +389,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (token) {
         localStorage.setItem("fluentia_auth_token", token);
       }
-      return { success: true };
+      return { success: true, user: authenticatedUser };
     } catch (err: any) {
       return { success: false, error: err.message || "Google sign-in failed" };
     } finally {

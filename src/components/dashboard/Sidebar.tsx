@@ -281,6 +281,29 @@ export function Sidebar() {
               })}
             </div>
           ))}
+
+          {/* Admin Switcher for ADMIN users */}
+          {user?.role?.toUpperCase() === "ADMIN" && (
+            <div className="pt-2 border-t border-slate-200 dark:border-white/10">
+              <div className="px-3 pb-1.5 text-[10px] font-bold text-amber-500 uppercase tracking-wider font-brand flex items-center justify-between">
+                <span>Admin Suite</span>
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              </div>
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-amber-500/10 to-purple-600/10 hover:from-amber-500/20 hover:to-purple-600/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 shadow-2xs transition-all group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-base">🛡️</span>
+                  <span>Admin Console</span>
+                </div>
+                <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
+                  Panel →
+                </span>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* User Card / Bottom Profile & Theme */}

@@ -42,6 +42,8 @@ export function GoogleAuthButton({
         onSuccess();
       } else {
         let target = "/dashboard";
+        const isAdmin = result.user?.role?.toUpperCase() === "ADMIN";
+
         if (typeof window !== "undefined") {
           const urlParams = new URLSearchParams(window.location.search);
           const redirectParam = urlParams.get("redirect");
@@ -49,7 +51,11 @@ export function GoogleAuthButton({
             target = redirectParam;
           } else if (localStorage.getItem("fluentia_level_test_session")) {
             target = "/level-test/general";
+          } else if (isAdmin) {
+            target = "/admin";
           }
+        } else if (isAdmin) {
+          target = "/admin";
         }
         router.push(target);
       }
