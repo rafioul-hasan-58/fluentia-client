@@ -282,7 +282,6 @@ export function Hero() {
 
                 <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] font-semibold text-primary dark:text-purple-400 group-hover:text-primary-dark dark:group-hover:text-purple-300 transition-colors relative z-10">
                   <span>Start Practice</span>
-                  <span className="transform group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </Link>
             ))}
