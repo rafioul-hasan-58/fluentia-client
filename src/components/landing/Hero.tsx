@@ -146,24 +146,27 @@ export function Hero() {
           <div className="lg:col-span-6 space-y-6 text-left">
             {/* Top Eyebrow Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 dark:bg-emerald-500/10 border border-blue-500/20 dark:border-emerald-500/25 backdrop-blur-md text-xs font-semibold tracking-wide text-primary dark:text-emerald-300 shadow-xs">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 dark:bg-emerald-400" />
+              </span>
               <span>✨ AI-POWERED ENGLISH & IELTS LEARNING</span>
             </div>
 
             {/* Primary Bilingual Headline */}
-            <h1 className="font-bangla text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-bold text-ink dark:text-white leading-[1.22] tracking-tight">
+            <h1 className="font-bangla text-3xl sm:text-4xl lg:text-[40px] xl:text-[45px] font-bold text-ink dark:text-white leading-[1.38] sm:leading-[1.38] lg:leading-[1.36] tracking-normal">
               Grammar বুঝছেন,{" "}
-              <span className="block mt-1 sm:mt-1.5 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-primary to-indigo-600 dark:from-cyan-300 dark:via-blue-400 dark:to-indigo-300 drop-shadow-[0_0_25px_rgba(56,189,248,0.25)]">
+              <span className="block mt-2 sm:mt-2.5 pb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-primary to-indigo-600 dark:from-cyan-300 dark:via-blue-400 dark:to-indigo-300 drop-shadow-[0_0_25px_rgba(56,189,248,0.25)] leading-[1.38] sm:leading-[1.38] lg:leading-[1.36]">
                 কিন্তু English-এ ব্যবহার করতে পারছেন না?
               </span>
             </h1>
 
             {/* Supporting Core Bangla Statement Callout */}
             <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 shadow-sm backdrop-blur-md space-y-2 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-gradient-to-b before:from-blue-500 before:to-indigo-600">
-              <p className="font-bangla text-base sm:text-lg text-ink dark:text-white font-bold leading-snug">
+              <p className="font-bangla text-base sm:text-lg text-ink dark:text-white font-bold leading-relaxed">
                 &ldquo;IELTS প্রস্তুতি হোক বা Everyday English — আপনার শেখার পথ হবে আপনার জন্যই।&rdquo;
               </p>
-              <p className="text-xs sm:text-sm text-ink-soft dark:text-slate-300 leading-relaxed">
+              <p className="font-bangla text-xs sm:text-sm text-ink-soft dark:text-slate-300 leading-relaxed">
                 মুখস্থ নয়—AI আপনার ভুল খুঁজে বের করবে, দুর্বলতা বুঝবে এবং আপনার জন্য তৈরি করবে personalized practice ও instant feedback।
               </p>
             </div>
