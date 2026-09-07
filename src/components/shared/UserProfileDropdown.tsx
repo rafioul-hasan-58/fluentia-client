@@ -38,18 +38,18 @@ export function UserProfileDropdown() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1.5 rounded-full sm:rounded-2xl border border-slate-200 dark:border-white/10 bg-paper-card hover:bg-slate-100 dark:hover:bg-white/5 transition-all shadow-xs group focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="flex items-center gap-2 p-0.5 sm:px-2.5 sm:py-1.5 rounded-full sm:rounded-2xl border border-slate-200 dark:border-white/10 bg-paper-card hover:bg-slate-100 dark:hover:bg-white/5 transition-all shadow-xs group focus:outline-none focus:ring-2 focus:ring-primary/20"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <div className="relative">
+        <div className="relative inline-flex shrink-0">
           <Avatar
             src={user.profileImage || user.avatar}
             fallback={initials}
             size="sm"
             className="w-8 h-8 sm:w-9 sm:h-9"
           />
-          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-[#030712]" />
+          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-[#0f0c20] z-10" />
         </div>
 
         <div className="hidden sm:flex flex-col text-left pr-1 font-nav">
@@ -60,17 +60,6 @@ export function UserProfileDropdown() {
             {user.level || "Intermediate"}
           </span>
         </div>
-
-        <svg
-          className={`w-3.5 h-3.5 text-ink-soft transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
       </button>
 
       {/* Dropdown Menu Modal */}
