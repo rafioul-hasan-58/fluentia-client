@@ -342,10 +342,80 @@ export function GeneralEnglishTestView() {
     }));
   };
 
-  // Submit test handler: Calls POST /api/v1/level-test-questions/submit
-  const handleSubmitTest = useCallback(async () => {
-    setIsEvaluating(true);
+  // Submit test handler: Calls POST /api/v1/level-test-questions/submit with user auth token
+  const executeSubmit = useCallback(
+    async (payloadToSubmit?: SubmitLevelTestPayload) => {
+      setIsEvaluating(true);
 
+      const payload: SubmitLevelTestPayload =
+        payloadToSubmit || {
+          answers: questions.map((q) => {
+            const selected = selectedAnswers[q.id];
+            return {
+              questionId: q.id,
+              answerOptionId: selected?.optionId || "",
+            };
+          }),
+          timeSpentSeconds: elapsedSeconds,
+        };
+
+      try {
+        console.log("Submitting diagnostic level test payload to backend (authenticated):", payload);
+        const res = await submitLevelTestAnswers(payload);
+
+        if (res && res.success && res.data) {
+          console.log("Evaluation analysis received from backend:", res.data);
+          setEvaluationResult(res.data);
+          setIsCompleted(true);
+
+          try {
+            localStorage.setItem(
+              "fluentia_level_test_session",
+              JSON.stringify({
+                selectedAnswers,
+                answerformat: payload,
+                evaluationResult: res.data,
+                elapsedSeconds,
+                isCompleted: true,
+                timestamp: Date.now(),
+              })
+            );
+          } catch (e) {
+            console.error("Failed to cache test session:", e);
+          }
+        } else {
+          throw new Error("Evaluation API returned incomplete response data");
+        }
+      } catch (err: any) {
+        console.warn("Submitting via API encountered error, utilizing local evaluation:", err);
+        const fallbackResult = generateFallbackEvaluation(questions, selectedAnswers, elapsedSeconds);
+        setEvaluationResult(fallbackResult);
+        setIsCompleted(true);
+
+        try {
+          localStorage.setItem(
+            "fluentia_level_test_session",
+            JSON.stringify({
+              selectedAnswers,
+              answerformat: payload,
+              evaluationResult: fallbackResult,
+              elapsedSeconds,
+              isCompleted: true,
+              timestamp: Date.now(),
+            })
+          );
+        } catch (e) {
+          console.error("Failed to cache fallback session:", e);
+        }
+      } finally {
+        setIsEvaluating(false);
+      }
+    },
+    [questions, selectedAnswers, elapsedSeconds]
+  );
+
+  // When test is completed by unauthenticated user: prompt login first, then submit once logged in
+  const handleSubmitTest = useCallback(() => {
     const payload: SubmitLevelTestPayload = {
       answers: questions.map((q) => {
         const selected = selectedAnswers[q.id];
@@ -357,58 +427,51 @@ export function GeneralEnglishTestView() {
       timeSpentSeconds: elapsedSeconds,
     };
 
-    try {
-      console.log("Submitting diagnostic level test payload to backend:", payload);
-      const res = await submitLevelTestAnswers(payload);
-
-      if (res && res.success && res.data) {
-        console.log("Evaluation analysis received from backend:", res.data);
-        setEvaluationResult(res.data);
-        setIsCompleted(true);
-
-        try {
-          localStorage.setItem(
-            "fluentia_level_test_session",
-            JSON.stringify({
-              selectedAnswers,
-              answerformat: payload,
-              evaluationResult: res.data,
-              elapsedSeconds,
-              isCompleted: true,
-              timestamp: Date.now(),
-            })
-          );
-        } catch (e) {
-          console.error("Failed to cache test session:", e);
-        }
-      } else {
-        throw new Error("Evaluation API returned incomplete response data");
-      }
-    } catch (err: any) {
-      console.warn("Submitting via API encountered error, utilizing local evaluation:", err);
-      const fallbackResult = generateFallbackEvaluation(questions, selectedAnswers, elapsedSeconds);
-      setEvaluationResult(fallbackResult);
-      setIsCompleted(true);
-
-      try {
-        localStorage.setItem(
-          "fluentia_level_test_session",
-          JSON.stringify({
-            selectedAnswers,
-            answerformat: payload,
-            evaluationResult: fallbackResult,
-            elapsedSeconds,
-            isCompleted: true,
-            timestamp: Date.now(),
-          })
-        );
-      } catch (e) {
-        console.error("Failed to cache fallback session:", e);
-      }
-    } finally {
-      setIsEvaluating(false);
+    // If user is already authenticated, submit immediately to API
+    if (isAuthenticated) {
+      executeSubmit(payload);
+      return;
     }
-  }, [questions, selectedAnswers, elapsedSeconds]);
+
+    // If user is not authenticated: save answers in storage and mark completed to show Auth Gate
+    try {
+      localStorage.setItem(
+        "fluentia_level_test_session",
+        JSON.stringify({
+          selectedAnswers,
+          pendingPayload: payload,
+          elapsedSeconds,
+          isCompleted: true,
+          timestamp: Date.now(),
+        })
+      );
+    } catch (e) {
+      console.error("Failed to cache pending test session:", e);
+    }
+    setIsCompleted(true);
+  }, [isAuthenticated, questions, selectedAnswers, elapsedSeconds, executeSubmit]);
+
+  // Auto-trigger submission once the user logs in after completing the test
+  useEffect(() => {
+    if (
+      isAuthenticated &&
+      isCompleted &&
+      !evaluationResult &&
+      !isEvaluating &&
+      questions.length > 0 &&
+      Object.keys(selectedAnswers).length > 0
+    ) {
+      executeSubmit();
+    }
+  }, [
+    isAuthenticated,
+    isCompleted,
+    evaluationResult,
+    isEvaluating,
+    questions.length,
+    selectedAnswers,
+    executeSubmit,
+  ]);
 
   // Navigation handlers
   const handleNext = () => {
@@ -545,7 +608,7 @@ export function GeneralEnglishTestView() {
   // ==========================================
   // RESULTS VIEW: AUTH GATE (If test completed but user not authenticated)
   // ==========================================
-  if (isCompleted && activeResult && !isAuthenticated) {
+  if (isCompleted && !isAuthenticated) {
     return (
       <div className="relative min-h-screen py-10 sm:py-16 px-4 sm:px-6 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200 flex flex-col justify-center items-center">
         <GridBackground squareSize={64} showDots={true} />
@@ -555,18 +618,18 @@ export function GeneralEnglishTestView() {
           {/* Header */}
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold uppercase tracking-wider shadow-2xs">
-              <span>🔒 RESULT EVALUATED • LOGIN TO VIEW</span>
+              <span>🔒 LOGIN REQUIRED • EVALUATE TEST</span>
             </div>
 
             <h1 className="font-bangla text-2xl sm:text-3xl font-bold tracking-tight text-ink dark:text-white leading-tight">
-              আপনার রেজাল্ট দেখতে{" "}
+              AI মূল্যায়ন দেখতে{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 dark:from-purple-300 dark:via-fuchsia-300 dark:to-indigo-300">
                 Login করুন
               </span>
             </h1>
 
             <p className="font-bangla text-xs sm:text-sm text-ink-soft dark:text-slate-300 leading-relaxed max-w-sm mx-auto">
-              আপনার টেস্ট সফলভাবে মূল্যায়ন হয়েছে! আপনার নির্ধারিত <strong>CEFR Level</strong>, বিস্তারিত দুর্বলতা বিশ্লেষণ ও AI স্টাডি রোডম্যাপ দেখতে Login করুন।
+              আপনার সকল উত্তর সংরক্ষিত আছে! AI দিয়ে উত্তরপত্র মূল্যায়ন করে <strong>CEFR Level</strong>, দুর্বলতা বিশ্লেষণ ও AI স্টাডি রোডম্যাপ পেতে Login করুন।
             </p>
           </div>
 
@@ -577,7 +640,7 @@ export function GeneralEnglishTestView() {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 <span className="font-bold text-ink dark:text-white">
-                  {activeResult.totalQuestions} Questions Evaluated
+                  {answeredCount} of {totalQuestions} Questions Answered
                 </span>
               </div>
               <span className="font-bold text-primary dark:text-purple-300 flex items-center gap-1">
@@ -589,7 +652,7 @@ export function GeneralEnglishTestView() {
             <div className="filter blur-sm select-none pointer-events-none opacity-40 dark:opacity-30 grid grid-cols-3 gap-2 py-1">
               <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-[#231b4c] border border-slate-200/60 dark:border-purple-400/20 text-center">
                 <span className="text-[10px] uppercase font-bold block text-ink-soft">Score</span>
-                <span className="text-base font-bold text-ink dark:text-white">?? / {activeResult.totalQuestions}</span>
+                <span className="text-base font-bold text-ink dark:text-white">?? / {totalQuestions}</span>
               </div>
               <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-[#231b4c] border border-slate-200/60 dark:border-purple-400/20 text-center">
                 <span className="text-[10px] uppercase font-bold block text-ink-soft">Accuracy</span>
