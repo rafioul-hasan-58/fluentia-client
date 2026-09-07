@@ -210,7 +210,7 @@ export function AdminSidebar() {
         </div>
 
         {/* Switcher back to Learner Hub */}
-        <div className="p-3 border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.01]">
+        {/* <div className="p-3 border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.01]">
           <Link
             href="/dashboard"
             className="flex items-center justify-between px-3 py-2 rounded-xl bg-primary/10 dark:bg-purple-600/15 border border-primary/20 hover:border-primary/40 text-primary dark:text-purple-300 text-xs font-semibold transition-all group"
@@ -221,7 +221,7 @@ export function AdminSidebar() {
             </span>
             <span className="group-hover:translate-x-0.5 transition-transform">→</span>
           </Link>
-        </div>
+        </div> */}
 
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5 font-nav">

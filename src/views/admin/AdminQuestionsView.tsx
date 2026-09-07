@@ -1,23 +1,34 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AdminHeader } from "@/components/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LevelTestQuestion } from "@/types/level-test";
-import { fetchGeneralLevelTestQuestions } from "@/lib/api/levelTest";
+import {
+  fetchAdminLevelTestQuestions,
+  MOCK_LEVEL_TEST_QUESTIONS,
+} from "@/lib/api/admin";
 
 export function AdminQuestionsView() {
-  const [questions, setQuestions] = useState<LevelTestQuestion[]>([]);
+  const [questions, setQuestions] = useState<LevelTestQuestion[]>(MOCK_LEVEL_TEST_QUESTIONS);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSection, setSelectedSection] = useState<string>("ALL");
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalCount, setTotalCount] = useState(40);
+  const [totalPages, setTotalPages] = useState(2);
+
   const [previewQuestion, setPreviewQuestion] = useState<LevelTestQuestion | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [actionAlert, setActionAlert] = useState<{ message: string; type: "success" | "warn" } | null>(null);
 
   // New question form state
   const [newQuestion, setNewQuestion] = useState<Partial<LevelTestQuestion>>({
@@ -36,41 +47,61 @@ export function AdminQuestionsView() {
     ],
   });
 
-  useEffect(() => {
-    async function loadQuestions() {
-      setIsLoading(true);
-      try {
-        const data = await fetchGeneralLevelTestQuestions(50);
-        setQuestions(data);
-      } catch {
-        // fallback handles errors
-      } finally {
-        setIsLoading(false);
-      }
+  const loadQuestions = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetchAdminLevelTestQuestions({
+        page: currentPage,
+        limit: pageSize,
+        sectionType: selectedSection === "ALL" ? undefined : selectedSection,
+        level: selectedLevel === "ALL" ? undefined : selectedLevel,
+        difficulty: selectedDifficulty === "ALL" ? undefined : selectedDifficulty,
+        search: searchQuery.trim() || undefined,
+      });
+
+      setQuestions(res.items);
+      setTotalCount(res.total);
+      setTotalPages(res.totalPages);
+    } catch (err) {
+      console.warn("Could not load questions", err);
+    } finally {
+      setIsLoading(false);
     }
+  }, [currentPage, pageSize, selectedSection, selectedLevel, selectedDifficulty, searchQuery]);
+
+  useEffect(() => {
     loadQuestions();
-  }, []);
+  }, [loadQuestions]);
 
-  const filteredQuestions = questions.filter((q) => {
-    const matchesSearch =
-      q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (q.explanation && q.explanation.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      q.id.toLowerCase().includes(searchQuery.toLowerCase());
+  const triggerAlert = (message: string, type: "success" | "warn" = "success") => {
+    setActionAlert({ message, type });
+    setTimeout(() => setActionAlert(null), 3500);
+  };
 
-    const matchesSection =
-      selectedSection === "ALL" ||
-      q.sectionType?.toUpperCase() === selectedSection.toUpperCase();
+  const handleSectionChange = (sec: string) => {
+    setSelectedSection(sec);
+    setCurrentPage(1);
+  };
 
-    const matchesLevel =
-      selectedLevel === "ALL" ||
-      q.level?.toUpperCase() === selectedLevel.toUpperCase();
+  const handleLevelChange = (lvl: string) => {
+    setSelectedLevel(lvl);
+    setCurrentPage(1);
+  };
 
-    const matchesDifficulty =
-      selectedDifficulty === "ALL" ||
-      q.difficulty?.toUpperCase() === selectedDifficulty.toUpperCase();
+  const handleDifficultyChange = (diff: string) => {
+    setSelectedDifficulty(diff);
+    setCurrentPage(1);
+  };
 
-    return matchesSearch && matchesSection && matchesLevel && matchesDifficulty;
-  });
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (val: number) => {
+    setPageSize(val);
+    setCurrentPage(1);
+  };
 
   const handleCreateQuestion = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +120,10 @@ export function AdminQuestionsView() {
     };
 
     setQuestions([created, ...questions]);
+    setTotalCount((c) => c + 1);
     setIsAddModalOpen(false);
+    triggerAlert("New evaluation question added to repository!", "success");
+
     setNewQuestion({
       sectionType: "GRAMMAR",
       level: "B1",
@@ -133,24 +167,153 @@ export function AdminQuestionsView() {
     }
   };
 
+  const startRecord = (currentPage - 1) * pageSize + 1;
+  const endRecord = Math.min(currentPage * pageSize, totalCount);
+
+  // Helper Pagination Controls Bar Component
+  const renderPaginationControls = (isTop: boolean) => {
+    if (totalCount === 0) return null;
+
+    return (
+      <div
+        className={`p-3.5 sm:p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn ${
+          isTop ? "border-primary/30 dark:border-primary/30" : "mt-2"
+        }`}
+      >
+        {/* Left: Summary Counter */}
+        <div className="flex items-center gap-2.5 text-xs text-ink-soft">
+          <span className="font-semibold text-ink">
+            Showing <strong className="text-primary dark:text-purple-300">{startRecord} - {endRecord}</strong> of {totalCount} Questions
+          </span>
+          <span className="text-slate-300 dark:text-white/20">|</span>
+          <span>Page {currentPage} of {totalPages || 1}</span>
+        </div>
+
+        {/* Right: Items per page & Page Jump */}
+        <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-end">
+          {/* Per Page Select */}
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-ink-soft text-[11px] font-semibold">Per page:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+              className="h-8 px-2 rounded-lg bg-paper border border-slate-200 dark:border-white/10 text-xs font-semibold text-ink cursor-pointer"
+            >
+              {[10, 20, 30, 50].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Page Buttons */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage <= 1 || isLoading}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="h-8 px-2.5 text-xs font-semibold"
+            >
+              ‹ Prev
+            </Button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+              if (
+                totalPages > 6 &&
+                p !== 1 &&
+                p !== totalPages &&
+                Math.abs(p - currentPage) > 1
+              ) {
+                if (p === 2 || p === totalPages - 1) {
+                  return (
+                    <span key={p} className="px-1 text-xs text-ink-soft">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              }
+
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setCurrentPage(p)}
+                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                    currentPage === p
+                      ? "bg-primary text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink hover:bg-slate-200 dark:hover:bg-white/10"
+                  }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
+
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage >= totalPages || isLoading}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="h-8 px-2.5 text-xs font-semibold"
+            >
+              Next ›
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn">
       {/* Header */}
       <AdminHeader
         title="Question Bank Manager"
-        subtitle={`Total of ${questions.length} active placement and evaluation questions indexed`}
+        subtitle={`Repository of ${totalCount} CEFR placement and diagnostic evaluation questions`}
         actions={
-          <Button
-            variant="gradient"
-            size="sm"
-            onClick={() => setIsAddModalOpen(true)}
-            className="text-xs font-bold shadow-sm"
-          >
-            <span>➕</span>
-            <span className="ml-1.5">Add Question</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadQuestions}
+              disabled={isLoading}
+              className="text-xs font-semibold"
+              title="Reload questions from backend"
+            >
+              <span className={isLoading ? "animate-spin mr-1.5 inline-block" : "mr-1.5"}>
+                🔄
+              </span>
+              <span>Refresh</span>
+            </Button>
+            <Button
+              variant="gradient"
+              size="sm"
+              onClick={() => setIsAddModalOpen(true)}
+              className="text-xs font-bold shadow-sm"
+            >
+              <span>➕</span>
+              <span className="ml-1.5">Add Question</span>
+            </Button>
+          </div>
         }
       />
+
+      {/* Global Alert */}
+      {actionAlert && (
+        <div
+          className={`p-3.5 rounded-2xl border text-xs font-semibold flex items-center gap-2 animate-fadeIn ${
+            actionAlert.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+              : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
+          }`}
+        >
+          <span>{actionAlert.type === "success" ? "✓" : "⚠️"}</span>
+          <span>{actionAlert.message}</span>
+        </div>
+      )}
 
       {/* Filter and Search Bar */}
       <div className="p-4 sm:p-5 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
@@ -162,11 +325,20 @@ export function AdminQuestionsView() {
             </span>
             <Input
               type="text"
-              placeholder="Search by keyword, question prompt, or ID..."
+              placeholder="Search by keyword, question prompt, answer, or ID..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-10"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-9 pr-8 text-xs h-10"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => handleSearchChange("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink text-xs"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           {/* View Mode Toggle */}
@@ -197,54 +369,82 @@ export function AdminQuestionsView() {
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200 dark:border-white/10">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft mr-1">
-            Section:
-          </span>
-          {["ALL", "GRAMMAR", "VOCABULARY", "READING"].map((sec) => (
-            <button
-              key={sec}
-              type="button"
-              onClick={() => setSelectedSection(sec)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                selectedSection === sec
-                  ? "bg-primary text-white shadow-xs"
-                  : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink"
-              }`}
-            >
-              {sec}
-            </button>
-          ))}
+        <div className="space-y-2.5 pt-2 border-t border-slate-200 dark:border-white/10">
+          {/* Section Filter */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft min-w-[70px]">
+              Section:
+            </span>
+            {["ALL", "GRAMMAR", "VOCABULARY", "READING", "SPEAKING"].map((sec) => (
+              <button
+                key={sec}
+                type="button"
+                onClick={() => handleSectionChange(sec)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                  selectedSection === sec
+                    ? "bg-primary text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink"
+                }`}
+              >
+                {sec}
+              </button>
+            ))}
+          </div>
 
-          <div className="w-px h-4 bg-slate-200 dark:border-white/10 mx-1 hidden sm:block" />
+          {/* Level Filter */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft min-w-[70px]">
+              CEFR Level:
+            </span>
+            {["ALL", "A1", "A2", "B1", "B2", "C1", "C2"].map((lvl) => (
+              <button
+                key={lvl}
+                type="button"
+                onClick={() => handleLevelChange(lvl)}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+                  selectedLevel === lvl
+                    ? "bg-primary text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink"
+                }`}
+              >
+                {lvl}
+              </button>
+            ))}
+          </div>
 
-          <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft mr-1">
-            Level:
-          </span>
-          {["ALL", "A1", "A2", "B1", "B2", "C1", "C2"].map((lvl) => (
-            <button
-              key={lvl}
-              type="button"
-              onClick={() => setSelectedLevel(lvl)}
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
-                selectedLevel === lvl
-                  ? "bg-primary text-white shadow-xs"
-                  : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink"
-              }`}
-            >
-              {lvl}
-            </button>
-          ))}
+          {/* Difficulty Filter */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft min-w-[70px]">
+              Difficulty:
+            </span>
+            {["ALL", "EASY", "MEDIUM", "HARD"].map((diff) => (
+              <button
+                key={diff}
+                type="button"
+                onClick={() => handleDifficultyChange(diff)}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+                  selectedDifficulty === diff
+                    ? "bg-primary text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink"
+                }`}
+              >
+                {diff}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
+      {/* TOP PAGINATION BAR (Right after Filter Bar) */}
+      {renderPaginationControls(true)}
+
       {/* Questions Content */}
       {isLoading ? (
-        <div className="p-12 text-center text-ink-soft text-sm flex items-center justify-center gap-2">
-          <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span>Loading Question Bank...</span>
+        <div className="p-16 text-center text-ink-soft text-sm flex flex-col items-center justify-center gap-3">
+          <span className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="font-semibold">Loading questions from Question Bank...</span>
         </div>
-      ) : filteredQuestions.length === 0 ? (
+      ) : questions.length === 0 ? (
         <div className="p-12 text-center rounded-3xl bg-paper-card border border-slate-200 dark:border-white/10 space-y-2">
           <p className="text-sm font-semibold text-ink">No questions matched your search criteria.</p>
           <p className="text-xs text-ink-soft">Try clearing your filters or adding a new question.</p>
@@ -255,6 +455,7 @@ export function AdminQuestionsView() {
               setSearchQuery("");
               setSelectedSection("ALL");
               setSelectedLevel("ALL");
+              setSelectedDifficulty("ALL");
             }}
             className="mt-2 text-xs"
           >
@@ -263,7 +464,7 @@ export function AdminQuestionsView() {
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredQuestions.map((q, idx) => (
+          {questions.map((q, idx) => (
             <div
               key={q.id || idx}
               className="p-5 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 hover:border-primary/40 shadow-sm transition-all space-y-3 flex flex-col justify-between group"
@@ -283,6 +484,13 @@ export function AdminQuestionsView() {
                     ● {q.difficulty}
                   </span>
                 </div>
+
+                {/* Reading Passage snippet if present */}
+                {q.passage && (
+                  <p className="text-[11px] text-ink-soft bg-slate-50 dark:bg-white/[0.02] p-2 rounded-lg border border-slate-200/60 dark:border-white/5 line-clamp-2 italic">
+                    &ldquo;{q.passage}&rdquo;
+                  </p>
+                )}
 
                 {/* Question Prompt */}
                 <h3 className="font-semibold text-sm text-ink group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
@@ -304,7 +512,7 @@ export function AdminQuestionsView() {
                         }`}
                       >
                         <span className="truncate">{opt.content}</span>
-                        {isCorrect && <span>✓</span>}
+                        {isCorrect && <span className="text-emerald-500 font-bold">✓</span>}
                       </div>
                     );
                   })}
@@ -313,7 +521,9 @@ export function AdminQuestionsView() {
 
               {/* Card Footer */}
               <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
-                <span className="text-[10px] text-ink-soft font-mono">ID: {q.id}</span>
+                <span className="text-[10px] text-ink-soft font-mono truncate max-w-[140px]" title={q.id}>
+                  ID: {q.id}
+                </span>
                 <button
                   type="button"
                   onClick={() => setPreviewQuestion(q)}
@@ -340,7 +550,7 @@ export function AdminQuestionsView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-              {filteredQuestions.map((q) => (
+              {questions.map((q) => (
                 <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02]">
                   <td className="py-3 px-3 font-medium text-ink max-w-xs truncate">
                     {q.question}
@@ -376,6 +586,9 @@ export function AdminQuestionsView() {
           </table>
         </div>
       )}
+
+      {/* BOTTOM PAGINATION BAR */}
+      {renderPaginationControls(false)}
 
       {/* Inspect Modal */}
       {previewQuestion && (
@@ -482,7 +695,7 @@ export function AdminQuestionsView() {
                   <select
                     id="sec"
                     value={newQuestion.sectionType}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, sectionType: e.target.value })}
+                    onChange={(e) => setNewQuestion({ ...newQuestion, sectionType: e.target.value as any })}
                     className="w-full h-10 px-3 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs font-medium text-ink"
                   >
                     <option value="GRAMMAR">GRAMMAR</option>
@@ -532,6 +745,16 @@ export function AdminQuestionsView() {
                   value={newQuestion.question}
                   onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
                   required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="qPassage">Reading Passage (Optional)</Label>
+                <Input
+                  id="qPassage"
+                  placeholder="Optional context or reading paragraph..."
+                  value={newQuestion.passage || ""}
+                  onChange={(e) => setNewQuestion({ ...newQuestion, passage: e.target.value })}
                 />
               </div>
 

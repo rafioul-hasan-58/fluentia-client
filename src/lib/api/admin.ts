@@ -829,28 +829,438 @@ export async function updateUserRoleApi(
 }
 
 /**
- * Fetches user details by ID
+ * Normalizes backend question payload
  */
-export async function fetchUserDetailsApi(userId: string): Promise<AdminUserRecord | null> {
+export function normalizeQuestionItem(item: any): LevelTestQuestion {
+  const options = Array.isArray(item.questionOptions)
+    ? item.questionOptions.map((opt: any) => ({
+        id: opt.id || `opt-${Math.random()}`,
+        content: opt.content || opt.text || "",
+        isCorrect: Boolean(opt.isCorrect),
+      }))
+    : [];
+
+  return {
+    id: item.id || `q-${Date.now()}`,
+    question: item.question || "",
+    passage: item.passage || null,
+    sectionType: (item.sectionType || "GRAMMAR").toUpperCase() as any,
+    level: (item.level || "A1").toUpperCase(),
+    difficulty: (item.difficulty || "EASY").toUpperCase(),
+    answer: item.answer || (options.find((o: any) => o.isCorrect)?.content || options[0]?.content || ""),
+    explanation: item.explanation || "",
+    questionOptions: options,
+  };
+}
+
+export const MOCK_LEVEL_TEST_QUESTIONS: LevelTestQuestion[] = [
+  {
+    id: "6a9eb72a0991ecb104b57f7b",
+    question: "My sister's daughter is my ___.",
+    passage: null,
+    sectionType: "VOCABULARY",
+    level: "A1",
+    difficulty: "EASY",
+    answer: "niece",
+    explanation: 'A "niece" is the daughter of one\'s brother or sister.',
+    questionOptions: [
+      { id: "6a9eb843af983cad3033354a", content: "niece" },
+      { id: "6a9eb843af983cad3033354b", content: "nephew" },
+      { id: "6a9eb843af983cad3033354c", content: "aunt" },
+      { id: "6a9eb843af983cad3033354d", content: "cousin" },
+    ],
+  },
+  {
+    id: "6a9eb7120991ecb104b57f67",
+    question: "There is ___ fresh orange on the dining table.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "A1",
+    difficulty: "EASY",
+    answer: "a",
+    explanation: 'The indefinite article "a" is used before singular countable nouns modified by words beginning with a consonant sound ("fresh").',
+    questionOptions: [
+      { id: "6a9eb7e8af983cad3033353a", content: "a" },
+      { id: "6a9eb7e8af983cad3033353b", content: "an" },
+      { id: "6a9eb7e8af983cad3033353c", content: "many" },
+      { id: "6a9eb7e8af983cad3033353d", content: "some" },
+    ],
+  },
+  {
+    id: "6a9eb6ee0991ecb104b57f49",
+    question: "Can you please shut the ___? The cold wind is blowing into the room.",
+    passage: null,
+    sectionType: "VOCABULARY",
+    level: "A1",
+    difficulty: "EASY",
+    answer: "window",
+    explanation: 'A "window" is an opening in a wall fitted with glass that can be shut to block outdoor wind.',
+    questionOptions: [
+      { id: "6a9eb7c6af983cad30333522", content: "window" },
+      { id: "6a9eb7c6af983cad30333523", content: "table" },
+      { id: "6a9eb7c6af983cad30333524", content: "chair" },
+      { id: "6a9eb7c6af983cad30333525", content: "floor" },
+    ],
+  },
+  {
+    id: "6a9eb6ec0991ecb104b57f35",
+    question: "Yesterday, David ___ an apple and a sandwich for his lunch.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "A1",
+    difficulty: "EASY",
+    answer: "ate",
+    explanation: '"Ate" is the past simple form of the irregular verb "eat", required by the past time marker "yesterday".',
+    questionOptions: [
+      { id: "6a9eb7b5af983cad30333512", content: "ate" },
+      { id: "6a9eb7b5af983cad30333513", content: "eat" },
+      { id: "6a9eb7b5af983cad30333514", content: "eats" },
+      { id: "6a9eb7b5af983cad30333515", content: "eating" },
+    ],
+  },
+  {
+    id: "6a9eb6e40991ecb104b57f17",
+    question: "What does Marco enjoy doing during his free time on weekends?",
+    passage: "Hello! My name is Marco. I am twenty-five years old and I work as a graphic designer in Milan. On weekends, I love riding my bicycle in the park and cooking Italian dinners for my close friends.",
+    sectionType: "READING",
+    level: "A1",
+    difficulty: "EASY",
+    answer: "Riding his bicycle and cooking dinners for friends",
+    explanation: 'The text states that on weekends Marco loves "riding my bicycle in the park and cooking Italian dinners for my close friends".',
+    questionOptions: [
+      { id: "6a9eb79caf983cad303334fa", content: "Riding his bicycle and cooking dinners for friends" },
+      { id: "6a9eb79caf983cad303334fb", content: "Designing graphics at the downtown office" },
+      { id: "6a9eb79caf983cad303334fc", content: "Playing competitive sports in a national tournament" },
+      { id: "6a9eb79caf983cad303334fd", content: "Working as a chef at a busy Italian restaurant" },
+    ],
+  },
+  {
+    id: "6a9eb6bc0991ecb104b57ef9",
+    question: "They ___ watch television in the afternoon because they have sports practice.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "A1",
+    difficulty: "EASY",
+    answer: "don't",
+    explanation: '"Don\'t" (do not) is the standard present simple negative auxiliary used with plural subject pronouns like "they".',
+    questionOptions: [
+      { id: "6a9eb77eaf983cad303334e2", content: "don't" },
+      { id: "6a9eb77eaf983cad303334e3", content: "doesn't" },
+      { id: "6a9eb77eaf983cad303334e4", content: "isn't" },
+      { id: "6a9eb77eaf983cad303334e5", content: "aren't" },
+    ],
+  },
+  {
+    id: "6a9eb6a20991ecb104b57ee5",
+    question: "I always eat breakfast in the ___ before I leave for work.",
+    passage: null,
+    sectionType: "VOCABULARY",
+    level: "A1",
+    difficulty: "EASY",
+    answer: "morning",
+    explanation: "Breakfast is the first meal of the day, traditionally eaten in the morning.",
+    questionOptions: [
+      { id: "6a9eb76faf983cad303334d2", content: "morning" },
+      { id: "6a9eb76faf983cad303334d3", content: "night" },
+      { id: "6a9eb76faf983cad303334d4", content: "evening" },
+      { id: "6a9eb76faf983cad303334d5", content: "midnight" },
+    ],
+  },
+  {
+    id: "6a9eb6970991ecb104b57ed1",
+    question: "She ___ from Spain and lives in Madrid.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "A1",
+    difficulty: "EASY",
+    answer: "is",
+    explanation: '"Is" is the correct third-person singular present form of the verb "to be" for the subject pronoun "she".',
+    questionOptions: [
+      { id: "6a9eb75caf983cad303334c2", content: "is" },
+      { id: "6a9eb75caf983cad303334c3", content: "are" },
+      { id: "6a9eb75caf983cad303334c4", content: "am" },
+      { id: "6a9eb75caf983cad303334c5", content: "be" },
+    ],
+  },
+  {
+    id: "6a9eb72d0991ecb104b57f85",
+    question: "If it rains heavily tomorrow afternoon, we ___ our hiking trip in the mountains.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "A2",
+    difficulty: "MEDIUM",
+    answer: "will cancel",
+    explanation: 'The first conditional ("If + present simple, will + base verb") expresses a real and probable future condition and its result.',
+    questionOptions: [
+      { id: "6a9eb86caf983cad30333552", content: "will cancel" },
+      { id: "6a9eb86caf983cad30333553", content: "canceled" },
+      { id: "6a9eb86caf983cad30333554", content: "would cancel" },
+      { id: "6a9eb86caf983cad30333555", content: "cancel" },
+    ],
+  },
+  {
+    id: "6a9eb71c0991ecb104b57f6c",
+    question: "We don't have ___ fresh milk left in the refrigerator, so I need to go to the grocery store.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "A2",
+    difficulty: "EASY",
+    answer: "any",
+    explanation: '"Any" is the appropriate quantifier in negative sentences when referring to uncountable nouns like "milk".',
+    questionOptions: [
+      { id: "6a9eb7e9af983cad3033353e", content: "any" },
+      { id: "6a9eb7e9af983cad3033353f", content: "some" },
+      { id: "6a9eb7e9af983cad30333540", content: "many" },
+      { id: "6a9eb7e9af983cad30333541", content: "a few" },
+    ],
+  },
+  {
+    id: "6a9eb7010991ecb104b57f53",
+    question: "What action are building residents instructed to take before Thursday morning?",
+    passage: "Attention Residents: The property maintenance staff will inspect water pipes in all units this Thursday between 9:00 AM and 1:00 PM. Please ensure that kitchen sinks and bathroom plumbing fixtures are completely clear and accessible. Water utility services will be temporarily shut off during this four-hour inspection window.",
+    sectionType: "READING",
+    level: "A2",
+    difficulty: "MEDIUM",
+    answer: "Ensure kitchen sinks and bathroom areas are clear and accessible",
+    explanation: 'The notice explicitly instructs residents to "ensure that kitchen sinks and bathroom plumbing fixtures are completely clear and accessible".',
+    questionOptions: [
+      { id: "6a9eb7d7af983cad3033352a", content: "Ensure kitchen sinks and bathroom areas are clear and accessible" },
+      { id: "6a9eb7d7af983cad3033352b", content: "Repair their own leaking pipes before the inspectors arrive" },
+      { id: "6a9eb7d7af983cad3033352c", content: "Vacate their apartments for the remainder of the calendar week" },
+      { id: "6a9eb7d7af983cad3033352d", content: "Pay an emergency plumbing fee directly to building management" },
+    ],
+  },
+  {
+    id: "6a9eb6ec0991ecb104b57f3a",
+    question: "Please remember to ___ your winter jacket before stepping outside; the temperature is below zero.",
+    passage: null,
+    sectionType: "VOCABULARY",
+    level: "A2",
+    difficulty: "MEDIUM",
+    answer: "put on",
+    explanation: 'The phrasal verb "put on" means to dress oneself in clothing or outerwear.',
+    questionOptions: [
+      { id: "6a9eb7b8af983cad30333516", content: "put on" },
+      { id: "6a9eb7b8af983cad30333517", content: "take off" },
+      { id: "6a9eb7b8af983cad30333518", content: "give up" },
+      { id: "6a9eb7b8af983cad30333519", content: "turn down" },
+    ],
+  },
+  {
+    id: "6a9eb6e50991ecb104b57f21",
+    question: "This new laptop model is ___ than the desktop computer I bought three years ago.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "A2",
+    difficulty: "MEDIUM",
+    answer: "much faster",
+    explanation: '"Much faster" correctly applies the comparative form "faster" intensified by the adverb "much". "More faster" is a double comparative and ungrammatical.',
+    questionOptions: [
+      { id: "6a9eb7a9af983cad30333502", content: "much faster" },
+      { id: "6a9eb7a9af983cad30333503", content: "more faster" },
+      { id: "6a9eb7a9af983cad30333504", content: "fastest" },
+      { id: "6a9eb7a9af983cad30333505", content: "as fast" },
+    ],
+  },
+  {
+    id: "6a9eb6c80991ecb104b57f08",
+    question: "The morning train was delayed, so the platform was ___ with commuters waiting to board.",
+    passage: null,
+    sectionType: "VOCABULARY",
+    level: "A2",
+    difficulty: "EASY",
+    answer: "crowded",
+    explanation: '"Crowded" describes a place that is packed with a large number of people.',
+    questionOptions: [
+      { id: "6a9eb78caf983cad303334ee", content: "crowded" },
+      { id: "6a9eb78caf983cad303334ef", content: "empty" },
+      { id: "6a9eb78caf983cad303334f0", content: "quiet" },
+      { id: "6a9eb78caf983cad303334f1", content: "narrow" },
+    ],
+  },
+  {
+    id: "6a9eb6ad0991ecb104b57eef",
+    question: "According to the notice, what new services can community library visitors access today?",
+    passage: "Community libraries are changing. Today, visitors can do much more than borrow printed books. Many branches now offer free high-speed internet access, digital audiobooks, quiet study rooms, and weekly workshops on computer programming and creative writing.",
+    sectionType: "READING",
+    level: "A2",
+    difficulty: "EASY",
+    answer: "Attend educational workshops and use free internet",
+    explanation: 'The text states that libraries now offer "free high-speed internet access" and "weekly workshops on computer programming and creative writing".',
+    questionOptions: [
+      { id: "6a9eb77caf983cad303334da", content: "Attend educational workshops and use free internet" },
+      { id: "6a9eb77caf983cad303334db", content: "Purchase brand new laptops at discounted prices" },
+      { id: "6a9eb77caf983cad303334dc", content: "Only borrow physical hardcover novels" },
+      { id: "6a9eb77caf983cad303334dd", content: "Enroll in official university degree programs" },
+    ],
+  },
+  {
+    id: "6a9eb6a00991ecb104b57edb",
+    question: "While Sarah was reading a book, her brother ___ video games in the living room.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "A2",
+    difficulty: "EASY",
+    answer: "was playing",
+    explanation: 'The past continuous "was playing" is used to describe an ongoing action occurring simultaneously with another past continuous action ("was reading").',
+    questionOptions: [
+      { id: "6a9eb75faf983cad303334ca", content: "was playing" },
+      { id: "6a9eb75faf983cad303334cb", content: "plays" },
+      { id: "6a9eb75faf983cad303334cc", content: "is playing" },
+      { id: "6a9eb75faf983cad303334cd", content: "has played" },
+    ],
+  },
+  {
+    id: "6a9eb7360991ecb104b57f8a",
+    question: "During the interview, the journalist asked the author where ___ the inspiration for his historical novel.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "B1",
+    difficulty: "MEDIUM",
+    answer: "he had found",
+    explanation: 'Reported questions follow affirmative statement word order (subject + verb) with tense backshift to the past perfect ("he had found").',
+    questionOptions: [
+      { id: "6a9eb86eaf983cad30333556", content: "he had found" },
+      { id: "6a9eb86eaf983cad30333557", content: "had he found" },
+      { id: "6a9eb86eaf983cad30333558", content: "did he find" },
+      { id: "6a9eb86eaf983cad30333559", content: "he has found" },
+    ],
+  },
+  {
+    id: "6a9eb7210991ecb104b57f71",
+    question: "What is a primary environmental advantage of vertical farming described in the text?",
+    passage: "Urban vertical farming is revolutionizing food production across metropolitan areas. By cultivating crops in stacked vertical layers inside climate-controlled indoor facilities, these automated operations consume up to 90% less water than conventional outdoor agriculture. Furthermore, because crops grow in sterile environments shielded from adverse weather and insects, vertical farms require virtually no chemical pesticides, supplying fresh produce directly to urban markets with minimal transportation emissions.",
+    sectionType: "READING",
+    level: "B1",
+    difficulty: "MEDIUM",
+    answer: "It drastically reduces water consumption and eliminates the need for chemical pesticides",
+    explanation: "The text highlights that vertical farms use up to 90% less water and require virtually no chemical pesticides compared to traditional farming.",
+    questionOptions: [
+      { id: "6a9eb80aaf983cad30333542", content: "It drastically reduces water consumption and eliminates the need for chemical pesticides" },
+      { id: "6a9eb80aaf983cad30333543", content: "It depends entirely on natural open-air rainfall and seasonal weather patterns" },
+      { id: "6a9eb80aaf983cad30333544", content: "It relies on international shipping routes to transport harvested food" },
+      { id: "6a9eb80aaf983cad30333545", content: "It replaces all traditional rural farms with heavy industrial manufacturing plants" },
+    ],
+  },
+  {
+    id: "6a9eb7030991ecb104b57f58",
+    question: "The research department decided to ___ a comprehensive market survey before releasing the product.",
+    passage: null,
+    sectionType: "VOCABULARY",
+    level: "B1",
+    difficulty: "MEDIUM",
+    answer: "conduct",
+    explanation: 'The established standard collocation for organizing and administering research or an investigation is to "conduct a survey".',
+    questionOptions: [
+      { id: "6a9eb7d8af983cad3033352e", content: "conduct" },
+      { id: "6a9eb7d8af983cad3033352f", content: "compose" },
+      { id: "6a9eb7d8af983cad30333530", content: "attract" },
+      { id: "6a9eb7d8af983cad30333531", content: "invent" },
+    ],
+  },
+  {
+    id: "6a9eb6ed0991ecb104b57f3f",
+    question: "The ancient medieval fortress ___ by thousands of international tourists each summer.",
+    passage: null,
+    sectionType: "GRAMMAR",
+    level: "B1",
+    difficulty: "MEDIUM",
+    answer: "is visited",
+    explanation: 'The present simple passive ("is visited") is used for routine or recurring facts where the object is the focus of the sentence.',
+    questionOptions: [
+      { id: "6a9eb7b9af983cad3033351a", content: "is visited" },
+      { id: "6a9eb7b9af983cad3033351b", content: "was visited" },
+      { id: "6a9eb7b9af983cad3033351c", content: "visits" },
+      { id: "6a9eb7b9af983cad3033351d", content: "has visited" },
+    ],
+  },
+];
+
+/**
+ * Fetches questions for admin management with live backend endpoint and fallback
+ */
+export async function fetchAdminLevelTestQuestions(query?: {
+  page?: number;
+  limit?: number;
+  sectionType?: string;
+  level?: string;
+  difficulty?: string;
+  search?: string;
+}): Promise<{
+  items: LevelTestQuestion[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}> {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
     const headers: Record<string, string> = { Accept: "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const res = await fetch(`${getApiBaseUrl()}/users/${userId}`, { headers });
+    const params = new URLSearchParams();
+    if (query?.page) params.append("page", String(query.page));
+    if (query?.limit) params.append("limit", String(query.limit));
+    if (query?.sectionType && query.sectionType !== "ALL") params.append("sectionType", query.sectionType);
+    if (query?.level && query.level !== "ALL") params.append("level", query.level);
+    if (query?.difficulty && query.difficulty !== "ALL") params.append("difficulty", query.difficulty);
+    if (query?.search) params.append("search", query.search);
+
+    const url = `${getApiBaseUrl()}/level-test-questions?${params.toString()}`;
+    const res = await fetch(url, { headers, cache: "no-store" });
     if (res.ok) {
       const json = await res.json();
       const rawData = json.data || json;
-      if (rawData && rawData.id) {
-        return normalizeUserItem(rawData);
+      const rawItems = rawData.items || (Array.isArray(rawData) ? rawData : []);
+      if (Array.isArray(rawItems) && rawItems.length > 0) {
+        const items = rawItems.map(normalizeQuestionItem);
+        return {
+          items,
+          total: rawData.total ?? items.length,
+          page: rawData.page ?? (query?.page || 1),
+          limit: rawData.limit ?? (query?.limit || 20),
+          totalPages: rawData.totalPages ?? 1,
+        };
       }
     }
   } catch (err) {
-    console.warn(`Could not fetch details for user ${userId}`, err);
+    console.warn("Could not fetch live level test questions, using fallback", err);
   }
 
-  const found = MOCK_ADMIN_USERS.find((u) => u.id === userId);
-  return found || null;
+  // Filter fallback
+  let filtered = [...MOCK_LEVEL_TEST_QUESTIONS];
+  if (query?.sectionType && query.sectionType !== "ALL") {
+    filtered = filtered.filter((q) => q.sectionType?.toUpperCase() === query.sectionType?.toUpperCase());
+  }
+  if (query?.level && query.level !== "ALL") {
+    filtered = filtered.filter((q) => q.level?.toUpperCase() === query.level?.toUpperCase());
+  }
+  if (query?.difficulty && query.difficulty !== "ALL") {
+    filtered = filtered.filter((q) => q.difficulty?.toUpperCase() === query.difficulty?.toUpperCase());
+  }
+  if (query?.search) {
+    const q = query.search.toLowerCase();
+    filtered = filtered.filter(
+      (item) =>
+        item.question.toLowerCase().includes(q) ||
+        (item.explanation && item.explanation.toLowerCase().includes(q)) ||
+        item.id.toLowerCase().includes(q)
+    );
+  }
+
+  const page = query?.page || 1;
+  const limit = query?.limit || 20;
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / limit) || 1;
+  const paginated = filtered.slice((page - 1) * limit, page * limit);
+
+  return {
+    items: paginated,
+    total,
+    page,
+    limit,
+    totalPages,
+  };
 }
 
 
