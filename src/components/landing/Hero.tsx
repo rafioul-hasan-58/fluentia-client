@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { StarfieldCanvas } from "./StarfieldCanvas";
+import { HeroProductPreview } from "./HeroProductPreview";
 import { ChatDemo } from "./ChatDemo";
 
 interface TrackCard {
@@ -19,32 +20,10 @@ interface TrackCard {
 
 const LEARNING_TRACKS: TrackCard[] = [
   {
-    id: "speaking",
-    badge: "AI Active",
-    title: "Speaking AI",
-    subtitle: "Real-time Fluency",
-    icon: "🗣️",
-    glowColor: "from-blue-600/20 to-cyan-500/10",
-    borderColor: "hover:border-cyan-500/60",
-    badgeColor: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border-cyan-500/30",
-    href: "/dashboard/chat",
-  },
-  {
-    id: "ielts",
-    badge: "Band 8.0+",
-    title: "IELTS Prep",
-    subtitle: "Speaking & Writing",
-    icon: "🎯",
-    glowColor: "from-indigo-600/20 to-blue-500/10",
-    borderColor: "hover:border-blue-500/60",
-    badgeColor: "bg-blue-500/15 text-primary dark:text-blue-300 border-blue-500/30",
-    href: "/dashboard/chat",
-  },
-  {
     id: "grammar",
     badge: "Instant Fix",
     title: "Grammar Doctor",
-    subtitle: "Syntax & Clauses",
+    subtitle: "Clauses & Verb Tenses",
     icon: "🔬",
     glowColor: "from-sky-600/20 to-indigo-500/10",
     borderColor: "hover:border-sky-500/60",
@@ -52,10 +31,32 @@ const LEARNING_TRACKS: TrackCard[] = [
     href: "/dashboard/chat",
   },
   {
+    id: "ielts",
+    badge: "Band 7.5+",
+    title: "IELTS Prep",
+    subtitle: "Speaking & Writing Tasks",
+    icon: "🎯",
+    glowColor: "from-indigo-600/20 to-blue-500/10",
+    borderColor: "hover:border-blue-500/60",
+    badgeColor: "bg-blue-500/15 text-primary dark:text-blue-300 border-blue-500/30",
+    href: "/dashboard/chat",
+  },
+  {
+    id: "speaking",
+    badge: "AI Active",
+    title: "Speaking AI",
+    subtitle: "Real-time Pronunciation",
+    icon: "🗣️",
+    glowColor: "from-blue-600/20 to-cyan-500/10",
+    borderColor: "hover:border-cyan-500/60",
+    badgeColor: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border-cyan-500/30",
+    href: "/dashboard/chat",
+  },
+  {
     id: "vocab",
     badge: "Daily XP",
     title: "Vocab Vault",
-    subtitle: "Idioms & Phrasing",
+    subtitle: "Idioms & Phrasal Verbs",
     icon: "📚",
     glowColor: "from-amber-600/20 to-orange-500/10",
     borderColor: "hover:border-amber-500/60",
@@ -63,11 +64,11 @@ const LEARNING_TRACKS: TrackCard[] = [
     href: "/dashboard/vocabulary",
   },
   {
-    id: "interview",
-    badge: "Career Pro",
-    title: "Interview Prep",
-    subtitle: "Executive English",
-    icon: "💼",
+    id: "writing",
+    badge: "Pro Essays",
+    title: "Writing Clarity",
+    subtitle: "Structure & Coherence",
+    icon: "✍️",
     glowColor: "from-emerald-600/20 to-teal-500/10",
     borderColor: "hover:border-emerald-500/60",
     badgeColor: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30",
@@ -77,7 +78,7 @@ const LEARNING_TRACKS: TrackCard[] = [
     id: "listening",
     badge: "Audio Lab",
     title: "Listening Pro",
-    subtitle: "Native Dialects",
+    subtitle: "Native Accents & Speed",
     icon: "🎧",
     glowColor: "from-purple-600/20 to-blue-500/10",
     borderColor: "hover:border-purple-500/60",
@@ -86,13 +87,20 @@ const LEARNING_TRACKS: TrackCard[] = [
   },
 ];
 
+const HIGHLIGHT_TAGS = [
+  { label: "Grammar Diagnosis", icon: "🔬" },
+  { label: "IELTS Band 7.5+", icon: "🎯" },
+  { label: "Speaking Audio AI", icon: "🗣️" },
+  { label: "Vocab Vault", icon: "📚" },
+];
+
 export function Hero() {
   const [showDemoModal, setShowDemoModal] = useState(false);
 
   // Interactive spark particle burst on click
   const handleHeroClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
     const target = e.target as HTMLElement;
-    // Prevent triggering on buttons or anchor links so user clicks stay focused
+    // Don't trigger on buttons, inputs or links
     if (target.closest("button") || target.closest("a") || target.closest("input")) {
       return;
     }
@@ -121,77 +129,111 @@ export function Hero() {
   return (
     <section
       onClick={handleHeroClick}
-      className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 bg-paper dark:bg-[#030712] text-ink dark:text-white transition-colors duration-200 cursor-default"
+      className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24 bg-paper dark:bg-[#030712] text-ink dark:text-white transition-colors duration-200 cursor-default"
     >
       {/* Animated Sky & Constellation Canvas with Interactive Mouse Physics */}
       <StarfieldCanvas />
 
       {/* Ambient Floating Glow Orbs */}
-      <div className="glow-orb orb-1 opacity-20 dark:opacity-30" />
-      <div className="glow-orb orb-2 opacity-20 dark:opacity-30" />
-      <div className="glow-orb orb-3 opacity-15 dark:opacity-25" />
+      <div className="glow-orb orb-1 opacity-25 dark:opacity-35" />
+      <div className="glow-orb orb-2 opacity-25 dark:opacity-35" />
+      <div className="glow-orb orb-3 opacity-20 dark:opacity-30" />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Top Announcement Tag */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 dark:bg-emerald-500/10 border border-primary/20 dark:border-emerald-500/25 backdrop-blur-md text-xs font-semibold tracking-wide text-primary dark:text-emerald-300 shadow-xs">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
-            <span className="text-primary dark:text-emerald-300">✨ NEXT-GEN AI LANGUAGE COACH</span>
-            <span className="text-ink-soft/40 dark:text-white/40">•</span>
-            <span className="text-ink-soft dark:text-white/80">Real-time Pronunciation & Grammar</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Main 2-Column Hero Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 xl:gap-12 items-center">
+          {/* Left Column: Educational Framing, Bangla Messaging & CTAs */}
+          <div className="lg:col-span-6 space-y-6 text-left">
+            {/* Top Eyebrow Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 dark:bg-emerald-500/10 border border-blue-500/20 dark:border-emerald-500/25 backdrop-blur-md text-xs font-semibold tracking-wide text-primary dark:text-emerald-300 shadow-xs">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
+              <span>✨ AI-POWERED ENGLISH & IELTS LEARNING</span>
+            </div>
+
+            {/* Primary Bilingual Headline */}
+            <h1 className="font-bangla text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-bold text-ink dark:text-white leading-[1.22] tracking-tight">
+              Grammar বুঝছেন,{" "}
+              <span className="block mt-1 sm:mt-1.5 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-primary to-indigo-600 dark:from-cyan-300 dark:via-blue-400 dark:to-indigo-300 drop-shadow-[0_0_25px_rgba(56,189,248,0.25)]">
+                কিন্তু English-এ ব্যবহার করতে পারছেন না?
+              </span>
+            </h1>
+
+            {/* Supporting Core Bangla Statement Callout */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 shadow-sm backdrop-blur-md space-y-2 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-gradient-to-b before:from-blue-500 before:to-indigo-600">
+              <p className="font-bangla text-base sm:text-lg text-ink dark:text-white font-bold leading-snug">
+                &ldquo;IELTS প্রস্তুতি হোক বা Everyday English — আপনার শেখার পথ হবে আপনার জন্যই।&rdquo;
+              </p>
+              <p className="text-xs sm:text-sm text-ink-soft dark:text-slate-300 leading-relaxed">
+                মুখস্থ নয়—AI আপনার ভুল খুঁজে বের করবে, দুর্বলতা বুঝবে এবং আপনার জন্য তৈরি করবে personalized practice ও instant feedback।
+              </p>
+            </div>
+
+            {/* Learning Feature Chips */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {HIGHLIGHT_TAGS.map((tag) => (
+                <span
+                  key={tag.label}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-ink dark:text-slate-200 shadow-2xs"
+                >
+                  <span>{tag.icon}</span>
+                  <span>{tag.label}</span>
+                </span>
+              ))}
+            </div>
+
+            {/* CTA Buttons Row */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+              <Link
+                href="/dashboard/chat"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white font-bold text-base transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40 dark:shadow-[0_0_30px_rgba(37,99,235,0.45)] hover:scale-[1.02] active:scale-95 text-center"
+              >
+                <span className="font-bangla text-lg font-bold">শেখা শুরু করুন</span>
+              </Link>
+
+              <button
+                onClick={() => setShowDemoModal(true)}
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl bg-white/90 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 text-ink dark:text-white font-semibold text-base border border-slate-300/80 dark:border-white/15 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-md cursor-pointer"
+              >
+                <span>🎮 How It Works</span>
+              </button>
+            </div>
+
+            {/* Trust Checkmarks Checklist */}
+            <div className="flex flex-wrap items-center gap-y-2 gap-x-5 pt-1 text-xs text-ink-soft dark:text-slate-300 font-medium">
+              <div className="flex items-center gap-1.5">
+                <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span>
+                <span>Personalized Practice</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span>
+                <span>Instant Weakness Diagnosis</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span>
+                <span>IELTS Band 7.5+ Benchmarks</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Interactive AI Learning Product Visualization */}
+          <div className="lg:col-span-6 mt-6 lg:mt-0">
+            <HeroProductPreview />
           </div>
         </div>
 
-        {/* Hero Central Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-6">
-          <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-ink dark:text-white leading-[1.1] drop-shadow-xs">
-            Speak English With{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-primary to-indigo-600 dark:from-cyan-300 dark:via-blue-400 dark:to-indigo-300 drop-shadow-[0_0_25px_rgba(56,189,248,0.3)]">
-              Absolute
-            </span>{" "}
-            Confidence
-          </h1>
-
-          <p className="text-base sm:text-lg text-ink-soft dark:text-slate-300 leading-relaxed max-w-2xl mx-auto font-normal">
-            Your 24/7 personalized AI companion for mastering accent fluency, IELTS prep, writing clarity, and natural vocabulary.
-          </p>
-
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Link
-              href="/dashboard/chat"
-              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white font-bold text-base transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40 dark:shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:scale-[1.03] active:scale-95"
-            >
-              Start Free Practice Now →
-            </Link>
-
-            <button
-              onClick={() => setShowDemoModal(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-white/90 to-slate-100/90 dark:from-white/10 dark:to-white/5 hover:from-white hover:to-slate-200 dark:hover:from-white/15 dark:hover:to-white/10 text-ink dark:text-white font-semibold text-base border border-slate-300/80 dark:border-white/15 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-md"
-            >
-              🎮 Try Interactive Demo
-            </button>
-          </div>
-
-          {/* Trust Checkmarks */}
-          <div className="flex flex-wrap items-center justify-center gap-6 pt-3 text-xs text-ink-soft dark:text-slate-400">
-            <div className="flex items-center gap-1.5">
-              <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span> No credit card required
+        {/* Illuminated Learning Tracks Exploration Section */}
+        <div className="mt-16 pt-10 border-t border-slate-200/70 dark:border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+            <div>
+              <span className="text-xs uppercase tracking-widest font-bold text-primary dark:text-cyan-300">
+                EXPLORE LEARNING TRACKS
+              </span>
+              <h3 className="font-bangla text-base sm:text-lg font-bold text-ink dark:text-white mt-0.5">
+                আপনার লক্ষ্য অনুযায়ী মডিউল বেছে নিন
+              </h3>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span> Instant sentence diagnosis
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span> IELTS Band 8.0+ Benchmarks
-            </div>
-          </div>
-        </div>
-
-        {/* Illuminated Learning Tracks Category Cards Row */}
-        <div className="mt-16 pt-8">
-          <div className="text-center mb-6">
-            <span className="text-xs uppercase tracking-widest font-bold text-primary dark:text-cyan-300/80">
-              Explore Practice Modules & Learning Tracks
+            <span className="text-xs text-ink-soft dark:text-slate-400">
+              6 Specialized Practice Areas
             </span>
           </div>
 
@@ -220,9 +262,9 @@ export function Hero() {
                   </div>
 
                   <div>
-                    <h3 className="font-display text-sm font-bold text-ink dark:text-white group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors">
+                    <h4 className="font-display text-sm font-bold text-ink dark:text-white group-hover:text-primary dark:group-hover:text-cyan-300 transition-colors">
                       {track.title}
-                    </h3>
+                    </h4>
                     <p className="text-[11px] text-ink-soft dark:text-slate-400 mt-0.5">
                       {track.subtitle}
                     </p>
@@ -245,7 +287,7 @@ export function Hero() {
           <div className="relative w-full max-w-lg">
             <button
               onClick={() => setShowDemoModal(false)}
-              className="absolute -top-12 right-0 text-white hover:text-white/80 bg-white/20 hover:bg-white/30 p-2 rounded-full text-sm backdrop-blur-md transition-colors"
+              className="absolute -top-12 right-0 text-white hover:text-white/80 bg-white/20 hover:bg-white/30 p-2 rounded-full text-sm backdrop-blur-md transition-colors cursor-pointer"
             >
               ✕ Close Demo
             </button>
@@ -256,4 +298,5 @@ export function Hero() {
     </section>
   );
 }
+
 

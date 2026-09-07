@@ -33,7 +33,8 @@ const config: Config = {
         brand: ["var(--font-brand)", "var(--font-outfit)", "var(--font-inter)", "sans-serif"],
         nav: ["var(--font-brand)", "var(--font-outfit)", "var(--font-inter)", "sans-serif"],
         display: ["var(--font-brand)", "var(--font-outfit)", "sans-serif"],
-        sans: ["var(--font-inter)", "sans-serif"],
+        bangla: ["var(--font-bangla)", "var(--font-inter)", "sans-serif"],
+        sans: ["var(--font-inter)", "var(--font-bangla)", "sans-serif"],
       },
       maxWidth: {
         prose: "42rem",

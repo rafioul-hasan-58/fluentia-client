@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Montserrat, Outfit } from "next/font/google";
+import { Inter, Montserrat, Outfit, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -24,6 +24,13 @@ const outfit = Outfit({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+const hindSiliguri = Hind_Siliguri({
+  subsets: ["bengali", "latin"],
+  variable: "--font-bangla",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Fluentia - Your Personal AI English Tutor",
   description: "Master English speaking, reading, writing, and vocabulary with personalized AI-powered coaching.",
@@ -42,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${montserrat.variable} ${outfit.variable}`}
+      className={`${inter.variable} ${montserrat.variable} ${outfit.variable} ${hindSiliguri.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased min-h-screen bg-paper text-ink font-sans transition-colors duration-200">
@@ -53,3 +60,4 @@ export default function RootLayout({
     </html>
   );
 }
+
