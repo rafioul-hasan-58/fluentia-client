@@ -77,20 +77,13 @@ export function Navbar() {
             {isAuthenticated && user ? (
               <UserProfileDropdown />
             ) : (
-              /* If Unauthenticated: Show Login link and Start Practice button */
+              /* If Unauthenticated: Show Login button */
               <div className="flex items-center gap-2 font-nav">
                 <Link
                   href="/login"
-                  className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
-                >
-                  Log In
-                </Link>
-
-                <Link
-                  href="/dashboard/chat"
                   className="inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold transition-all duration-200 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-95"
                 >
-                  Start Practice
+                  Log In
                 </Link>
               </div>
             )}
@@ -111,40 +104,6 @@ export function Navbar() {
               </svg>
             </button>
           </div>
-        </div>
-
-        {/* Mobile Quick Scroll Nav Strip */}
-        <div className="md:hidden flex items-center gap-2 px-4 py-2 border-t border-slate-200/70 dark:border-white/5 overflow-x-auto no-scrollbar bg-slate-50/70 dark:bg-white/[0.02] font-nav">
-          <a
-            href="#how-it-works"
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-ink-soft hover:text-ink hover:bg-paper whitespace-nowrap transition-colors"
-          >
-            ⚡ How It Works
-          </a>
-          <a
-            href="#demo"
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-ink-soft hover:text-ink hover:bg-paper whitespace-nowrap transition-colors"
-          >
-            🎮 Demo
-          </a>
-          <a
-            href="#cta"
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-ink-soft hover:text-ink hover:bg-paper whitespace-nowrap transition-colors"
-          >
-            🚀 Get Started
-          </a>
-          <Link
-            href="/dashboard"
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-primary dark:text-purple-300 hover:bg-paper whitespace-nowrap transition-colors"
-          >
-            📊 Dashboard
-          </Link>
-          <Link
-            href="/dashboard/chat"
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-primary dark:text-purple-300 hover:bg-paper whitespace-nowrap transition-colors"
-          >
-            💬 AI Chat
-          </Link>
         </div>
       </header>
 
