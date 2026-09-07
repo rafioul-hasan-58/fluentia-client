@@ -5,6 +5,8 @@ import Link from "next/link";
 import { StarfieldCanvas } from "./StarfieldCanvas";
 import { HeroProductPreview } from "./HeroProductPreview";
 import { ChatDemo } from "./ChatDemo";
+import { GridBackground } from "./GridBackground";
+
 
 interface TrackCard {
   id: string;
@@ -131,8 +133,12 @@ export function Hero() {
       onClick={handleHeroClick}
       className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24 bg-paper dark:bg-[#070510] text-ink dark:text-white transition-colors duration-200 cursor-default"
     >
+      {/* Block Square Grid Background Pattern (Blueprint / Engineering Grid) */}
+      <GridBackground />
+
       {/* Animated Sky & Constellation Canvas with Interactive Mouse Physics */}
       <StarfieldCanvas />
+
 
       {/* Ambient Floating Glow Orbs */}
       <div className="glow-orb orb-1 opacity-25 dark:opacity-35" />
