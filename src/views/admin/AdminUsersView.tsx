@@ -1,55 +1,129 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AdminHeader } from "@/components/admin";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
-import { MOCK_ADMIN_USERS, AdminUserRecord } from "@/lib/api/admin";
+import {
+  MOCK_ADMIN_USERS,
+  AdminUserRecord,
+  fetchAdminUsers,
+  toggleUserSuspensionApi,
+  updateUserRoleApi,
+} from "@/lib/api/admin";
 
 export function AdminUsersView() {
   const { user: currentAdmin } = useAuth();
   const [users, setUsers] = useState<AdminUserRecord[]>(MOCK_ADMIN_USERS);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(MOCK_ADMIN_USERS.length);
+
   const [selectedUser, setSelectedUser] = useState<AdminUserRecord | null>(null);
   const [editingRoleUser, setEditingRoleUser] = useState<AdminUserRecord | null>(null);
   const [newRole, setNewRole] = useState<"ADMIN" | "USER">("USER");
+  const [isUpdatingAction, setIsUpdatingAction] = useState(false);
   const [actionAlert, setActionAlert] = useState<{ message: string; type: "success" | "warn" } | null>(null);
 
-  const filteredUsers = users.filter((u) => {
-    const matchesSearch =
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.id.toLowerCase().includes(searchQuery.toLowerCase());
+  const loadUsers = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const isSuspendedParam =
+        statusFilter === "ALL" ? undefined : statusFilter === "SUSPENDED";
 
-    const matchesRole =
-      roleFilter === "ALL" || u.role.toUpperCase() === roleFilter.toUpperCase();
+      const res = await fetchAdminUsers({
+        page: currentPage,
+        limit: 10,
+        role: roleFilter,
+        isSuspended: isSuspendedParam,
+        search: searchQuery.trim() || undefined,
+      });
 
-    const matchesStatus =
-      statusFilter === "ALL" ||
-      (statusFilter === "ACTIVE" && !u.isSuspended) ||
-      (statusFilter === "SUSPENDED" && u.isSuspended);
+      setUsers(res.items);
+      setTotalCount(res.total);
+      setTotalPages(res.totalPages);
+    } catch (err) {
+      console.warn("Error loading admin users directory", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, roleFilter, statusFilter, searchQuery]);
 
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
-  const handleUpdateRole = () => {
-    if (!editingRoleUser) return;
-    setUsers((prev) =>
-      prev.map((u) => (u.id === editingRoleUser.id ? { ...u, role: newRole } : u))
-    );
-    setActionAlert({
-      message: `Role for ${editingRoleUser.name} updated to ${newRole}.`,
-      type: "success",
-    });
-    setEditingRoleUser(null);
-    setTimeout(() => setActionAlert(null), 3500);
+  // Reset page to 1 when filters change
+  const handleRoleFilterChange = (role: string) => {
+    setRoleFilter(role);
+    setCurrentPage(1);
   };
 
-  const handleToggleSuspend = (targetUser: AdminUserRecord) => {
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+  };
+
+  const handleUpdateRole = async () => {
+    if (!editingRoleUser) return;
+
+    if (
+      currentAdmin?.email &&
+      editingRoleUser.email.toLowerCase() === currentAdmin.email.toLowerCase() &&
+      newRole !== "ADMIN"
+    ) {
+      setActionAlert({
+        message: "You cannot revoke administrative access from your own current account.",
+        type: "warn",
+      });
+      setTimeout(() => setActionAlert(null), 3500);
+      return;
+    }
+
+    setIsUpdatingAction(true);
+    try {
+      const res = await updateUserRoleApi(editingRoleUser.id, newRole);
+      if (res.success) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === editingRoleUser.id ? { ...u, role: newRole } : u))
+        );
+        if (selectedUser && selectedUser.id === editingRoleUser.id) {
+          setSelectedUser({ ...selectedUser, role: newRole });
+        }
+        setActionAlert({
+          message: `Role for ${editingRoleUser.name} updated to ${newRole} successfully.`,
+          type: "success",
+        });
+        setEditingRoleUser(null);
+      } else {
+        setActionAlert({
+          message: res.message || "Failed to update user role on server.",
+          type: "warn",
+        });
+      }
+    } catch (err: any) {
+      setActionAlert({
+        message: err.message || "An error occurred while updating role.",
+        type: "warn",
+      });
+    } finally {
+      setIsUpdatingAction(false);
+      setTimeout(() => setActionAlert(null), 3500);
+    }
+  };
+
+  const handleToggleSuspend = async (targetUser: AdminUserRecord) => {
     if (currentAdmin?.email && targetUser.email.toLowerCase() === currentAdmin.email.toLowerCase()) {
       setActionAlert({
         message: "You cannot suspend your own active administrator account.",
@@ -60,17 +134,51 @@ export function AdminUsersView() {
     }
 
     const nextState = !targetUser.isSuspended;
+    setIsUpdatingAction(true);
+
+    // Optimistic UI update
     setUsers((prev) =>
       prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: nextState } : u))
     );
+    if (selectedUser && selectedUser.id === targetUser.id) {
+      setSelectedUser({ ...selectedUser, isSuspended: nextState });
+    }
 
-    setActionAlert({
-      message: nextState
-        ? `Account for ${targetUser.name} has been suspended.`
-        : `Account for ${targetUser.name} has been reactivated.`,
-      type: nextState ? "warn" : "success",
-    });
-    setTimeout(() => setActionAlert(null), 3500);
+    try {
+      const res = await toggleUserSuspensionApi(targetUser.id, nextState);
+      if (res.success) {
+        setActionAlert({
+          message: nextState
+            ? `Account for ${targetUser.name} has been suspended.`
+            : `Account for ${targetUser.name} has been reactivated.`,
+          type: nextState ? "warn" : "success",
+        });
+      } else {
+        // Revert on failure
+        setUsers((prev) =>
+          prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: targetUser.isSuspended } : u))
+        );
+        if (selectedUser && selectedUser.id === targetUser.id) {
+          setSelectedUser({ ...selectedUser, isSuspended: targetUser.isSuspended });
+        }
+        setActionAlert({
+          message: res.message || "Could not update suspension status.",
+          type: "warn",
+        });
+      }
+    } catch (err: any) {
+      // Revert on failure
+      setUsers((prev) =>
+        prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: targetUser.isSuspended } : u))
+      );
+      setActionAlert({
+        message: err.message || "Network error updating suspension status.",
+        type: "warn",
+      });
+    } finally {
+      setIsUpdatingAction(false);
+      setTimeout(() => setActionAlert(null), 3500);
+    }
   };
 
   const getRoleBadge = (role: string) => {
@@ -88,8 +196,21 @@ export function AdminUsersView() {
         subtitle="Manage learner profiles, administrative access, and account suspension statuses."
         actions={
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 text-ink-soft">
-              {users.length} Registered Accounts
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadUsers}
+              disabled={isLoading}
+              className="text-xs font-semibold"
+              title="Refresh users directory"
+            >
+              <span className={isLoading ? "animate-spin mr-1.5 inline-block" : "mr-1.5"}>
+                🔄
+              </span>
+              <span>Refresh</span>
+            </Button>
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 text-ink-soft">
+              {totalCount} Total Accounts
             </span>
           </div>
         }
@@ -120,9 +241,18 @@ export function AdminUsersView() {
               type="text"
               placeholder="Search learners by name or email..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-10"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-9 pr-8 text-xs h-10"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => handleSearchChange("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink text-xs"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -138,7 +268,7 @@ export function AdminUsersView() {
                 <button
                   key={st.key}
                   type="button"
-                  onClick={() => setStatusFilter(st.key)}
+                  onClick={() => handleStatusFilterChange(st.key)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                     statusFilter === st.key
                       ? "bg-white dark:bg-white/15 text-ink shadow-xs"
@@ -153,24 +283,30 @@ export function AdminUsersView() {
         </div>
 
         {/* Role Filters */}
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-white/10 flex-wrap">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft mr-1">
-            Role:
-          </span>
-          {["ALL", "USER", "ADMIN"].map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRoleFilter(r)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                roleFilter === r
-                  ? "bg-primary text-white shadow-xs"
-                  : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink"
-              }`}
-            >
-              {r === "ALL" ? "All Roles" : r}
-            </button>
-          ))}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-white/10 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft mr-1">
+              Role:
+            </span>
+            {["ALL", "USER", "ADMIN"].map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => handleRoleFilterChange(r)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                  roleFilter === r
+                    ? "bg-primary text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink"
+                }`}
+              >
+                {r === "ALL" ? "All Roles" : r}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-[11px] text-ink-soft">
+            Showing <strong className="text-ink">{users.length}</strong> of {totalCount} accounts
+          </div>
         </div>
       </div>
 
@@ -190,131 +326,179 @@ export function AdminUsersView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-            {filteredUsers.map((u) => (
-              <tr
-                key={u.id}
-                className={`transition-colors group ${
-                  u.isSuspended
-                    ? "bg-rose-500/[0.03] hover:bg-rose-500/[0.06]"
-                    : "hover:bg-slate-50 dark:hover:bg-white/[0.02]"
-                }`}
-              >
-                {/* User Info */}
-                <td className="py-3.5 px-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      src={u.avatar || undefined}
-                      fallback={u.name.slice(0, 2).toUpperCase()}
-                      size="sm"
-                      className="w-8 h-8 shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className="font-semibold text-ink truncate group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
-                          {u.name}
-                        </p>
-                        {u.isSuspended && (
-                          <span className="text-[10px] text-rose-500 font-bold" title="Suspended Account">
-                            🚫
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-ink-soft truncate">{u.email}</p>
-                    </div>
-                  </div>
-                </td>
-
-                {/* Role Badge */}
-                <td className="py-3.5 px-3">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border uppercase tracking-wider ${getRoleBadge(u.role)}`}>
-                    {u.role}
-                  </span>
-                </td>
-
-                {/* Suspension Status */}
-                <td className="py-3.5 px-3">
-                  {u.isSuspended ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25">
-                      <span>🚫</span>
-                      <span>Suspended</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
-                      <span>🟢</span>
-                      <span>Active</span>
-                    </span>
-                  )}
-                </td>
-
-                {/* Proficiency */}
-                <td className="py-3.5 px-3">
-                  <span className="font-semibold text-ink">
-                    {u.level}
-                  </span>
-                </td>
-
-                {/* Auth Provider */}
-                <td className="py-3.5 px-3">
-                  <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 font-mono text-ink-soft uppercase">
-                    {u.provider}
-                  </span>
-                </td>
-
-                {/* Tests Taken */}
-                <td className="py-3.5 px-3 font-semibold text-ink">
-                  {u.testsTaken} tests
-                </td>
-
-                {/* Last Active */}
-                <td className="py-3.5 px-3 text-ink-soft text-[11px]">
-                  {u.lastActive}
-                </td>
-
-                {/* Actions & Suspend Toggle */}
-                <td className="py-3.5 px-3 text-right">
-                  <div className="flex items-center justify-end gap-1.5">
-                    {/* Suspend / Activate Toggle */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleSuspend(u)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
-                        u.isSuspended
-                          ? "bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 border-emerald-500/30"
-                          : "bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white dark:text-rose-400 border-rose-500/30"
-                      }`}
-                      title={u.isSuspended ? "Reactivate account" : "Suspend account"}
-                    >
-                      {u.isSuspended ? "Activate" : "Suspend"}
-                    </button>
-
-                    {/* Change Role */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingRoleUser(u);
-                        setNewRole(u.role === "ADMIN" ? "ADMIN" : "USER");
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-ink text-xs font-semibold transition-colors"
-                      title="Change user role"
-                    >
-                      Role
-                    </button>
-
-                    {/* Profile details */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedUser(u)}
-                      className="px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white dark:text-purple-300 text-xs font-semibold transition-colors"
-                      title="View user details"
-                    >
-                      Profile
-                    </button>
+            {isLoading ? (
+              <tr>
+                <td colSpan={8} className="py-12 text-center text-ink-soft">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="animate-spin inline-block">🔄</span>
+                    <span>Loading user directory...</span>
                   </div>
                 </td>
               </tr>
-            ))}
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="py-12 text-center text-ink-soft">
+                  <p className="text-sm font-semibold text-ink">No users match your filters.</p>
+                  <p className="text-xs text-ink-soft mt-1">Try broadening your search or resetting filters.</p>
+                </td>
+              </tr>
+            ) : (
+              users.map((u) => (
+                <tr
+                  key={u.id}
+                  className={`transition-colors group ${
+                    u.isSuspended
+                      ? "bg-rose-500/[0.03] hover:bg-rose-500/[0.06]"
+                      : "hover:bg-slate-50 dark:hover:bg-white/[0.02]"
+                  }`}
+                >
+                  {/* User Info */}
+                  <td className="py-3.5 px-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        src={u.avatar || undefined}
+                        fallback={u.name.slice(0, 2).toUpperCase()}
+                        size="sm"
+                        className="w-8 h-8 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-semibold text-ink truncate group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
+                            {u.name}
+                          </p>
+                          {u.isSuspended && (
+                            <span className="text-[10px] text-rose-500 font-bold" title="Suspended Account">
+                              🚫
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-ink-soft truncate">{u.email}</p>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Role Badge */}
+                  <td className="py-3.5 px-3">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border uppercase tracking-wider ${getRoleBadge(u.role)}`}>
+                      {u.role}
+                    </span>
+                  </td>
+
+                  {/* Suspension Status */}
+                  <td className="py-3.5 px-3">
+                    {u.isSuspended ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25">
+                        <span>🚫</span>
+                        <span>Suspended</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                        <span>🟢</span>
+                        <span>Active</span>
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Proficiency */}
+                  <td className="py-3.5 px-3">
+                    <span className="font-semibold text-ink">
+                      {u.level}
+                    </span>
+                  </td>
+
+                  {/* Auth Provider */}
+                  <td className="py-3.5 px-3">
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 font-mono text-ink-soft uppercase">
+                      {u.provider}
+                    </span>
+                  </td>
+
+                  {/* Tests Taken */}
+                  <td className="py-3.5 px-3 font-semibold text-ink">
+                    {u.testsTaken} tests
+                  </td>
+
+                  {/* Last Active */}
+                  <td className="py-3.5 px-3 text-ink-soft text-[11px]">
+                    {u.lastActive}
+                  </td>
+
+                  {/* Actions & Suspend Toggle */}
+                  <td className="py-3.5 px-3 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      {/* Suspend / Activate Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSuspend(u)}
+                        disabled={isUpdatingAction}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
+                          u.isSuspended
+                            ? "bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 border-emerald-500/30"
+                            : "bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white dark:text-rose-400 border-rose-500/30"
+                        }`}
+                        title={u.isSuspended ? "Reactivate account" : "Suspend account"}
+                      >
+                        {u.isSuspended ? "Activate" : "Suspend"}
+                      </button>
+
+                      {/* Change Role */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingRoleUser(u);
+                          setNewRole(u.role === "ADMIN" ? "ADMIN" : "USER");
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-ink text-xs font-semibold transition-colors"
+                        title="Change user role"
+                      >
+                        Role
+                      </button>
+
+                      {/* Profile details */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUser(u)}
+                        className="px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white dark:text-purple-300 text-xs font-semibold transition-colors"
+                        title="View user details"
+                      >
+                        Profile
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-200 dark:border-white/10">
+            <span className="text-xs text-ink-soft">
+              Page {currentPage} of {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1 || isLoading}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="text-xs"
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage >= totalPages || isLoading}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="text-xs"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* User Details Modal */}
@@ -347,11 +531,13 @@ export function AdminUsersView() {
             <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-xs">
               <div>
                 <span className="text-ink-soft block text-[10px] uppercase font-bold">Assigned Role</span>
-                <span className="font-bold text-ink">{selectedUser.role}</span>
+                <span className={`inline-block font-bold text-[11px] px-2 py-0.5 rounded-full border uppercase mt-0.5 ${getRoleBadge(selectedUser.role)}`}>
+                  {selectedUser.role}
+                </span>
               </div>
               <div>
                 <span className="text-ink-soft block text-[10px] uppercase font-bold">Account Status</span>
-                <span className={`font-bold ${selectedUser.isSuspended ? "text-rose-500" : "text-emerald-500"}`}>
+                <span className={`font-bold mt-0.5 block ${selectedUser.isSuspended ? "text-rose-500" : "text-emerald-500"}`}>
                   {selectedUser.isSuspended ? "Suspended 🚫" : "Active 🟢"}
                 </span>
               </div>
@@ -361,7 +547,11 @@ export function AdminUsersView() {
               </div>
               <div>
                 <span className="text-ink-soft block text-[10px] uppercase font-bold">Target CEFR</span>
-                <span className="font-bold text-ink">{selectedUser.targetLevel || "C1"}</span>
+                <span className="font-bold text-ink">{selectedUser.profile?.targetLevel || selectedUser.targetLevel || "Not Specified"}</span>
+              </div>
+              <div>
+                <span className="text-ink-soft block text-[10px] uppercase font-bold">Native Language</span>
+                <span className="font-bold text-ink">{selectedUser.profile?.nativeLanguage || "Not Specified"}</span>
               </div>
               <div>
                 <span className="text-ink-soft block text-[10px] uppercase font-bold">Registered Via</span>
@@ -371,18 +561,36 @@ export function AdminUsersView() {
                 <span className="text-ink-soft block text-[10px] uppercase font-bold">Tests Completed</span>
                 <span className="font-bold text-ink">{selectedUser.testsTaken}</span>
               </div>
+              <div>
+                <span className="text-ink-soft block text-[10px] uppercase font-bold">Daily Study Goal</span>
+                <span className="font-bold text-ink">{selectedUser.profile?.dailyGoalMinutes || 15} min / day</span>
+              </div>
             </div>
+
+            {/* Learning Goals */}
+            {selectedUser.profile?.learningGoals && selectedUser.profile.learningGoals.length > 0 && (
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft">
+                  Learner Goals:
+                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {selectedUser.profile.learningGoals.map((goal, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary dark:text-purple-300 text-xs font-semibold"
+                    >
+                      🎯 {goal}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/10">
               <button
                 type="button"
-                onClick={() => {
-                  handleToggleSuspend(selectedUser);
-                  setSelectedUser({
-                    ...selectedUser,
-                    isSuspended: !selectedUser.isSuspended,
-                  });
-                }}
+                onClick={() => handleToggleSuspend(selectedUser)}
+                disabled={isUpdatingAction}
                 className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all ${
                   selectedUser.isSuspended
                     ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white border-emerald-500/30"
@@ -473,9 +681,10 @@ export function AdminUsersView() {
                 variant="gradient"
                 size="sm"
                 onClick={handleUpdateRole}
+                disabled={isUpdatingAction}
                 className="text-xs font-bold"
               >
-                Save Role
+                {isUpdatingAction ? "Saving..." : "Save Role"}
               </Button>
             </div>
           </div>
@@ -484,3 +693,4 @@ export function AdminUsersView() {
     </div>
   );
 }
+

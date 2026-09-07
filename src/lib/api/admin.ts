@@ -44,19 +44,38 @@ export interface RecentTestAttempt {
   weaknesses?: string[];
 }
 
+export interface UserProfileDetails {
+  id?: string;
+  userId?: string;
+  estimatedCEFR?: string | null;
+  targetLevel?: string | null;
+  nativeLanguage?: string | null;
+  learningGoals?: string[];
+  dailyGoalMinutes?: number;
+  streakDays?: number;
+  lastActiveAt?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
 export interface AdminUserRecord {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   avatar?: string | null;
   role: "ADMIN" | "USER";
   level: string;
+  proficiencyLevel?: string;
   targetLevel?: string | null;
   provider: "email" | "google";
   testsTaken: number;
   isSuspended: boolean;
   lastActive: string;
   createdAt: string;
+  updatedAt?: string;
+  profile?: UserProfileDetails | null;
 }
 
 export const MOCK_ADMIN_STATS: AdminStats = {
@@ -167,66 +186,267 @@ export const MOCK_RECENT_SUBMISSIONS: RecentTestAttempt[] = [
 
 export const MOCK_ADMIN_USERS: AdminUserRecord[] = [
   {
-    id: "6a96da820a2010ee88950305",
-    name: "Rafioul Hasan Prodhan",
-    email: "rafioulhasan2@gmail.com",
-    avatar: "https://medsyst.s3.eu-north-1.amazonaws.com/avatars/1788710141329-e7bc5d0551a2f421.jfif",
+    id: "6a9f026e38a959b4a85efc06",
+    name: "Fluentia Admin",
+    firstName: "Fluentia",
+    lastName: "Admin",
+    email: "admin@gmail.com",
+    avatar: null,
     role: "ADMIN",
     level: "A2 Elementary",
-    targetLevel: "C2",
-    provider: "google",
-    testsTaken: 2,
+    proficiencyLevel: "A2",
+    targetLevel: null,
+    provider: "email",
+    testsTaken: 0,
     isSuspended: false,
     lastActive: "Just now",
-    createdAt: "2026-09-01T10:00:00Z",
+    createdAt: "2026-09-07T18:29:02.473Z",
+    updatedAt: "2026-09-07T18:48:42.172Z",
+    profile: null,
   },
   {
     id: "6a9efded30080295fc0bcddc",
     name: "Hasan Mahmod",
+    firstName: "Hasan",
+    lastName: "Mahmod",
     email: "hasanmahod2004@gmail.com",
     avatar: null,
     role: "USER",
     level: "B1 Intermediate",
-    targetLevel: "B2",
-    provider: "email",
+    proficiencyLevel: "B1",
+    targetLevel: null,
+    provider: "google",
     testsTaken: 1,
     isSuspended: false,
     lastActive: "15m ago",
-    createdAt: "2026-09-07T18:00:00Z",
+    createdAt: "2026-09-07T18:09:49.128Z",
+    updatedAt: "2026-09-07T18:48:42.172Z",
+    profile: {
+      id: "6a9efdf830080295fc0bcdf2",
+      userId: "6a9efded30080295fc0bcddc",
+      estimatedCEFR: "B1",
+      targetLevel: null,
+      nativeLanguage: null,
+      learningGoals: [],
+      dailyGoalMinutes: 15,
+      streakDays: 0,
+      lastActiveAt: "2026-09-07T18:09:59.768Z",
+      createdAt: "2026-09-07T18:09:59.769Z",
+      updatedAt: "2026-09-07T18:09:59.769Z",
+    },
+  },
+  {
+    id: "6a9ef9f5edfbc889ec95f120",
+    name: "Fluentia Admin",
+    firstName: "Fluentia",
+    lastName: "Admin",
+    email: "adminfluentia@gmail.com",
+    avatar: null,
+    role: "ADMIN",
+    level: "A2 Elementary",
+    proficiencyLevel: "A2",
+    targetLevel: null,
+    provider: "email",
+    testsTaken: 0,
+    isSuspended: false,
+    lastActive: "Just now",
+    createdAt: "2026-09-07T17:52:53.030Z",
+    updatedAt: "2026-09-07T18:48:42.172Z",
+    profile: null,
+  },
+  {
+    id: "6a9ef7043377b2e3c5627ed2",
+    name: "Farhanamito",
+    firstName: "Farhanamito",
+    lastName: "",
+    email: "farhanamito54@gmail.com",
+    avatar: null,
+    role: "USER",
+    level: "A2 Elementary",
+    proficiencyLevel: "A2",
+    targetLevel: null,
+    provider: "google",
+    testsTaken: 0,
+    isSuspended: false,
+    lastActive: "1h ago",
+    createdAt: "2026-09-07T17:40:20.817Z",
+    updatedAt: "2026-09-07T18:48:42.172Z",
+    profile: null,
   },
   {
     id: "6a9ef56e3377b2e3c5627ed1",
     name: "Foysal Islam",
+    firstName: "Foysal",
+    lastName: "Islam",
     email: "foysalislam5547@gmail.com",
     avatar: null,
     role: "USER",
     level: "A1 Beginner",
-    targetLevel: "B1",
-    provider: "email",
+    proficiencyLevel: "A1",
+    targetLevel: null,
+    provider: "google",
     testsTaken: 1,
     isSuspended: false,
-    lastActive: "40m ago",
-    createdAt: "2026-09-07T17:30:00Z",
+    lastActive: "1h ago",
+    createdAt: "2026-09-07T17:33:34.460Z",
+    updatedAt: "2026-09-07T18:48:42.172Z",
+    profile: {
+      id: "6a9ef81930080295fc0bcddb",
+      userId: "6a9ef56e3377b2e3c5627ed1",
+      estimatedCEFR: "A1",
+      targetLevel: null,
+      nativeLanguage: null,
+      learningGoals: [],
+      dailyGoalMinutes: 15,
+      streakDays: 0,
+      lastActiveAt: "2026-09-07T17:44:57.202Z",
+      createdAt: "2026-09-07T17:44:57.203Z",
+      updatedAt: "2026-09-07T17:44:57.203Z",
+    },
   },
   {
-    id: "usr-admin-fl",
-    name: "Fluentia Admin",
-    email: "adminfluentia@gmail.com",
+    id: "6a9d8f0f223b54c7a20fb01c",
+    name: "Rafioul Hasan Sourob",
+    firstName: "Rafioul",
+    lastName: "Hasan Sourob",
+    email: "rafioulhasan@gmail.com",
     avatar: null,
-    role: "ADMIN",
-    level: "C2 Mastery",
-    targetLevel: "C2",
+    role: "USER",
+    level: "A2 Elementary",
+    proficiencyLevel: "A2",
+    targetLevel: null,
     provider: "email",
-    testsTaken: 10,
+    testsTaken: 0,
     isSuspended: false,
-    lastActive: "Just now",
-    createdAt: "2026-09-01T00:00:00Z",
+    lastActive: "Yesterday",
+    createdAt: "2026-09-06T16:04:31.902Z",
+    updatedAt: "2026-09-07T18:48:42.172Z",
+    profile: null,
+  },
+  {
+    id: "6a96da820a2010ee88950305",
+    name: "Rafioul Hasan Prodhan",
+    firstName: "Rafioul",
+    lastName: "Hasan Prodhan",
+    email: "rafioulhasan2@gmail.com",
+    avatar: "https://medsyst.s3.eu-north-1.amazonaws.com/avatars/1788710141329-e7bc5d0551a2f421.jfif",
+    role: "USER",
+    level: "A2 Elementary",
+    proficiencyLevel: "A2",
+    targetLevel: "B2",
+    provider: "email",
+    testsTaken: 2,
+    isSuspended: false,
+    lastActive: "1h ago",
+    createdAt: "2026-09-01T14:00:34.016Z",
+    updatedAt: "2026-09-07T18:48:42.172Z",
+    profile: {
+      id: "6a9d8cd5223b54c7a20fb01b",
+      userId: "6a96da820a2010ee88950305",
+      estimatedCEFR: "A2",
+      targetLevel: "B2",
+      nativeLanguage: "Bengali",
+      learningGoals: ["Speaking", "Grammar", "Business English"],
+      dailyGoalMinutes: 15,
+      streakDays: 0,
+      lastActiveAt: "2026-09-07T17:40:42.970Z",
+      createdAt: null,
+      updatedAt: "2026-09-07T17:40:42.972Z",
+    },
   },
 ];
 
 export const MOCK_ALL_SUBMISSIONS: RecentTestAttempt[] = [
   ...MOCK_RECENT_SUBMISSIONS,
 ];
+
+/**
+ * Format relative ISO timestamp helper
+ */
+function formatRelativeTime(isoString?: string | null): string {
+  if (!isoString) return "Recently";
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    if (diffMs < 0) return "Just now";
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return "Just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 30) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  } catch {
+    return isoString || "Recently";
+  }
+}
+
+/**
+ * Normalizes raw backend user item into AdminUserRecord
+ */
+export function normalizeUserItem(item: any): AdminUserRecord {
+  const fName = item.firstName || "";
+  const lName = item.lastName || "";
+  const fullName =
+    item.fullName ||
+    (fName || lName ? `${fName} ${lName}`.trim() : item.name || "Learner");
+
+  const proficiency = item.proficiency || {};
+  const profLevel = proficiency.level || item.profile?.estimatedCEFR || item.level || "A1";
+  const profLabel =
+    proficiency.label ||
+    (typeof item.level === "string" && item.level.includes(" ")
+      ? item.level
+      : `${profLevel} Elementary`);
+
+  const testsCount =
+    typeof item.testsCount === "number"
+      ? item.testsCount
+      : typeof item.testsTaken === "number"
+      ? item.testsTaken
+      : parseInt(String(item.testsTaken || "0"), 10) || 0;
+
+  const authProvider = String(item.authProvider || item.provider || "EMAIL").toLowerCase();
+  const profile = item.profile || null;
+
+  return {
+    id: item.id || `usr-${Date.now()}`,
+    name: fullName,
+    firstName: item.firstName || "",
+    lastName: item.lastName || "",
+    email: item.email || "",
+    avatar: item.profileImage || item.avatar || null,
+    role: item.role === "ADMIN" ? "ADMIN" : "USER",
+    level: profLabel,
+    proficiencyLevel: profLevel,
+    targetLevel: profile?.targetLevel || item.targetLevel || null,
+    provider: authProvider === "google" ? "google" : "email",
+    testsTaken: testsCount,
+    isSuspended: Boolean(item.isSuspended),
+    lastActive: formatRelativeTime(item.lastActive || item.updatedAt || item.createdAt),
+    createdAt: item.createdAt || new Date().toISOString(),
+    updatedAt: item.updatedAt || new Date().toISOString(),
+    profile: profile
+      ? {
+          id: profile.id,
+          userId: profile.userId,
+          estimatedCEFR: profile.estimatedCEFR,
+          targetLevel: profile.targetLevel,
+          nativeLanguage: profile.nativeLanguage,
+          learningGoals: Array.isArray(profile.learningGoals) ? profile.learningGoals : [],
+          dailyGoalMinutes: profile.dailyGoalMinutes ?? 15,
+          streakDays: profile.streakDays ?? 0,
+          lastActiveAt: profile.lastActiveAt,
+          createdAt: profile.createdAt,
+          updatedAt: profile.updatedAt,
+        }
+      : null,
+  };
+}
 
 /**
  * Normalizes raw backend test attempt item into RecentTestAttempt
@@ -433,4 +653,182 @@ export async function fetchSubmissionById(id: string): Promise<RecentTestAttempt
   const found = MOCK_ALL_SUBMISSIONS.find((i) => i.id === id);
   return found || null;
 }
+
+/**
+ * Fetches users directory from backend with fallback
+ */
+export async function fetchAdminUsers(query?: {
+  page?: number;
+  limit?: number;
+  role?: string;
+  isSuspended?: boolean | "ALL";
+  search?: string;
+}): Promise<{ items: AdminUserRecord[]; total: number; page: number; limit: number; totalPages: number }> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const params = new URLSearchParams();
+    if (query?.page) params.append("page", String(query.page));
+    if (query?.limit) params.append("limit", String(query.limit));
+    if (query?.role && query.role !== "ALL") params.append("role", query.role);
+    if (typeof query?.isSuspended === "boolean") params.append("isSuspended", String(query.isSuspended));
+    if (query?.search) params.append("search", query.search);
+
+    const url = `${getApiBaseUrl()}/users?${params.toString()}`;
+    const res = await fetch(url, { headers, cache: "no-store" });
+    if (res.ok) {
+      const json = await res.json();
+      const rawData = json.data || json;
+      const rawItems = rawData.items || (Array.isArray(rawData) ? rawData : []);
+      if (Array.isArray(rawItems) && rawItems.length > 0) {
+        const items = rawItems.map(normalizeUserItem);
+        return {
+          items,
+          total: rawData.total ?? items.length,
+          page: rawData.page ?? (query?.page || 1),
+          limit: rawData.limit ?? (query?.limit || 10),
+          totalPages: rawData.totalPages ?? 1,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch live users directory, using fallback", err);
+  }
+
+  // Filter fallback
+  let filtered = [...MOCK_ADMIN_USERS];
+  if (query?.role && query.role !== "ALL") {
+    filtered = filtered.filter((u) => u.role.toUpperCase() === query.role?.toUpperCase());
+  }
+  if (typeof query?.isSuspended === "boolean") {
+    filtered = filtered.filter((u) => u.isSuspended === query.isSuspended);
+  }
+  if (query?.search) {
+    const q = query.search.toLowerCase();
+    filtered = filtered.filter(
+      (u) =>
+        u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        u.id.toLowerCase().includes(q)
+    );
+  }
+
+  const page = query?.page || 1;
+  const limit = query?.limit || 10;
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / limit) || 1;
+  const paginated = filtered.slice((page - 1) * limit, page * limit);
+
+  return {
+    items: paginated,
+    total,
+    page,
+    limit,
+    totalPages,
+  };
+}
+
+/**
+ * Toggles or updates user suspension status
+ */
+export async function toggleUserSuspensionApi(
+  userId: string,
+  isSuspended?: boolean
+): Promise<{ success: boolean; data?: any; message?: string }> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const body = JSON.stringify(typeof isSuspended === "boolean" ? { isSuspended } : {});
+    
+    // First try standard toggle endpoint
+    let res = await fetch(`${getApiBaseUrl()}/users/${userId}/toggle-suspend`, {
+      method: "PATCH",
+      headers,
+      body,
+    });
+
+    // If 404, fallback to /users/:id
+    if (!res.ok && res.status === 404) {
+      res = await fetch(`${getApiBaseUrl()}/users/${userId}`, {
+        method: "PATCH",
+        headers,
+        body,
+      });
+    }
+
+    if (res.ok) {
+      const json = await res.json();
+      return { success: true, data: json.data, message: json.message };
+    }
+    const errJson = await res.json().catch(() => ({}));
+    return { success: false, message: errJson.message || "Failed to toggle user suspension." };
+  } catch (err: any) {
+    return { success: false, message: err.message || "Network error while updating suspension." };
+  }
+}
+
+/**
+ * Updates a user's role (ADMIN | USER)
+ */
+export async function updateUserRoleApi(
+  userId: string,
+  role: "ADMIN" | "USER"
+): Promise<{ success: boolean; data?: any; message?: string }> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${getApiBaseUrl()}/users/${userId}/role`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ role }),
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      return { success: true, data: json.data, message: json.message };
+    }
+    const errJson = await res.json().catch(() => ({}));
+    return { success: false, message: errJson.message || "Failed to update user role." };
+  } catch (err: any) {
+    return { success: false, message: err.message || "Network error while updating user role." };
+  }
+}
+
+/**
+ * Fetches user details by ID
+ */
+export async function fetchUserDetailsApi(userId: string): Promise<AdminUserRecord | null> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${getApiBaseUrl()}/users/${userId}`, { headers });
+    if (res.ok) {
+      const json = await res.json();
+      const rawData = json.data || json;
+      if (rawData && rawData.id) {
+        return normalizeUserItem(rawData);
+      }
+    }
+  } catch (err) {
+    console.warn(`Could not fetch details for user ${userId}`, err);
+  }
+
+  const found = MOCK_ADMIN_USERS.find((u) => u.id === userId);
+  return found || null;
+}
+
 
