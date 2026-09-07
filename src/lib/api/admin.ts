@@ -655,6 +655,28 @@ export async function fetchSubmissionById(id: string): Promise<RecentTestAttempt
 }
 
 /**
+ * Sorts users so that ADMINs are always at the top of the list
+ */
+export function sortUsersWithAdminsFirst(users: AdminUserRecord[]): AdminUserRecord[] {
+  return [...users].sort((a, b) => {
+    // 1. Role priority: ADMIN always first
+    const aIsAdmin = a.role?.toUpperCase() === "ADMIN";
+    const bIsAdmin = b.role?.toUpperCase() === "ADMIN";
+    if (aIsAdmin && !bIsAdmin) return -1;
+    if (!aIsAdmin && bIsAdmin) return 1;
+
+    // 2. Active status priority: active before suspended
+    if (!a.isSuspended && b.isSuspended) return -1;
+    if (a.isSuspended && !b.isSuspended) return 1;
+
+    // 3. Newest first (createdAt)
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
+    return dateB - dateA;
+  });
+}
+
+/**
  * Fetches users directory from backend with fallback
  */
 export async function fetchAdminUsers(query?: {
@@ -683,7 +705,7 @@ export async function fetchAdminUsers(query?: {
       const rawData = json.data || json;
       const rawItems = rawData.items || (Array.isArray(rawData) ? rawData : []);
       if (Array.isArray(rawItems) && rawItems.length > 0) {
-        const items = rawItems.map(normalizeUserItem);
+        const items = sortUsersWithAdminsFirst(rawItems.map(normalizeUserItem));
         return {
           items,
           total: rawData.total ?? items.length,
@@ -698,7 +720,7 @@ export async function fetchAdminUsers(query?: {
   }
 
   // Filter fallback
-  let filtered = [...MOCK_ADMIN_USERS];
+  let filtered = sortUsersWithAdminsFirst([...MOCK_ADMIN_USERS]);
   if (query?.role && query.role !== "ALL") {
     filtered = filtered.filter((u) => u.role.toUpperCase() === query.role?.toUpperCase());
   }

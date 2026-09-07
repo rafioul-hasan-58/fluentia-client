@@ -12,11 +12,12 @@ import {
   fetchAdminUsers,
   toggleUserSuspensionApi,
   updateUserRoleApi,
+  sortUsersWithAdminsFirst,
 } from "@/lib/api/admin";
 
 export function AdminUsersView() {
   const { user: currentAdmin } = useAuth();
-  const [users, setUsers] = useState<AdminUserRecord[]>(MOCK_ADMIN_USERS);
+  const [users, setUsers] = useState<AdminUserRecord[]>(sortUsersWithAdminsFirst(MOCK_ADMIN_USERS));
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
@@ -45,7 +46,7 @@ export function AdminUsersView() {
         search: searchQuery.trim() || undefined,
       });
 
-      setUsers(res.items);
+      setUsers(sortUsersWithAdminsFirst(res.items));
       setTotalCount(res.total);
       setTotalPages(res.totalPages);
     } catch (err) {
@@ -96,7 +97,9 @@ export function AdminUsersView() {
       const res = await updateUserRoleApi(editingRoleUser.id, newRole);
       if (res.success) {
         setUsers((prev) =>
-          prev.map((u) => (u.id === editingRoleUser.id ? { ...u, role: newRole } : u))
+          sortUsersWithAdminsFirst(
+            prev.map((u) => (u.id === editingRoleUser.id ? { ...u, role: newRole } : u))
+          )
         );
         if (selectedUser && selectedUser.id === editingRoleUser.id) {
           setSelectedUser({ ...selectedUser, role: newRole });
@@ -138,7 +141,9 @@ export function AdminUsersView() {
 
     // Optimistic UI update
     setUsers((prev) =>
-      prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: nextState } : u))
+      sortUsersWithAdminsFirst(
+        prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: nextState } : u))
+      )
     );
     if (selectedUser && selectedUser.id === targetUser.id) {
       setSelectedUser({ ...selectedUser, isSuspended: nextState });
@@ -156,7 +161,9 @@ export function AdminUsersView() {
       } else {
         // Revert on failure
         setUsers((prev) =>
-          prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: targetUser.isSuspended } : u))
+          sortUsersWithAdminsFirst(
+            prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: targetUser.isSuspended } : u))
+          )
         );
         if (selectedUser && selectedUser.id === targetUser.id) {
           setSelectedUser({ ...selectedUser, isSuspended: targetUser.isSuspended });
@@ -169,7 +176,9 @@ export function AdminUsersView() {
     } catch (err: any) {
       // Revert on failure
       setUsers((prev) =>
-        prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: targetUser.isSuspended } : u))
+        sortUsersWithAdminsFirst(
+          prev.map((u) => (u.id === targetUser.id ? { ...u, isSuspended: targetUser.isSuspended } : u))
+        )
       );
       setActionAlert({
         message: err.message || "Network error updating suspension status.",
@@ -187,6 +196,8 @@ export function AdminUsersView() {
     }
     return "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30";
   };
+
+  const sortedUsers = sortUsersWithAdminsFirst(users);
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn">
@@ -305,7 +316,7 @@ export function AdminUsersView() {
           </div>
 
           <div className="text-[11px] text-ink-soft">
-            Showing <strong className="text-ink">{users.length}</strong> of {totalCount} accounts
+            Showing <strong className="text-ink">{sortedUsers.length}</strong> of {totalCount} accounts
           </div>
         </div>
       </div>
@@ -335,7 +346,7 @@ export function AdminUsersView() {
                   </div>
                 </td>
               </tr>
-            ) : users.length === 0 ? (
+            ) : sortedUsers.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-ink-soft">
                   <p className="text-sm font-semibold text-ink">No users match your filters.</p>
@@ -343,11 +354,13 @@ export function AdminUsersView() {
                 </td>
               </tr>
             ) : (
-              users.map((u) => (
+              sortedUsers.map((u) => (
                 <tr
                   key={u.id}
                   className={`transition-colors group ${
-                    u.isSuspended
+                    u.role === "ADMIN"
+                      ? "bg-amber-500/[0.02] dark:bg-amber-500/[0.03] hover:bg-amber-500/[0.06]"
+                      : u.isSuspended
                       ? "bg-rose-500/[0.03] hover:bg-rose-500/[0.06]"
                       : "hover:bg-slate-50 dark:hover:bg-white/[0.02]"
                   }`}
@@ -366,6 +379,11 @@ export function AdminUsersView() {
                           <p className="font-semibold text-ink truncate group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
                             {u.name}
                           </p>
+                          {u.role === "ADMIN" && (
+                            <span className="text-[10px] text-amber-500 font-bold" title="Administrator">
+                              🛡️
+                            </span>
+                          )}
                           {u.isSuspended && (
                             <span className="text-[10px] text-rose-500 font-bold" title="Suspended Account">
                               🚫
@@ -693,4 +711,3 @@ export function AdminUsersView() {
     </div>
   );
 }
-
