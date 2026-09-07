@@ -136,7 +136,7 @@ export function Features() {
             যা প্রয়োজন, তা শিখুন।{" "}
             <span className="relative inline-block mt-1 sm:mt-0">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-600 to-fuchsia-500 dark:from-purple-300 dark:via-fuchsia-300 dark:to-indigo-300">
-                যা শিখেছেন, তা প্রয়োগ করুন।
+                যা শিখেছেন, তা Apply করুন।
               </span>
               <CurvedUnderline className="absolute -bottom-1.5 sm:-bottom-2.5 left-0 w-full" />
             </span>
