@@ -33,6 +33,19 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
         ),
       },
       {
+        name: "Test Attempts",
+        href: "/admin/attempts",
+        badge: "Live",
+        badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+        icon: ({ className }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+            <rect width="8" height="4" x="8" y="2" rx="1" />
+            <path d="m9 14 2 2 4-4" />
+          </svg>
+        ),
+      },
+      {
         name: "Question Bank",
         href: "/admin/questions",
         badge: "40+ Tests",

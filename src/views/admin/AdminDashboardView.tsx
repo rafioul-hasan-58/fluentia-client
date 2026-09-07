@@ -244,9 +244,9 @@ export function AdminDashboardView() {
             </p>
           </div>
 
-          <Link href="/admin/users">
+          <Link href="/admin/attempts">
             <Button variant="outline" size="sm" className="text-xs font-semibold">
-              View All Learners →
+              View All Attempts →
             </Button>
           </Link>
         </div>
