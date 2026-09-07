@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { themeConfig } from "./src/config/theme";
 
 const config: Config = {
   darkMode: "class",
@@ -6,6 +7,7 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/views/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
@@ -20,14 +22,44 @@ const config: Config = {
           soft: "var(--text-soft)",
         },
         primary: {
-          DEFAULT: "#2563EB",
-          dark: "#1D4ED8",
+          DEFAULT: themeConfig.colors.primary.DEFAULT,
+          dark: themeConfig.colors.primary.dark,
           light: "var(--primary-light)",
         },
-        amber: {
-          DEFAULT: "#F59E0B",
-          light: "rgba(245, 158, 11, 0.15)",
+        secondary: {
+          DEFAULT: themeConfig.colors.secondary.DEFAULT,
+          dark: themeConfig.colors.secondary.dark,
+          light: themeConfig.colors.secondary.light,
         },
+        amber: {
+          DEFAULT: themeConfig.colors.amber.DEFAULT,
+          light: themeConfig.colors.amber.light,
+        },
+        emerald: {
+          DEFAULT: themeConfig.colors.emerald.DEFAULT,
+          light: themeConfig.colors.emerald.light,
+        },
+        rose: {
+          DEFAULT: themeConfig.colors.rose.DEFAULT,
+          light: themeConfig.colors.rose.light,
+        },
+        cyan: {
+          DEFAULT: themeConfig.colors.accent.DEFAULT,
+          light: themeConfig.colors.accent.light,
+        },
+        purple: {
+          DEFAULT: themeConfig.colors.purple.DEFAULT,
+          light: themeConfig.colors.purple.light,
+        },
+      },
+      backgroundImage: {
+        "gradient-primary": themeConfig.gradients.primary,
+        "gradient-primary-hover": themeConfig.gradients.primaryHover,
+        "gradient-secondary": themeConfig.gradients.secondary,
+        "gradient-hero": themeConfig.gradients.hero,
+        "gradient-hero-dark": themeConfig.gradients.heroDark,
+        "gradient-accent": themeConfig.gradients.accent,
+        "gradient-card-border": themeConfig.gradients.cardBorder,
       },
       fontFamily: {
         brand: ["var(--font-brand)", "var(--font-outfit)", "var(--font-inter)", "sans-serif"],

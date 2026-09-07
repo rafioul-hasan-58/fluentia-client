@@ -246,7 +246,7 @@ export function Navbar() {
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full flex items-center justify-center py-3 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 text-white text-sm font-bold shadow-md shadow-blue-500/25 active:scale-98 transition-all"
+                  className="w-full flex items-center justify-center py-3 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-sm font-bold shadow-md shadow-blue-500/25 active:scale-98 transition-all"
                 >
                   Create Free Account →
                 </Link>
@@ -255,7 +255,7 @@ export function Navbar() {
               <Link
                 href="/dashboard/chat"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center py-3 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 text-white text-sm font-bold shadow-md shadow-blue-500/25 active:scale-98 transition-all"
+                className="w-full flex items-center justify-center py-3 rounded-xl bg-gradient-to-r from-blue-600 via-primary to-indigo-600 hover:from-blue-500 hover:via-primary-dark hover:to-indigo-500 text-white text-sm font-bold shadow-md shadow-blue-500/25 active:scale-98 transition-all"
               >
                 Resume AI Coaching →
               </Link>
