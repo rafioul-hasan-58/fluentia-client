@@ -8,8 +8,16 @@ import { Label } from "@/components/ui/label";
 import { LevelTestQuestion } from "@/types/level-test";
 import {
   fetchAdminLevelTestQuestions,
+  createAdminQuestionApi,
+  deleteAdminQuestionApi,
+  CreateLevelTestQuestionDto,
   MOCK_LEVEL_TEST_QUESTIONS,
 } from "@/lib/api/admin";
+
+interface OptionFormState {
+  id: string;
+  content: string;
+}
 
 export function AdminQuestionsView() {
   const [questions, setQuestions] = useState<LevelTestQuestion[]>(MOCK_LEVEL_TEST_QUESTIONS);
@@ -28,24 +36,24 @@ export function AdminQuestionsView() {
 
   const [previewQuestion, setPreviewQuestion] = useState<LevelTestQuestion | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [actionAlert, setActionAlert] = useState<{ message: string; type: "success" | "warn" } | null>(null);
 
   // New question form state
-  const [newQuestion, setNewQuestion] = useState<Partial<LevelTestQuestion>>({
-    sectionType: "GRAMMAR",
-    level: "B1",
-    difficulty: "MEDIUM",
-    question: "",
-    passage: null,
-    explanation: "",
-    answer: "",
-    questionOptions: [
-      { id: "opt-1", content: "" },
-      { id: "opt-2", content: "" },
-      { id: "opt-3", content: "" },
-      { id: "opt-4", content: "" },
-    ],
-  });
+  const [newSection, setNewSection] = useState<string>("GRAMMAR");
+  const [newLevel, setNewLevel] = useState<string>("B1");
+  const [newDifficulty, setNewDifficulty] = useState<string>("MEDIUM");
+  const [newPrompt, setNewPrompt] = useState<string>("");
+  const [newPassage, setNewPassage] = useState<string>("");
+  const [newExplanation, setNewExplanation] = useState<string>("");
+  const [correctOptionIdx, setCorrectOptionIdx] = useState<number>(0);
+  const [formOptions, setFormOptions] = useState<OptionFormState[]>([
+    { id: "opt-1", content: "" },
+    { id: "opt-2", content: "" },
+    { id: "opt-3", content: "" },
+    { id: "opt-4", content: "" },
+  ]);
 
   const loadQuestions = useCallback(async () => {
     setIsLoading(true);
@@ -75,7 +83,7 @@ export function AdminQuestionsView() {
 
   const triggerAlert = (message: string, type: "success" | "warn" = "success") => {
     setActionAlert({ message, type });
-    setTimeout(() => setActionAlert(null), 3500);
+    setTimeout(() => setActionAlert(null), 4000);
   };
 
   const handleSectionChange = (sec: string) => {
@@ -103,42 +111,128 @@ export function AdminQuestionsView() {
     setCurrentPage(1);
   };
 
-  const handleCreateQuestion = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newQuestion.question) return;
+  const resetForm = () => {
+    setNewSection("GRAMMAR");
+    setNewLevel("B1");
+    setNewDifficulty("MEDIUM");
+    setNewPrompt("");
+    setNewPassage("");
+    setNewExplanation("");
+    setCorrectOptionIdx(0);
+    setFormOptions([
+      { id: "opt-1", content: "" },
+      { id: "opt-2", content: "" },
+      { id: "opt-3", content: "" },
+      { id: "opt-4", content: "" },
+    ]);
+  };
 
-    const created: LevelTestQuestion = {
-      id: `q-custom-${Date.now()}`,
-      question: newQuestion.question,
-      passage: newQuestion.passage || null,
-      sectionType: newQuestion.sectionType || "GRAMMAR",
-      level: newQuestion.level || "B1",
-      difficulty: newQuestion.difficulty || "MEDIUM",
-      answer: newQuestion.answer || (newQuestion.questionOptions?.[0]?.content || ""),
-      explanation: newQuestion.explanation || "",
-      questionOptions: (newQuestion.questionOptions || []).filter((opt) => opt.content.trim() !== ""),
+  const handleOptionChange = (idx: number, val: string) => {
+    const updated = [...formOptions];
+    updated[idx] = { ...updated[idx], content: val };
+    setFormOptions(updated);
+  };
+
+  const handleAddOptionField = () => {
+    if (formOptions.length >= 6) return;
+    setFormOptions([...formOptions, { id: `opt-${Date.now()}`, content: "" }]);
+  };
+
+  const handleRemoveOptionField = (idx: number) => {
+    if (formOptions.length <= 2) return;
+    const updated = formOptions.filter((_, i) => i !== idx);
+    setFormOptions(updated);
+    if (correctOptionIdx >= updated.length) {
+      setCorrectOptionIdx(0);
+    }
+  };
+
+  const handleCreateQuestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const trimmedPrompt = newPrompt.trim();
+    if (!trimmedPrompt) {
+      triggerAlert("Please enter a question prompt.", "warn");
+      return;
+    }
+
+    const validOptions = formOptions
+      .map((opt) => ({ id: opt.id, content: opt.content.trim() }))
+      .filter((opt) => opt.content.length > 0);
+
+    if (validOptions.length < 2) {
+      triggerAlert("Please provide at least 2 answer choices.", "warn");
+      return;
+    }
+
+    const selectedOptionContent = formOptions[correctOptionIdx]?.content?.trim();
+    if (!selectedOptionContent) {
+      triggerAlert("The selected correct answer option cannot be empty.", "warn");
+      return;
+    }
+
+    const payloadOptions = validOptions.map((opt) => ({
+      id: opt.id,
+      content: opt.content,
+      isCorrect: opt.content === selectedOptionContent,
+    }));
+
+    const hasCorrect = payloadOptions.some((o) => o.isCorrect);
+    if (!hasCorrect) {
+      payloadOptions[0].isCorrect = true;
+    }
+
+    const payload: CreateLevelTestQuestionDto = {
+      question: trimmedPrompt,
+      passage: newPassage.trim() || null,
+      sectionType: newSection,
+      level: newLevel,
+      difficulty: newDifficulty,
+      answer: selectedOptionContent || payloadOptions[0].content,
+      explanation: newExplanation.trim() || undefined,
+      options: payloadOptions,
     };
 
-    setQuestions([created, ...questions]);
-    setTotalCount((c) => c + 1);
-    setIsAddModalOpen(false);
-    triggerAlert("New evaluation question added to repository!", "success");
+    setIsSubmitting(true);
+    try {
+      const res = await createAdminQuestionApi(payload);
+      if (res.success) {
+        triggerAlert(res.message || "New evaluation question added to repository!", "success");
+        setIsAddModalOpen(false);
+        resetForm();
+        await loadQuestions();
+      } else {
+        triggerAlert(res.message || "Failed to create question on server.", "warn");
+      }
+    } catch (err: any) {
+      triggerAlert(err.message || "Network error occurred while saving question.", "warn");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    setNewQuestion({
-      sectionType: "GRAMMAR",
-      level: "B1",
-      difficulty: "MEDIUM",
-      question: "",
-      passage: null,
-      explanation: "",
-      answer: "",
-      questionOptions: [
-        { id: "opt-1", content: "" },
-        { id: "opt-2", content: "" },
-        { id: "opt-3", content: "" },
-        { id: "opt-4", content: "" },
-      ],
-    });
+  const handleDeleteQuestion = async (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this question from the bank?")) return;
+
+    setDeletingId(id);
+    try {
+      const res = await deleteAdminQuestionApi(id);
+      if (res.success) {
+        triggerAlert("Question deleted successfully.", "success");
+        setQuestions((prev) => prev.filter((q) => q.id !== id));
+        setTotalCount((prev) => Math.max(0, prev - 1));
+        if (previewQuestion?.id === id) {
+          setPreviewQuestion(null);
+        }
+      } else {
+        triggerAlert(res.message || "Could not delete question.", "warn");
+      }
+    } catch (err: any) {
+      triggerAlert(err.message || "Error deleting question.", "warn");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const getSectionBadgeClass = (section: string) => {
@@ -170,17 +264,17 @@ export function AdminQuestionsView() {
   const startRecord = (currentPage - 1) * pageSize + 1;
   const endRecord = Math.min(currentPage * pageSize, totalCount);
 
-  // Helper Pagination Controls Bar Component
-  const renderPaginationControls = (isTop: boolean) => {
+  // Helper Pagination Controls Bar
+  const renderPaginationControls = (isTopPosition: boolean) => {
     if (totalCount === 0) return null;
 
     return (
       <div
         className={`p-3.5 sm:p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn ${
-          isTop ? "border-primary/30 dark:border-primary/30" : "mt-2"
+          isTopPosition ? "border-primary/30 dark:border-primary/30" : "mt-2"
         }`}
       >
-        {/* Left: Summary Counter */}
+        {/* Counter Summary */}
         <div className="flex items-center gap-2.5 text-xs text-ink-soft">
           <span className="font-semibold text-ink">
             Showing <strong className="text-primary dark:text-purple-300">{startRecord} - {endRecord}</strong> of {totalCount} Questions
@@ -189,9 +283,8 @@ export function AdminQuestionsView() {
           <span>Page {currentPage} of {totalPages || 1}</span>
         </div>
 
-        {/* Right: Items per page & Page Jump */}
+        {/* Page Size & Page Controls */}
         <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-end">
-          {/* Per Page Select */}
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-ink-soft text-[11px] font-semibold">Per page:</span>
             <select
@@ -207,7 +300,6 @@ export function AdminQuestionsView() {
             </select>
           </div>
 
-          {/* Page Buttons */}
           <div className="flex items-center gap-1">
             <Button
               variant="outline"
@@ -301,17 +393,26 @@ export function AdminQuestionsView() {
         }
       />
 
-      {/* Global Alert */}
+      {/* Global Action Alert */}
       {actionAlert && (
         <div
-          className={`p-3.5 rounded-2xl border text-xs font-semibold flex items-center gap-2 animate-fadeIn ${
+          className={`p-3.5 rounded-2xl border text-xs font-semibold flex items-center justify-between gap-2 animate-fadeIn ${
             actionAlert.type === "success"
               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
               : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
           }`}
         >
-          <span>{actionAlert.type === "success" ? "✓" : "⚠️"}</span>
-          <span>{actionAlert.message}</span>
+          <div className="flex items-center gap-2">
+            <span>{actionAlert.type === "success" ? "✓" : "⚠️"}</span>
+            <span>{actionAlert.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionAlert(null)}
+            className="text-xs opacity-70 hover:opacity-100"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -435,7 +536,7 @@ export function AdminQuestionsView() {
         </div>
       </div>
 
-      {/* TOP PAGINATION BAR (Right after Filter Bar) */}
+      {/* TOP PAGINATION BAR */}
       {renderPaginationControls(true)}
 
       {/* Questions Content */}
@@ -524,13 +625,24 @@ export function AdminQuestionsView() {
                 <span className="text-[10px] text-ink-soft font-mono truncate max-w-[140px]" title={q.id}>
                   ID: {q.id}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setPreviewQuestion(q)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-primary hover:text-white dark:hover:bg-primary font-semibold transition-colors"
-                >
-                  Inspect Question →
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteQuestion(q.id, e)}
+                    disabled={deletingId === q.id}
+                    className="p-1.5 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors text-xs"
+                    title="Delete Question"
+                  >
+                    {deletingId === q.id ? "⏳" : "🗑️"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewQuestion(q)}
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-primary hover:text-white dark:hover:bg-primary font-semibold transition-colors"
+                  >
+                    Inspect Question →
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -572,13 +684,24 @@ export function AdminQuestionsView() {
                     {q.answer}
                   </td>
                   <td className="py-3 px-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewQuestion(q)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-primary hover:text-white dark:hover:bg-primary font-semibold transition-colors"
-                    >
-                      Inspect
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteQuestion(q.id, e)}
+                        disabled={deletingId === q.id}
+                        className="p-1 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-md transition-colors"
+                        title="Delete Question"
+                      >
+                        {deletingId === q.id ? "⏳" : "🗑️"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewQuestion(q)}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-primary hover:text-white dark:hover:bg-primary font-semibold transition-colors"
+                      >
+                        Inspect
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -660,9 +783,18 @@ export function AdminQuestionsView() {
               </div>
             )}
 
-            <div className="flex justify-end pt-2">
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/10">
               <Button
                 variant="outline"
+                size="sm"
+                onClick={() => handleDeleteQuestion(previewQuestion.id)}
+                className="text-rose-500 hover:text-rose-600 border-rose-500/30 hover:bg-rose-500/10 text-xs"
+              >
+                🗑️ Delete Question
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPreviewQuestion(null)}
                 className="text-xs font-semibold"
               >
@@ -678,7 +810,10 @@ export function AdminQuestionsView() {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
           <div className="w-full max-w-xl bg-paper-card border border-slate-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
-              <h3 className="font-brand text-lg font-bold text-ink">Add New Question</h3>
+              <div>
+                <h3 className="font-brand text-lg font-bold text-ink">Add New Question</h3>
+                <p className="text-xs text-ink-soft">Create and publish a diagnostic test question to the question bank.</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
@@ -691,12 +826,12 @@ export function AdminQuestionsView() {
             <form onSubmit={handleCreateQuestion} className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="sec">Section</Label>
+                  <Label htmlFor="sec" className="text-xs font-semibold">Section</Label>
                   <select
                     id="sec"
-                    value={newQuestion.sectionType}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, sectionType: e.target.value as any })}
-                    className="w-full h-10 px-3 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs font-medium text-ink"
+                    value={newSection}
+                    onChange={(e) => setNewSection(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs font-medium text-ink cursor-pointer"
                   >
                     <option value="GRAMMAR">GRAMMAR</option>
                     <option value="VOCABULARY">VOCABULARY</option>
@@ -706,29 +841,29 @@ export function AdminQuestionsView() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="lvl">CEFR Level</Label>
+                  <Label htmlFor="lvl" className="text-xs font-semibold">CEFR Level</Label>
                   <select
                     id="lvl"
-                    value={newQuestion.level}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, level: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs font-medium text-ink"
+                    value={newLevel}
+                    onChange={(e) => setNewLevel(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs font-medium text-ink cursor-pointer"
                   >
-                    <option value="A1">A1</option>
-                    <option value="A2">A2</option>
-                    <option value="B1">B1</option>
-                    <option value="B2">B2</option>
-                    <option value="C1">C1</option>
-                    <option value="C2">C2</option>
+                    <option value="A1">A1 Beginner</option>
+                    <option value="A2">A2 Elementary</option>
+                    <option value="B1">B1 Intermediate</option>
+                    <option value="B2">B2 Upper Intermediate</option>
+                    <option value="C1">C1 Advanced</option>
+                    <option value="C2">C2 Mastery</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="diff">Difficulty</Label>
+                  <Label htmlFor="diff" className="text-xs font-semibold">Difficulty</Label>
                   <select
                     id="diff"
-                    value={newQuestion.difficulty}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, difficulty: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs font-medium text-ink"
+                    value={newDifficulty}
+                    onChange={(e) => setNewDifficulty(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs font-medium text-ink cursor-pointer"
                   >
                     <option value="EASY">EASY</option>
                     <option value="MEDIUM">MEDIUM</option>
@@ -738,71 +873,111 @@ export function AdminQuestionsView() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="qPrompt">Question Prompt</Label>
+                <Label htmlFor="qPrompt" className="text-xs font-semibold">Question Prompt *</Label>
                 <Input
                   id="qPrompt"
-                  placeholder="e.g., If she ___ earlier, she wouldn't have missed the flight."
-                  value={newQuestion.question}
-                  onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+                  placeholder="e.g. She ___ from Spain and lives in Madrid."
+                  value={newPrompt}
+                  onChange={(e) => setNewPrompt(e.target.value)}
                   required
+                  className="text-xs h-10"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="qPassage">Reading Passage (Optional)</Label>
-                <Input
+                <Label htmlFor="qPassage" className="text-xs font-semibold">Reading Context / Passage (Optional)</Label>
+                <textarea
                   id="qPassage"
-                  placeholder="Optional context or reading paragraph..."
-                  value={newQuestion.passage || ""}
-                  onChange={(e) => setNewQuestion({ ...newQuestion, passage: e.target.value })}
+                  rows={2}
+                  placeholder="Optional context paragraph or reading comprehension passage..."
+                  value={newPassage}
+                  onChange={(e) => setNewPassage(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs text-ink placeholder:text-ink-soft/60 focus:outline-hidden focus:ring-2 focus:ring-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Answer Choices (Select the correct one)</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {newQuestion.questionOptions?.map((opt, i) => (
-                    <div key={opt.id} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="correctAnswerRadio"
-                        checked={newQuestion.answer === opt.content && opt.content !== ""}
-                        onChange={() => setNewQuestion({ ...newQuestion, answer: opt.content })}
-                        className="accent-primary w-4 h-4 cursor-pointer"
-                        title="Mark as correct answer"
-                      />
-                      <Input
-                        placeholder={`Option ${i + 1}`}
-                        value={opt.content}
-                        onChange={(e) => {
-                          const updated = [...(newQuestion.questionOptions || [])];
-                          updated[i] = { ...opt, content: e.target.value };
-                          setNewQuestion({ ...newQuestion, questionOptions: updated });
-                        }}
-                        className="text-xs h-9"
-                        required
-                      />
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">
+                    Answer Choices * (Select the radio corresponding to the correct answer)
+                  </Label>
+                  {formOptions.length < 6 && (
+                    <button
+                      type="button"
+                      onClick={handleAddOptionField}
+                      className="text-[11px] text-primary font-bold hover:underline"
+                    >
+                      + Add Choice
+                    </button>
+                  )}
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {formOptions.map((opt, i) => {
+                    const isSelected = correctOptionIdx === i;
+                    return (
+                      <div
+                        key={opt.id}
+                        className={`p-2 rounded-xl border flex items-center gap-2 transition-all ${
+                          isSelected
+                            ? "border-emerald-500/50 bg-emerald-500/5"
+                            : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          id={`radio-opt-${i}`}
+                          name="correctOptionRadio"
+                          checked={isSelected}
+                          onChange={() => setCorrectOptionIdx(i)}
+                          className="accent-emerald-600 w-4 h-4 cursor-pointer flex-shrink-0"
+                          title="Mark this option as the correct answer"
+                        />
+                        <Input
+                          placeholder={`Option ${i + 1}`}
+                          value={opt.content}
+                          onChange={(e) => handleOptionChange(i, e.target.value)}
+                          className="text-xs h-8 flex-1"
+                          required={i < 2}
+                        />
+                        {formOptions.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveOptionField(i)}
+                            className="text-slate-400 hover:text-rose-500 text-xs p-1"
+                            title="Remove this option"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-ink-soft">
+                  Selected correct answer: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">{formOptions[correctOptionIdx]?.content || "(Option empty)"}</strong>
+                </p>
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="expl">Pedagogical Explanation</Label>
-                <Input
+                <Label htmlFor="expl" className="text-xs font-semibold">Pedagogical Explanation</Label>
+                <textarea
                   id="expl"
-                  placeholder="Explain why the correct answer fits grammatically or semantically..."
-                  value={newQuestion.explanation || ""}
-                  onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })}
+                  rows={2}
+                  placeholder='e.g. "Is" is the correct third-person singular present form of the verb "to be".'
+                  value={newExplanation}
+                  onChange={(e) => setNewExplanation(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-paper border border-slate-200 dark:border-white/10 text-xs text-ink placeholder:text-ink-soft/60 focus:outline-hidden focus:ring-2 focus:ring-primary"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-white/10">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-white/10">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setIsAddModalOpen(false)}
+                  disabled={isSubmitting}
                   className="text-xs"
                 >
                   Cancel
@@ -811,9 +986,17 @@ export function AdminQuestionsView() {
                   type="submit"
                   variant="gradient"
                   size="sm"
+                  disabled={isSubmitting}
                   className="text-xs font-bold"
                 >
-                  Save Question
+                  {isSubmitting ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5" />
+                      Saving to Bank...
+                    </>
+                  ) : (
+                    "Save Question"
+                  )}
                 </Button>
               </div>
             </form>

@@ -1263,4 +1263,87 @@ export async function fetchAdminLevelTestQuestions(query?: {
   };
 }
 
+export interface CreateLevelTestQuestionDto {
+  question: string;
+  passage?: string | null;
+  sectionType: "GRAMMAR" | "VOCABULARY" | "READING" | "SPEAKING" | string;
+  level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | string;
+  difficulty: "EASY" | "MEDIUM" | "HARD" | string;
+  answer: string;
+  explanation?: string;
+  options: Array<{
+    id?: string;
+    content: string;
+    isCorrect: boolean;
+  }>;
+}
 
+/**
+ * Creates a new question in the question bank via live backend POST /level-test-questions
+ */
+export async function createAdminQuestionApi(
+  dto: CreateLevelTestQuestionDto
+): Promise<{ success: boolean; data?: LevelTestQuestion; message?: string }> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${getApiBaseUrl()}/level-test-questions`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(dto),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      const createdItem = json.data || json;
+      return {
+        success: true,
+        data: createdItem ? normalizeQuestionItem(createdItem) : undefined,
+        message: json.message || "Question created successfully in repository.",
+      };
+    }
+
+    return {
+      success: false,
+      message: json.message || `Failed to create question (Status: ${res.status})`,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Network error while creating question.",
+    };
+  }
+}
+
+/**
+ * Deletes a question from the repository via DELETE /level-test-questions/:id
+ */
+export async function deleteAdminQuestionApi(
+  questionId: string
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/${questionId}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { success: true, message: json.message || "Question deleted successfully." };
+    }
+    const errJson = await res.json().catch(() => ({}));
+    return { success: false, message: errJson.message || "Failed to delete question." };
+  } catch (err: any) {
+    return { success: false, message: err.message || "Network error while deleting question." };
+  }
+}
