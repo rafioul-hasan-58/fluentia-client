@@ -161,9 +161,9 @@ export function Hero() {
 
             {/* Primary Bilingual Headline */}
             <h1 className="font-bangla text-3xl sm:text-4xl lg:text-[40px] xl:text-[45px] font-bold text-ink dark:text-white leading-[1.38] sm:leading-[1.38] lg:leading-[1.36] tracking-normal">
-              Grammar বুঝছেন,{" "}
+              English শেখা শুরু করবেন,{" "}
               <span className="block mt-2 sm:mt-2.5 pb-1 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 dark:from-purple-300 dark:via-fuchsia-300 dark:to-indigo-300 drop-shadow-[0_0_25px_rgba(168,85,247,0.35)] leading-[1.38] sm:leading-[1.38] lg:leading-[1.36]">
-                কিন্তু English-এ ব্যবহার করতে পারছেন না?
+                কিন্তু কোথা থেকে শুরু করবেন জানেন না?
               </span>
             </h1>
 

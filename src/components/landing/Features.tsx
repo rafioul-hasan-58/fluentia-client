@@ -11,6 +11,8 @@ import {
   ArrowRight,
   RotateCcw,
 } from "lucide-react";
+import { CurvedUnderline } from "@/components/ui";
+
 
 interface LearningStep {
   stepNumber: string;
@@ -130,17 +132,18 @@ export function Features() {
             <span>The Adaptive Learning Loop</span>
           </div>
 
-          <h2 className="font-brand text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ink leading-[1.18]">
-            Learn what you need.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-600 to-fuchsia-500 dark:from-purple-400 dark:via-fuchsia-300 dark:to-indigo-300">
-              Practice what you learn.
+          <h2 className="font-bangla text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-ink dark:text-white leading-[1.35] sm:leading-[1.32]">
+            যা প্রয়োজন, তা শিখুন।{" "}
+            <span className="relative inline-block mt-1 sm:mt-0">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-600 to-fuchsia-500 dark:from-purple-300 dark:via-fuchsia-300 dark:to-indigo-300">
+                যা শিখেছেন, তা প্রয়োগ করুন।
+              </span>
+              <CurvedUnderline className="absolute -bottom-1.5 sm:-bottom-2.5 left-0 w-full" />
             </span>
           </h2>
 
-          <p className="text-ink-soft text-sm sm:text-base lg:text-lg leading-relaxed pt-1 max-w-2xl mx-auto">
-            Fluentia finds your weaknesses, teaches you the right concepts, and
-            helps you apply them in real English — so every practice session
-            moves you forward.
+          <p className="font-bangla text-ink-soft dark:text-slate-300 text-sm sm:text-base lg:text-lg leading-relaxed pt-1 max-w-2xl mx-auto">
+            Fluentia আপনার English-এর দুর্বল জায়গাগুলো চিহ্নিত করে, প্রয়োজনীয় বিষয়গুলো শেখায় এবং বাস্তব English-এ সেগুলো প্রয়োগ করার সুযোগ দেয়—যাতে প্রতিটি practice session আপনাকে আরও এক ধাপ এগিয়ে নিয়ে যায়।
           </p>
         </div>
 
