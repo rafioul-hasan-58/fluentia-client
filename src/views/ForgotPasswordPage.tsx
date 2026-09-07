@@ -58,7 +58,7 @@ export default function ForgotPasswordPage({
 
   // Form Fields
   const [email, setEmail] = useState(queryEmail);
-  const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
+  const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", ""]);
   const [resetToken, setResetToken] = useState<string>("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -157,10 +157,10 @@ export default function ForgotPasswordPage({
       const res = await sendForgotPasswordOtp(email);
       setIsSubmitting(false);
       if (res.success) {
-        setSuccessMessage("A fresh 6-digit code has been sent to your email.");
+        setSuccessMessage("A fresh 5-digit code has been sent to your email.");
         setResendCooldown(60);
         // Clear previous input
-        setOtpDigits(["", "", "", "", "", ""]);
+        setOtpDigits(["", "", "", "", ""]);
         otpInputRefs.current[0]?.focus();
       } else {
         setError(res.message || "Failed to resend code.");
@@ -183,8 +183,14 @@ export default function ForgotPasswordPage({
     setOtpDigits(newDigits);
 
     // If typed a digit, focus next input
-    if (cleanVal && index < 5) {
+    if (cleanVal && index < 4) {
       otpInputRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-proceed when all 5 digits are entered
+    const fullCode = newDigits.join("");
+    if (fullCode.length === 5 && !newDigits.includes("")) {
+      triggerVerifyWithCode(fullCode);
     }
   };
 
@@ -195,7 +201,7 @@ export default function ForgotPasswordPage({
       }
     } else if (e.key === "ArrowLeft" && index > 0) {
       otpInputRefs.current[index - 1]?.focus();
-    } else if (e.key === "ArrowRight" && index < 5) {
+    } else if (e.key === "ArrowRight" && index < 4) {
       otpInputRefs.current[index + 1]?.focus();
     }
   };
@@ -205,8 +211,8 @@ export default function ForgotPasswordPage({
     const pastedData = e.clipboardData.getData("text").trim();
     if (!pastedData) return;
 
-    // Filter alphanumeric characters
-    const digits = pastedData.replace(/[^0-9a-zA-Z]/g, "").slice(0, 6).split("");
+    // Filter alphanumeric characters for 5 digits
+    const digits = pastedData.replace(/[^0-9a-zA-Z]/g, "").slice(0, 5).split("");
     const newDigits = [...otpDigits];
 
     digits.forEach((digit, i) => {
@@ -215,31 +221,33 @@ export default function ForgotPasswordPage({
 
     setOtpDigits(newDigits);
 
-    // Focus on the next empty box or the last box
-    const nextEmptyIndex = newDigits.findIndex((d) => !d);
-    if (nextEmptyIndex !== -1) {
-      otpInputRefs.current[nextEmptyIndex]?.focus();
+    // Auto-proceed if 5 digits are pasted
+    const fullCode = newDigits.join("");
+    if (fullCode.length === 5 && !newDigits.includes("")) {
+      otpInputRefs.current[4]?.focus();
+      triggerVerifyWithCode(fullCode);
     } else {
-      otpInputRefs.current[5]?.focus();
+      const nextEmptyIndex = newDigits.findIndex((d) => !d);
+      if (nextEmptyIndex !== -1) {
+        otpInputRefs.current[nextEmptyIndex]?.focus();
+      } else {
+        otpInputRefs.current[4]?.focus();
+      }
     }
   };
 
   // ----------------------------------------------------
   // STEP 2: Verify OTP
   // ----------------------------------------------------
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otpCode.length < 4) {
-      setError("Please enter the complete verification code.");
-      return;
-    }
+  const triggerVerifyWithCode = async (codeToVerify: string) => {
+    if (!codeToVerify.trim() || isSubmitting) return;
 
     setError(null);
     setSuccessMessage(null);
     setIsSubmitting(true);
 
     try {
-      const res = await verifyPasswordResetOtp(email, otpCode);
+      const res = await verifyPasswordResetOtp(email, codeToVerify);
       setIsSubmitting(false);
       if (res.success) {
         const token =
@@ -264,6 +272,15 @@ export default function ForgotPasswordPage({
       setIsSubmitting(false);
       setError(err.message || "Invalid or expired verification code.");
     }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpCode.length < 5) {
+      setError("Please enter the complete 5-digit verification code.");
+      return;
+    }
+    await triggerVerifyWithCode(otpCode);
   };
 
   // ----------------------------------------------------
@@ -386,7 +403,7 @@ export default function ForgotPasswordPage({
               </div>
               <CardTitle>Forgot Password?</CardTitle>
               <CardDescription>
-                Enter your registered email address and we&apos;ll send you a 6-digit verification code to reset your password.
+                Enter your registered email address and we&apos;ll send you a 5-digit verification code to reset your password.
               </CardDescription>
             </CardHeader>
 
@@ -457,7 +474,7 @@ export default function ForgotPasswordPage({
               </div>
               <CardTitle>Verify Your Code</CardTitle>
               <CardDescription>
-                We sent a 6-digit verification code to{" "}
+                We sent a 5-digit verification code to{" "}
                 <span className="font-semibold text-ink dark:text-white block mt-0.5">
                   {email}
                 </span>
@@ -480,12 +497,12 @@ export default function ForgotPasswordPage({
               )}
 
               <form onSubmit={handleVerifyOtp} className="space-y-5">
-                {/* 6-Digit OTP Box Grid */}
+                {/* 5-Digit OTP Box Grid */}
                 <div className="space-y-2">
                   <Label className="text-center block text-xs uppercase tracking-wider text-ink-soft font-bold">
-                    6-Digit Security PIN
+                    5-Digit Security PIN
                   </Label>
-                  <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+                  <div className="flex items-center justify-center gap-2 sm:gap-3">
                     {otpDigits.map((digit, idx) => (
                       <input
                         key={idx}
@@ -500,7 +517,7 @@ export default function ForgotPasswordPage({
                         onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                         onPaste={handleOtpPaste}
                         disabled={isSubmitting}
-                        className={`w-11 sm:w-12 h-13 text-center text-xl font-bold rounded-xl border bg-paper transition-all focus:outline-none focus:ring-2 ${
+                        className={`w-12 sm:w-14 h-13 sm:h-14 text-center text-xl font-bold rounded-xl border bg-paper transition-all focus:outline-none focus:ring-2 ${
                           digit
                             ? "border-primary ring-2 ring-primary/20 text-primary dark:text-cyan-300"
                             : "border-slate-200 dark:border-white/10 text-ink focus:border-primary focus:ring-primary/20"
@@ -547,7 +564,7 @@ export default function ForgotPasswordPage({
                 <Button
                   type="submit"
                   variant="gradient"
-                  disabled={isSubmitting || otpCode.length < 4}
+                  disabled={isSubmitting || otpCode.length < 5}
                   className="w-full h-11 font-bold text-sm shadow-md"
                 >
                   {isSubmitting ? (
