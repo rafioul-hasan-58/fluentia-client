@@ -247,6 +247,44 @@ function normalizeSubmissionItem(item: any): RecentTestAttempt {
 
   const aiAnalysis = item.aiAnalysis || {};
 
+  const formatAnalysisItem = (val: any): string => {
+    if (!val) return "";
+    if (typeof val === "string") return val;
+    if (typeof val === "object") {
+      if (val.area && val.description) {
+        return `${val.area}: ${val.description}${val.evidence ? ` (Evidence: ${val.evidence})` : ""}`;
+      }
+      if (val.description) return val.description;
+      if (val.area) return val.area;
+      if (val.title) return val.description ? `${val.title}: ${val.description}` : val.title;
+      return Object.values(val)
+        .filter((v) => typeof v === "string")
+        .join(" - ");
+    }
+    return String(val);
+  };
+
+  const rawStrengths = Array.isArray(item.strengths)
+    ? item.strengths
+    : Array.isArray(aiAnalysis.strengths)
+    ? aiAnalysis.strengths
+    : [];
+
+  const rawWeaknesses = Array.isArray(item.weaknesses)
+    ? item.weaknesses
+    : Array.isArray(aiAnalysis.weaknesses)
+    ? aiAnalysis.weaknesses
+    : [];
+
+  const rawSummary =
+    typeof item.summary === "string"
+      ? item.summary
+      : typeof aiAnalysis.summary === "string"
+      ? aiAnalysis.summary
+      : typeof aiAnalysis.summary === "object" && aiAnalysis.summary?.description
+      ? aiAnalysis.summary.description
+      : "Placement evaluation completed successfully.";
+
   return {
     id: item.id || `att-${Date.now()}`,
     userName: fullName,
@@ -275,9 +313,9 @@ function normalizeSubmissionItem(item: any): RecentTestAttempt {
         percentage: reading.percentage || 0,
       },
     },
-    summary: item.summary || aiAnalysis.summary || "Placement evaluation completed successfully.",
-    strengths: item.strengths || aiAnalysis.strengths || [],
-    weaknesses: item.weaknesses || aiAnalysis.weaknesses || [],
+    summary: rawSummary,
+    strengths: rawStrengths.map(formatAnalysisItem).filter(Boolean),
+    weaknesses: rawWeaknesses.map(formatAnalysisItem).filter(Boolean),
   };
 }
 

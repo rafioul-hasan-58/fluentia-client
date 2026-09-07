@@ -644,9 +644,19 @@ export function AdminAttemptsView() {
                 </span>
                 <ul className="text-xs text-ink space-y-1 list-disc list-inside">
                   {selectedAttempt.strengths && selectedAttempt.strengths.length > 0 ? (
-                    selectedAttempt.strengths.map((s, i) => (
-                      <li key={i}>{s}</li>
-                    ))
+                    selectedAttempt.strengths.map((s, i) => {
+                      if (!s) return null;
+                      if (typeof s === "object") {
+                        const itemObj = s as Record<string, any>;
+                        return (
+                          <li key={i}>
+                            {itemObj.area && <strong className="font-semibold">{itemObj.area}: </strong>}
+                            {itemObj.description || itemObj.title || JSON.stringify(itemObj)}
+                          </li>
+                        );
+                      }
+                      return <li key={i}>{String(s)}</li>;
+                    })
                   ) : (
                     <li className="text-ink-soft italic">No specific strengths flagged</li>
                   )}
@@ -659,9 +669,19 @@ export function AdminAttemptsView() {
                 </span>
                 <ul className="text-xs text-ink space-y-1 list-disc list-inside">
                   {selectedAttempt.weaknesses && selectedAttempt.weaknesses.length > 0 ? (
-                    selectedAttempt.weaknesses.map((w, i) => (
-                      <li key={i}>{w}</li>
-                    ))
+                    selectedAttempt.weaknesses.map((w, i) => {
+                      if (!w) return null;
+                      if (typeof w === "object") {
+                        const itemObj = w as Record<string, any>;
+                        return (
+                          <li key={i}>
+                            {itemObj.area && <strong className="font-semibold">{itemObj.area}: </strong>}
+                            {itemObj.description || itemObj.recommendation || JSON.stringify(itemObj)}
+                          </li>
+                        );
+                      }
+                      return <li key={i}>{String(w)}</li>;
+                    })
                   ) : (
                     <li className="text-ink-soft italic">Zero major weaknesses detected</li>
                   )}
