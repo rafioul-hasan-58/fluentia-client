@@ -33,6 +33,18 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
         ),
       },
       {
+        name: "Learners & Users",
+        href: "/admin/users",
+        icon: ({ className }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        ),
+      },
+      {
         name: "Test Attempts",
         href: "/admin/attempts",
         badge: "Live",
@@ -48,7 +60,6 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
       {
         name: "Question Bank",
         href: "/admin/questions",
-        badge: "40+ Tests",
         badgeColor: "bg-purple-500/20 text-purple-400 border-purple-500/30",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -59,18 +70,7 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
           </svg>
         ),
       },
-      {
-        name: "Learners & Users",
-        href: "/admin/users",
-        icon: ({ className }) => (
-          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        ),
-      },
+
     ],
   },
   {
@@ -109,11 +109,11 @@ export function AdminSidebar() {
 
   const initials = user?.name
     ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
     : "AD";
 
   return (
@@ -166,9 +166,8 @@ export function AdminSidebar() {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 max-w-[85vw] bg-paper-card border-r border-slate-200 dark:border-white/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 max-w-[85vw] bg-paper-card border-r border-slate-200 dark:border-white/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+          }`}
       >
         {/* Admin Brand Header */}
         <div className="h-16 lg:h-20 flex items-center justify-between px-5 border-b border-slate-200 dark:border-white/10">
@@ -245,30 +244,27 @@ export function AdminSidebar() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group ${
-                      isActive
-                        ? "bg-primary text-white shadow-sm dark:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
-                        : "text-ink-soft hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-ink"
-                    }`}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group ${isActive
+                      ? "bg-primary text-white shadow-sm dark:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+                      : "text-ink-soft hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-ink"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
-                        className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
-                          isActive
-                            ? "text-white"
-                            : "text-ink-soft group-hover:text-primary dark:group-hover:text-purple-300"
-                        }`}
+                        className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${isActive
+                          ? "text-white"
+                          : "text-ink-soft group-hover:text-primary dark:group-hover:text-purple-300"
+                          }`}
                       />
                       <span>{item.name}</span>
                     </div>
 
                     {item.badge && (
                       <span
-                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
-                          isActive
-                            ? "bg-white/20 text-white border-transparent"
-                            : item.badgeColor || "bg-amber-500/20 text-amber-500 border-amber-500/30"
-                        }`}
+                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${isActive
+                          ? "bg-white/20 text-white border-transparent"
+                          : item.badgeColor || "bg-amber-500/20 text-amber-500 border-amber-500/30"
+                          }`}
                       >
                         {item.badge}
                       </span>
