@@ -12,6 +12,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { CurvedUnderline, FlowArrow } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 
 interface LearningStep {
@@ -204,21 +205,40 @@ export function Features() {
                   </div>
 
                   {/* Bottom Step Indicator */}
-                  <div className="pt-5 mt-4 border-t border-slate-200/80 dark:border-white/5 flex items-center justify-between text-xs font-semibold text-ink-soft group-hover:text-ink relative z-10 transition-colors">
-                    <span className="text-[11px] tracking-wide text-ink-soft/80 font-mono">
-                      Step {idx + 1} of 6
-                    </span>
+                  <div className="pt-5 mt-4 flex items-center justify-between relative z-10 border-t border-slate-200/80 dark:border-white/5">
+                    {/* Progress */}
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex gap-1">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <span
+                            key={i}
+                            className={cn(
+                              "h-1.5 rounded-full transition-all duration-300",
+                              i <= idx
+                                ? "w-5 bg-primary"
+                                : "w-2 bg-slate-200 dark:bg-white/10"
+                            )}
+                          />
+                        ))}
+                      </div>
 
-                    {isLast ? (
-                      <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
-                        <span>Loops to Step 01</span>
+                      <span className="text-[11px] font-medium text-ink-soft font-mono">
+                        {String(idx + 1).padStart(2, "0")} / 06
+                      </span>
+                    </div>
+
+                    {/* Next / Loop */}
+                    {/* {isLast ? (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                         <RotateCcw className="w-3.5 h-3.5 animate-spin-slow" />
+                        Complete
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-primary dark:text-purple-300 text-[11px] font-semibold transform group-hover:translate-x-1 transition-transform">
-                        {/* Next Step placeholder / clean finish */}
+                      <span className="text-[11px] font-medium text-ink-soft/70 group-hover:text-ink transition-colors">
+                        Next
+                        <span className="ml-1 text-primary dark:text-purple-300">→</span>
                       </span>
-                    )}
+                    )} */}
                   </div>
                 </div>
 
