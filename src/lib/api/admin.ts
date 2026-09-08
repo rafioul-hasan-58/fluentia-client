@@ -767,7 +767,7 @@ export async function toggleUserSuspensionApi(
     };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const body = JSON.stringify(typeof isSuspended === "boolean" ? { isSuspended } : {});
+    const body = typeof isSuspended === "boolean" ? JSON.stringify({ isSuspended }) : undefined;
 
     // First try standard toggle endpoint
     let res = await fetch(`${getApiBaseUrl()}/users/${userId}/toggle-suspend`, {
@@ -781,13 +781,14 @@ export async function toggleUserSuspensionApi(
       res = await fetch(`${getApiBaseUrl()}/users/${userId}`, {
         method: "PATCH",
         headers,
-        body,
+        body: JSON.stringify(typeof isSuspended === "boolean" ? { isSuspended } : {}),
       });
     }
 
     if (res.ok) {
       const json = await res.json();
-      return { success: true, data: json.data, message: json.message };
+      const message = json.message || json.data?.message || "User status updated successfully";
+      return { success: true, data: json.data, message };
     }
     const errJson = await res.json().catch(() => ({}));
     return { success: false, message: errJson.message || "Failed to toggle user suspension." };
