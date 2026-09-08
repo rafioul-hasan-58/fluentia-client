@@ -23,14 +23,22 @@ export function UserProfileDropdown() {
 
   if (!user) return null;
 
-  const initials = user.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
-    : "FL";
+  const displayName =
+    user.name && user.name !== "Google User" && user.name !== "Google"
+      ? user.name
+      : user.firstName && user.firstName !== "Google"
+        ? `${user.firstName} ${user.lastName && user.lastName !== "Learner" ? user.lastName : ""}`.trim()
+        : user.email
+          ? user.email.split("@")[0].replace(/[._0-9]/g, " ").trim().replace(/\b\w/g, (c: string) => c.toUpperCase())
+          : "Learner";
+
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "FL";
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
@@ -54,7 +62,7 @@ export function UserProfileDropdown() {
 
         <div className="hidden sm:flex flex-col text-left pr-1 font-nav">
           <span className="text-xs font-bold font-brand text-ink leading-tight group-hover:text-primary dark:group-hover:text-purple-300 transition-colors truncate max-w-[120px]">
-            {user.name}
+            {displayName}
           </span>
           <span className="text-[10px] text-ink-soft leading-tight truncate">
             {user.level || "Intermediate"}
@@ -75,11 +83,18 @@ export function UserProfileDropdown() {
                 className="w-10 h-10 shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold font-brand text-ink truncate">{user.name}</p>
+                <p className="text-xs font-bold font-brand text-ink truncate">{displayName}</p>
                 <p className="text-[11px] text-ink-soft truncate">{user.email}</p>
-                <span className="inline-block mt-1 bg-primary/10 dark:bg-purple-500/20 text-primary dark:text-purple-300 text-[9px] font-bold px-2 py-0.5 rounded-md border border-primary/20 dark:border-purple-500/30 font-brand">
-                  {user.level || "Intermediate B2"}
-                </span>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="inline-block bg-primary/10 dark:bg-purple-500/20 text-primary dark:text-purple-300 text-[9px] font-bold px-2 py-0.5 rounded-md border border-primary/20 dark:border-purple-500/30 font-brand">
+                    {user.level || "Intermediate B2"}
+                  </span>
+                  {(user.streakDays !== undefined && user.streakDays > 0) || (user.profile?.streakDays && user.profile.streakDays > 0) ? (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-md border border-amber-500/20 font-brand">
+                      🔥 {user.streakDays ?? user.profile?.streakDays}d
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>

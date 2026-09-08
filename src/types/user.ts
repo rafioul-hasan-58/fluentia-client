@@ -13,6 +13,10 @@ export interface UserProfileData {
   estimatedCEFR?: string | null;
   targetLevel?: string | null;
   dailyGoalMinutes?: number | string | null;
+  streakDays?: number;
+  lastActiveDate?: string | null;
+  longestStreak?: number;
+  streakFreezeCount?: number;
   role?: string;
   registrationMethod?: string;
   createdAt?: string;
@@ -23,6 +27,10 @@ export interface UserProfileData {
     estimatedCEFR?: string | null;
     targetLevel?: string | null;
     dailyGoalMinutes?: number | string | null;
+    streakDays?: number;
+    lastActiveDate?: string | null;
+    longestStreak?: number;
+    streakFreezeCount?: number;
     [key: string]: any;
   } | null;
   level?: string;
@@ -59,3 +67,26 @@ export interface UpdateUserProfileResponse {
   data: UserProfileData;
   timestamp: string;
 }
+
+export interface StreakRecordDto {
+  timezone?: string;
+}
+
+export interface StreakData {
+  streakDays?: number;
+  lastActiveDate?: string;
+  longestStreak?: number;
+  isNewDay?: boolean;
+  streakUpdated?: boolean;
+  user?: UserProfileData;
+  [key: string]: any;
+}
+
+export interface StreakRecordResponse {
+  success: boolean;
+  statusCode?: number;
+  message?: string;
+  data?: StreakData | UserProfileData;
+  timestamp?: string;
+}
+

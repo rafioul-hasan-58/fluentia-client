@@ -134,14 +134,22 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
 
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
-    : "FL";
+  const displayName =
+    user?.name && user.name !== "Google User" && user.name !== "Google"
+      ? user.name
+      : user?.firstName && user.firstName !== "Google"
+        ? `${user.firstName} ${user.lastName && user.lastName !== "Learner" ? user.lastName : ""}`.trim()
+        : user?.email
+          ? user.email.split("@")[0].replace(/[._0-9]/g, " ").trim().replace(/\b\w/g, (c: string) => c.toUpperCase())
+          : "Learner";
+
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "FL";
 
   return (
     <>
@@ -323,9 +331,16 @@ export function Sidebar() {
                     className="w-8 h-8 shrink-0 group-hover:scale-105 transition-transform"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-ink truncate group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
-                      {user.name}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-semibold text-ink truncate group-hover:text-primary dark:group-hover:text-purple-300 transition-colors">
+                        {displayName}
+                      </p>
+                      {(user.streakDays !== undefined && user.streakDays > 0) || (user.profile?.streakDays && user.profile.streakDays > 0) ? (
+                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.2 rounded-full border border-amber-500/20 shrink-0 shadow-2xs">
+                          🔥 {user.streakDays ?? user.profile?.streakDays}
+                        </span>
+                      ) : null}
+                    </div>
                     <p className="text-[10px] text-ink-soft truncate">{user.level || "Intermediate"}</p>
                   </div>
                 </div>

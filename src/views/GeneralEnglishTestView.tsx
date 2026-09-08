@@ -273,7 +273,7 @@ export function GeneralEnglishTestView() {
     }
   }, []);
 
-  // Load questions on mount (20 questions)
+  // Load questions on mount (5 questions)
   useEffect(() => {
     let isMounted = true;
 
@@ -281,7 +281,7 @@ export function GeneralEnglishTestView() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchGeneralLevelTestQuestions(20);
+        const data = await fetchGeneralLevelTestQuestions(5);
         if (isMounted) {
           setQuestions(data);
         }

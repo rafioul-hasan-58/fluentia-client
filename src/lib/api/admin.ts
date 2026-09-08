@@ -407,8 +407,8 @@ export function normalizeUserItem(item: any): AdminUserRecord {
     typeof item.testsCount === "number"
       ? item.testsCount
       : typeof item.testsTaken === "number"
-      ? item.testsTaken
-      : parseInt(String(item.testsTaken || "0"), 10) || 0;
+        ? item.testsTaken
+        : parseInt(String(item.testsTaken || "0"), 10) || 0;
 
   const authProvider = String(item.authProvider || item.provider || "EMAIL").toLowerCase();
   const profile = item.profile || null;
@@ -432,18 +432,18 @@ export function normalizeUserItem(item: any): AdminUserRecord {
     updatedAt: item.updatedAt || new Date().toISOString(),
     profile: profile
       ? {
-          id: profile.id,
-          userId: profile.userId,
-          estimatedCEFR: profile.estimatedCEFR,
-          targetLevel: profile.targetLevel,
-          nativeLanguage: profile.nativeLanguage,
-          learningGoals: Array.isArray(profile.learningGoals) ? profile.learningGoals : [],
-          dailyGoalMinutes: profile.dailyGoalMinutes ?? 15,
-          streakDays: profile.streakDays ?? 0,
-          lastActiveAt: profile.lastActiveAt,
-          createdAt: profile.createdAt,
-          updatedAt: profile.updatedAt,
-        }
+        id: profile.id,
+        userId: profile.userId,
+        estimatedCEFR: profile.estimatedCEFR,
+        targetLevel: profile.targetLevel,
+        nativeLanguage: profile.nativeLanguage,
+        learningGoals: Array.isArray(profile.learningGoals) ? profile.learningGoals : [],
+        dailyGoalMinutes: profile.dailyGoalMinutes ?? 15,
+        streakDays: profile.streakDays ?? 0,
+        lastActiveAt: profile.lastActiveAt,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt,
+      }
       : null,
   };
 }
@@ -492,23 +492,23 @@ function normalizeSubmissionItem(item: any): RecentTestAttempt {
   const rawStrengths = Array.isArray(item.strengths)
     ? item.strengths
     : Array.isArray(aiAnalysis.strengths)
-    ? aiAnalysis.strengths
-    : [];
+      ? aiAnalysis.strengths
+      : [];
 
   const rawWeaknesses = Array.isArray(item.weaknesses)
     ? item.weaknesses
     : Array.isArray(aiAnalysis.weaknesses)
-    ? aiAnalysis.weaknesses
-    : [];
+      ? aiAnalysis.weaknesses
+      : [];
 
   const rawSummary =
     typeof item.summary === "string"
       ? item.summary
       : typeof aiAnalysis.summary === "string"
-      ? aiAnalysis.summary
-      : typeof aiAnalysis.summary === "object" && aiAnalysis.summary?.description
-      ? aiAnalysis.summary.description
-      : "Placement evaluation completed successfully.";
+        ? aiAnalysis.summary
+        : typeof aiAnalysis.summary === "object" && aiAnalysis.summary?.description
+          ? aiAnalysis.summary.description
+          : "Placement evaluation completed successfully.";
 
   return {
     id: item.id || `att-${Date.now()}`,
@@ -768,7 +768,7 @@ export async function toggleUserSuspensionApi(
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
     const body = JSON.stringify(typeof isSuspended === "boolean" ? { isSuspended } : {});
-    
+
     // First try standard toggle endpoint
     let res = await fetch(`${getApiBaseUrl()}/users/${userId}/toggle-suspend`, {
       method: "PATCH",
@@ -834,10 +834,10 @@ export async function updateUserRoleApi(
 export function normalizeQuestionItem(item: any): LevelTestQuestion {
   const options = Array.isArray(item.questionOptions)
     ? item.questionOptions.map((opt: any) => ({
-        id: opt.id || `opt-${Math.random()}`,
-        content: opt.content || opt.text || "",
-        isCorrect: Boolean(opt.isCorrect),
-      }))
+      id: opt.id || `opt-${Math.random()}`,
+      content: opt.content || opt.text || "",
+      isCorrect: Boolean(opt.isCorrect),
+    }))
     : [];
 
   return {
@@ -1218,7 +1218,7 @@ export async function fetchAdminLevelTestQuestions(query?: {
           items,
           total: rawData.total ?? items.length,
           page: rawData.page ?? (query?.page || 1),
-          limit: rawData.limit ?? (query?.limit || 20),
+          limit: rawData.limit ?? (query?.limit || 5),
           totalPages: rawData.totalPages ?? 1,
         };
       }
@@ -1249,7 +1249,7 @@ export async function fetchAdminLevelTestQuestions(query?: {
   }
 
   const page = query?.page || 1;
-  const limit = query?.limit || 20;
+  const limit = query?.limit || 5;
   const total = filtered.length;
   const totalPages = Math.ceil(total / limit) || 1;
   const paginated = filtered.slice((page - 1) * limit, page * limit);

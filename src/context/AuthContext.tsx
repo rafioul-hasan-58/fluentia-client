@@ -10,6 +10,7 @@ import {
   fetchUserProfile,
   updateUserProfile as apiUpdateUserProfile,
   uploadProfileImage as apiUploadProfileImage,
+  recordDailyStreak,
   getApiBaseUrl,
 } from "@/lib/api";
 
@@ -30,6 +31,10 @@ export interface User {
   estimatedCEFR?: string | null;
   targetLevel?: string | null;
   dailyGoalMinutes?: number | string | null;
+  streakDays?: number;
+  lastActiveDate?: string | null;
+  longestStreak?: number;
+  streakFreezeCount?: number;
   role?: string;
   level?: string;
   provider?: "email" | "google";
@@ -57,12 +62,39 @@ interface AuthContextType {
   updateProfile: (dto: UpdateUserProfileDto) => Promise<{ success: boolean; data?: User; error?: string }>;
   uploadAvatar: (file: File) => Promise<{ success: boolean; profileImageUrl?: string; error?: string }>;
   refreshProfile: () => Promise<void>;
+  recordStreak: (customTimezone?: string) => Promise<{ success: boolean; streakDays?: number; message?: string; isNewDay?: boolean }>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = "fluentia_auth_user";
+
+/**
+ * Safely parse JWT payload without external dependencies
+ */
+function parseJwtPayload(token?: string | null): Record<string, any> | null {
+  if (!token || typeof token !== "string") return null;
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    try {
+      return JSON.parse(atob(token.split(".")[1]));
+    } catch {
+      return null;
+    }
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -73,40 +105,151 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initAuth = async () => {
       try {
         const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        let parsedUser: User | null = null;
         if (stored) {
-          setUser(JSON.parse(stored));
+          try {
+            parsedUser = JSON.parse(stored);
+            // Self-heal "Google User" placeholder from stored email
+            if (parsedUser && (parsedUser.name === "Google User" || parsedUser.name === "Google")) {
+              if (parsedUser.email) {
+                const nameFromEmail = parsedUser.email
+                  .split("@")[0]
+                  .replace(/[._0-9]/g, " ")
+                  .trim()
+                  .replace(/\b\w/g, (c: string) => c.toUpperCase());
+                parsedUser.name = nameFromEmail || "Learner";
+                parsedUser.firstName = nameFromEmail ? nameFromEmail.split(" ")[0] : "Learner";
+                parsedUser.lastName = nameFromEmail ? nameFromEmail.split(" ").slice(1).join(" ") : "";
+              }
+            }
+            setUser(parsedUser);
+          } catch {
+            // ignore
+          }
         }
 
         const token = localStorage.getItem("fluentia_auth_token");
+        const tokenPayload = parseJwtPayload(token);
+
         if (token || stored) {
           const profileData = await fetchUserProfile();
           if (profileData) {
-            const fullName = profileData.firstName || profileData.lastName
-              ? `${profileData.firstName || ""} ${profileData.lastName || ""}`.trim()
-              : "Learner";
+            const rawName = (profileData as any).name;
+            const fName =
+              profileData.firstName && profileData.firstName !== "Google"
+                ? profileData.firstName
+                : (tokenPayload?.given_name || parsedUser?.firstName || "");
+            const lName =
+              profileData.lastName && profileData.lastName !== "Learner" && profileData.lastName !== "User"
+                ? profileData.lastName
+                : (tokenPayload?.family_name || parsedUser?.lastName || "");
+
+            const emailName = profileData.email
+              ? profileData.email
+                  .split("@")[0]
+                  .replace(/[._0-9]/g, " ")
+                  .trim()
+                  .replace(/\b\w/g, (c: string) => c.toUpperCase())
+              : "";
+
+            const fullName =
+              fName || lName
+                ? `${fName || ""} ${lName || ""}`.trim()
+                : (rawName && rawName !== "Google User"
+                    ? rawName
+                    : (tokenPayload?.name || (parsedUser?.name && parsedUser.name !== "Google User" ? parsedUser.name : "") || emailName || "Learner"));
+
+            const sDays = profileData.streakDays ?? profileData.profile?.streakDays ?? parsedUser?.streakDays ?? parsedUser?.profile?.streakDays ?? 0;
+            const sLastActive = profileData.lastActiveDate ?? profileData.profile?.lastActiveDate ?? parsedUser?.lastActiveDate ?? parsedUser?.profile?.lastActiveDate ?? null;
+            const sLongest = profileData.longestStreak ?? profileData.profile?.longestStreak ?? parsedUser?.longestStreak ?? parsedUser?.profile?.longestStreak ?? sDays;
+            const sFreeze = profileData.streakFreezeCount ?? profileData.profile?.streakFreezeCount ?? parsedUser?.streakFreezeCount ?? 0;
 
             const updated: User = {
-              id: profileData.id || `user_${Date.now()}`,
+              id: profileData.id || parsedUser?.id || `user_${Date.now()}`,
               name: fullName,
-              firstName: profileData.firstName,
-              lastName: profileData.lastName,
-              email: profileData.email || "",
-              avatar: profileData.profileImage || null,
-              profileImage: profileData.profileImage || null,
+              firstName: fName || (fullName ? fullName.split(" ")[0] : "Learner"),
+              lastName: lName || (fullName ? fullName.split(" ").slice(1).join(" ") : ""),
+              email: profileData.email || tokenPayload?.email || parsedUser?.email || "",
+              avatar: profileData.profileImage || tokenPayload?.picture || parsedUser?.avatar || null,
+              profileImage: profileData.profileImage || tokenPayload?.picture || parsedUser?.profileImage || null,
               bio: profileData.bio || null,
               phoneNumber: profileData.phoneNumber || null,
               country: profileData.country || null,
               timezone: profileData.timezone || null,
-              role: profileData.role || "USER",
-              level: profileData.level || "Intermediate B2",
-              provider: profileData.registrationMethod === "GOOGLE" ? "google" : "email",
-              registrationMethod: profileData.registrationMethod || "EMAIL",
+              streakDays: sDays,
+              lastActiveDate: sLastActive,
+              longestStreak: sLongest,
+              streakFreezeCount: sFreeze,
+              role: profileData.role || parsedUser?.role || "USER",
+              level: profileData.level || parsedUser?.level || "Intermediate B2",
+              provider: profileData.registrationMethod === "GOOGLE" ? "google" : (parsedUser?.provider || "email"),
+              registrationMethod: profileData.registrationMethod || parsedUser?.registrationMethod || "EMAIL",
               createdAt: profileData.createdAt,
               updatedAt: profileData.updatedAt,
-              profile: profileData.profile || null,
+              profile: {
+                ...(profileData.profile || {}),
+                streakDays: sDays,
+                lastActiveDate: sLastActive,
+                longestStreak: sLongest,
+                streakFreezeCount: sFreeze,
+              },
             };
             setUser(updated);
             localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+
+            // Auto-record streak for the active day once per calendar date
+            const tz =
+              profileData.timezone ||
+              (typeof Intl !== "undefined" && Intl.DateTimeFormat
+                ? Intl.DateTimeFormat().resolvedOptions().timeZone
+                : "UTC") ||
+              "UTC";
+            const todayKey = `fluentia_streak_sync_${updated.id}_${new Date().toISOString().slice(0, 10)}`;
+            if (token && typeof window !== "undefined" && !sessionStorage.getItem(todayKey)) {
+              sessionStorage.setItem(todayKey, "1");
+              recordDailyStreak(tz)
+                .then((res) => {
+                  if (res?.data) {
+                    const resData: any = res.data;
+                    const liveStreak =
+                      typeof resData.streakDays === "number"
+                        ? resData.streakDays
+                        : typeof (resData.user?.streakDays) === "number"
+                        ? resData.user.streakDays
+                        : typeof (resData.user?.profile?.streakDays) === "number"
+                        ? resData.user.profile.streakDays
+                        : undefined;
+                    const liveLongest =
+                      typeof resData.longestStreak === "number"
+                        ? resData.longestStreak
+                        : typeof (resData.user?.longestStreak) === "number"
+                        ? resData.user.longestStreak
+                        : undefined;
+                    const liveLastActive = resData.lastActiveDate || resData.user?.lastActiveDate;
+
+                    if (liveStreak !== undefined) {
+                      setUser((curr) => {
+                        if (!curr) return null;
+                        const syncUser: User = {
+                          ...curr,
+                          streakDays: liveStreak,
+                          lastActiveDate: liveLastActive || curr.lastActiveDate,
+                          longestStreak: liveLongest ?? curr.longestStreak,
+                          profile: {
+                            ...(curr.profile || {}),
+                            streakDays: liveStreak,
+                            lastActiveDate: liveLastActive || curr.profile?.lastActiveDate,
+                            longestStreak: liveLongest ?? curr.profile?.longestStreak,
+                          },
+                        };
+                        saveUserSession(syncUser);
+                        return syncUser;
+                      });
+                    }
+                  }
+                })
+                .catch(() => {});
+            }
           }
         }
       } catch {
@@ -177,6 +320,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? `${fName} ${lName}`.trim()
         : userPayload.name || email.split("@")[0];
 
+      const sDays = userPayload.streakDays ?? userPayload.profile?.streakDays ?? 0;
+      const sLastActive = userPayload.lastActiveDate ?? userPayload.profile?.lastActiveDate ?? null;
+      const sLongest = userPayload.longestStreak ?? userPayload.profile?.longestStreak ?? sDays;
+      const sFreeze = userPayload.streakFreezeCount ?? userPayload.profile?.streakFreezeCount ?? 0;
+
       let loggedInUser: User = {
         id: userPayload.id || `user_${Date.now()}`,
         name: fullName || "Learner",
@@ -194,16 +342,76 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         estimatedCEFR: userPayload.estimatedCEFR || null,
         targetLevel: userPayload.targetLevel || null,
         dailyGoalMinutes: userPayload.dailyGoalMinutes || 15,
+        streakDays: sDays,
+        lastActiveDate: sLastActive,
+        longestStreak: sLongest,
+        streakFreezeCount: sFreeze,
         role: userPayload.role || "USER",
         level: userPayload.level || userPayload.targetLevel || "Intermediate B2",
         provider: userPayload.registrationMethod === "GOOGLE" ? "google" : "email",
         registrationMethod: userPayload.registrationMethod || "EMAIL",
         createdAt: userPayload.createdAt,
         updatedAt: userPayload.updatedAt,
-        profile: userPayload.profile || null,
+        profile: {
+          ...(userPayload.profile || {}),
+          streakDays: sDays,
+          lastActiveDate: sLastActive,
+          longestStreak: sLongest,
+          streakFreezeCount: sFreeze,
+        },
       };
 
       saveUserSession(loggedInUser);
+
+      // Trigger daily streak sync in background upon login
+      const tz =
+        userPayload.timezone ||
+        (typeof Intl !== "undefined" && Intl.DateTimeFormat
+          ? Intl.DateTimeFormat().resolvedOptions().timeZone
+          : "UTC") ||
+        "UTC";
+      recordDailyStreak(tz)
+        .then((res) => {
+          if (res?.data) {
+            const resData: any = res.data;
+            const liveStreak =
+              typeof resData.streakDays === "number"
+                ? resData.streakDays
+                : typeof (resData.user?.streakDays) === "number"
+                ? resData.user.streakDays
+                : typeof (resData.user?.profile?.streakDays) === "number"
+                ? resData.user.profile.streakDays
+                : undefined;
+            const liveLongest =
+              typeof resData.longestStreak === "number"
+                ? resData.longestStreak
+                : typeof (resData.user?.longestStreak) === "number"
+                ? resData.user.longestStreak
+                : undefined;
+            const liveLastActive = resData.lastActiveDate || resData.user?.lastActiveDate;
+
+            if (liveStreak !== undefined) {
+              setUser((curr) => {
+                if (!curr) return null;
+                const syncUser: User = {
+                  ...curr,
+                  streakDays: liveStreak,
+                  lastActiveDate: liveLastActive || curr.lastActiveDate,
+                  longestStreak: liveLongest ?? curr.longestStreak,
+                  profile: {
+                    ...(curr.profile || {}),
+                    streakDays: liveStreak,
+                    lastActiveDate: liveLastActive || curr.profile?.lastActiveDate,
+                    longestStreak: liveLongest ?? curr.profile?.longestStreak,
+                  },
+                };
+                saveUserSession(syncUser);
+                return syncUser;
+              });
+            }
+          }
+        })
+        .catch(() => {});
 
       // Hydrate additional profile details from /users/my-profile in the background
       try {
@@ -213,12 +421,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ? `${fullProfile.firstName || ""} ${fullProfile.lastName || ""}`.trim()
             : loggedInUser.name;
 
+          const pStreak = fullProfile.streakDays ?? fullProfile.profile?.streakDays ?? loggedInUser.streakDays ?? 0;
+          const pLastActive = fullProfile.lastActiveDate ?? fullProfile.profile?.lastActiveDate ?? loggedInUser.lastActiveDate;
+          const pLongest = fullProfile.longestStreak ?? fullProfile.profile?.longestStreak ?? loggedInUser.longestStreak;
+
           loggedInUser = {
             ...loggedInUser,
             ...fullProfile,
             name: mergedName,
             avatar: fullProfile.profileImage || loggedInUser.avatar,
             profileImage: fullProfile.profileImage || loggedInUser.profileImage,
+            streakDays: pStreak,
+            lastActiveDate: pLastActive,
+            longestStreak: pLongest,
+            profile: {
+              ...(fullProfile.profile || {}),
+              streakDays: pStreak,
+              lastActiveDate: pLastActive,
+              longestStreak: pLongest,
+            },
           };
           saveUserSession(loggedInUser);
         }
@@ -355,6 +576,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = async (googleCredential: string): Promise<{ success: boolean; user?: User; error?: string }> => {
     setIsLoading(true);
     try {
+      // Decode Google ID token to extract authentic user profile directly from Google
+      const googleProfile = parseJwtPayload(googleCredential);
+      const googleFullName =
+        googleProfile?.name ||
+        (googleProfile?.given_name
+          ? `${googleProfile.given_name} ${googleProfile.family_name || ""}`.trim()
+          : null);
+      const googleFirstName =
+        googleProfile?.given_name || (googleFullName ? googleFullName.split(" ")[0] : "");
+      const googleLastName =
+        googleProfile?.family_name ||
+        (googleFullName ? googleFullName.split(" ").slice(1).join(" ") : "");
+      const googlePicture = googleProfile?.picture || null;
+      const googleEmail = googleProfile?.email || "";
+
       const url = `${getApiBaseUrl()}/auth/google-login`;
       const res = await fetch(url, {
         method: "POST",
@@ -370,25 +606,125 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.message || "Failed to authenticate with Google");
       }
 
+      const resData = data.data || data;
+      const backendUser = data.user || resData.user || (resData.id ? resData : null) || {};
+
+      const finalFirstName =
+        backendUser.firstName && backendUser.firstName !== "Google"
+          ? backendUser.firstName
+          : googleFirstName || (backendUser.name && backendUser.name !== "Google User" ? backendUser.name.split(" ")[0] : "") || (googleEmail ? googleEmail.split("@")[0] : "Learner");
+
+      const finalLastName =
+        backendUser.lastName && backendUser.lastName !== "Learner" && backendUser.lastName !== "User"
+          ? backendUser.lastName
+          : googleLastName || (backendUser.name && backendUser.name !== "Google User" ? backendUser.name.split(" ").slice(1).join(" ") : "");
+
+      const finalFullName =
+        backendUser.name && backendUser.name !== "Google User"
+          ? backendUser.name
+          : googleFullName || ((finalFirstName || finalLastName) ? `${finalFirstName} ${finalLastName}`.trim() : (googleEmail ? googleEmail.split("@")[0] : "Learner"));
+
+      const finalAvatar =
+        backendUser.profileImage ||
+        backendUser.avatar ||
+        backendUser.picture ||
+        googlePicture ||
+        null;
+
+      const finalEmail = backendUser.email || googleEmail || "";
+
+      const sDays = backendUser.streakDays ?? backendUser.profile?.streakDays ?? 0;
+      const sLastActive = backendUser.lastActiveDate ?? backendUser.profile?.lastActiveDate ?? null;
+      const sLongest = backendUser.longestStreak ?? backendUser.profile?.longestStreak ?? sDays;
+      const sFreeze = backendUser.streakFreezeCount ?? backendUser.profile?.streakFreezeCount ?? 0;
+
       // Extract user and token from backend response
-      const authenticatedUser: User = data.user || (data.data && data.data.user) || {
-        id: data.id || `google_${Date.now()}`,
-        name: data.name || (data.firstName ? `${data.firstName} ${data.lastName || ""}`.trim() : "Google User"),
-        firstName: data.firstName || "Google",
-        lastName: data.lastName || "Learner",
-        email: data.email || "",
-        avatar: data.avatar || data.picture || null,
-        role: data.role || "student",
-        level: data.level || "Intermediate B2",
+      const authenticatedUser: User = {
+        id: backendUser.id || data.id || googleProfile?.sub || `google_${Date.now()}`,
+        name: finalFullName,
+        firstName: finalFirstName,
+        lastName: finalLastName,
+        email: finalEmail,
+        avatar: finalAvatar,
+        profileImage: finalAvatar,
+        streakDays: sDays,
+        lastActiveDate: sLastActive,
+        longestStreak: sLongest,
+        streakFreezeCount: sFreeze,
+        role: backendUser.role || data.role || "USER",
+        level: backendUser.level || backendUser.estimatedCEFR || "Intermediate B2",
         provider: "google",
+        registrationMethod: "GOOGLE",
+        profile: {
+          ...(backendUser.profile || {}),
+          streakDays: sDays,
+          lastActiveDate: sLastActive,
+          longestStreak: sLongest,
+          streakFreezeCount: sFreeze,
+        },
       };
 
-      const token = data.accessToken || data.access_token || data.token || (data.data && (data.data.accessToken || data.data.token));
+      const token =
+        data.accessToken ||
+        data.access_token ||
+        data.token ||
+        (data.data && (data.data.accessToken || data.data.token || data.data.access_token));
 
       saveUserSession(authenticatedUser);
       if (token) {
         localStorage.setItem("fluentia_auth_token", token);
       }
+
+      // Trigger daily streak sync in background upon Google login
+      const tz =
+        backendUser.timezone ||
+        (typeof Intl !== "undefined" && Intl.DateTimeFormat
+          ? Intl.DateTimeFormat().resolvedOptions().timeZone
+          : "UTC") ||
+        "UTC";
+      recordDailyStreak(tz)
+        .then((res) => {
+          if (res?.data) {
+            const resData: any = res.data;
+            const liveStreak =
+              typeof resData.streakDays === "number"
+                ? resData.streakDays
+                : typeof (resData.user?.streakDays) === "number"
+                ? resData.user.streakDays
+                : typeof (resData.user?.profile?.streakDays) === "number"
+                ? resData.user.profile.streakDays
+                : undefined;
+            const liveLongest =
+              typeof resData.longestStreak === "number"
+                ? resData.longestStreak
+                : typeof (resData.user?.longestStreak) === "number"
+                ? resData.user.longestStreak
+                : undefined;
+            const liveLastActive = resData.lastActiveDate || resData.user?.lastActiveDate;
+
+            if (liveStreak !== undefined) {
+              setUser((curr) => {
+                if (!curr) return null;
+                const syncUser: User = {
+                  ...curr,
+                  streakDays: liveStreak,
+                  lastActiveDate: liveLastActive || curr.lastActiveDate,
+                  longestStreak: liveLongest ?? curr.longestStreak,
+                  profile: {
+                    ...(curr.profile || {}),
+                    streakDays: liveStreak,
+                    lastActiveDate: liveLastActive || curr.profile?.lastActiveDate,
+                    longestStreak: liveLongest ?? curr.profile?.longestStreak,
+                  },
+                };
+                saveUserSession(syncUser);
+                return syncUser;
+              });
+            }
+          }
+        })
+        .catch(() => {});
+
       return { success: true, user: authenticatedUser };
     } catch (err: any) {
       return { success: false, error: err.message || "Google sign-in failed" };
@@ -425,6 +761,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ? `${profileData.firstName || ""} ${profileData.lastName || ""}`.trim()
             : (prev?.name || "Learner");
 
+          const sDays = profileData.streakDays ?? profileData.profile?.streakDays ?? prev?.streakDays ?? 0;
+          const sLastActive = profileData.lastActiveDate ?? profileData.profile?.lastActiveDate ?? prev?.lastActiveDate ?? null;
+          const sLongest = profileData.longestStreak ?? profileData.profile?.longestStreak ?? prev?.longestStreak ?? sDays;
+          const sFreeze = profileData.streakFreezeCount ?? profileData.profile?.streakFreezeCount ?? prev?.streakFreezeCount ?? 0;
+
           const updated: User = {
             id: profileData.id || prev?.id || `user_${Date.now()}`,
             name: fullName,
@@ -437,13 +778,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             phoneNumber: profileData.phoneNumber || null,
             country: profileData.country || null,
             timezone: profileData.timezone || null,
+            streakDays: sDays,
+            lastActiveDate: sLastActive,
+            longestStreak: sLongest,
+            streakFreezeCount: sFreeze,
             role: profileData.role || prev?.role || "USER",
             level: profileData.level || prev?.level || "Intermediate B2",
             provider: prev?.provider || (profileData.registrationMethod === "GOOGLE" ? "google" : "email"),
             registrationMethod: profileData.registrationMethod || (prev?.provider === "google" ? "GOOGLE" : "EMAIL"),
             createdAt: profileData.createdAt || prev?.createdAt,
             updatedAt: profileData.updatedAt || prev?.updatedAt,
-            profile: profileData.profile || prev?.profile || null,
+            profile: {
+              ...(profileData.profile || prev?.profile || {}),
+              streakDays: sDays,
+              lastActiveDate: sLastActive,
+              longestStreak: sLongest,
+              streakFreezeCount: sFreeze,
+            },
           };
           saveUserSession(updated);
           return updated;
@@ -536,6 +887,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const recordStreak = async (
+    customTimezone?: string
+  ): Promise<{ success: boolean; streakDays?: number; message?: string; isNewDay?: boolean }> => {
+    try {
+      const tz =
+        customTimezone ||
+        user?.timezone ||
+        (typeof Intl !== "undefined" && Intl.DateTimeFormat
+          ? Intl.DateTimeFormat().resolvedOptions().timeZone
+          : "UTC") ||
+        "UTC";
+
+      const res = await recordDailyStreak(tz);
+      if (res && (res.success || res.data)) {
+        const streakData: any = res.data || res;
+        const newStreakDays =
+          typeof streakData.streakDays === "number"
+            ? streakData.streakDays
+            : typeof (streakData.user?.streakDays) === "number"
+            ? streakData.user.streakDays
+            : typeof (streakData.user?.profile?.streakDays) === "number"
+            ? streakData.user.profile.streakDays
+            : undefined;
+
+        const newLastActiveDate =
+          streakData.lastActiveDate ||
+          streakData.user?.lastActiveDate ||
+          new Date().toISOString();
+
+        const newLongestStreak =
+          typeof streakData.longestStreak === "number"
+            ? streakData.longestStreak
+            : typeof (streakData.user?.longestStreak) === "number"
+            ? streakData.user.longestStreak
+            : undefined;
+
+        setUser((prev) => {
+          if (!prev) return null;
+          const currentStreak = newStreakDays !== undefined ? newStreakDays : (prev.streakDays || 0) + 1;
+          const updated: User = {
+            ...prev,
+            streakDays: currentStreak,
+            lastActiveDate: newLastActiveDate,
+            longestStreak: newLongestStreak !== undefined ? newLongestStreak : Math.max(prev.longestStreak || 0, currentStreak),
+            profile: {
+              ...(prev.profile || {}),
+              streakDays: currentStreak,
+              lastActiveDate: newLastActiveDate,
+              longestStreak: newLongestStreak !== undefined ? newLongestStreak : Math.max(prev.profile?.longestStreak || 0, currentStreak),
+            },
+          };
+          saveUserSession(updated);
+          return updated;
+        });
+
+        return {
+          success: true,
+          streakDays: newStreakDays,
+          message: res.message || "Streak check-in successful!",
+          isNewDay: streakData.isNewDay ?? true,
+        };
+      }
+
+      return {
+        success: false,
+        message: res?.message || "Could not record streak",
+      };
+    } catch (err: any) {
+      console.warn("recordStreak error:", err);
+      return {
+        success: false,
+        message: err.message || "Failed to record streak",
+      };
+    }
+  };
+
   const logout = () => {
     saveUserSession(null);
     if (typeof window !== "undefined") {
@@ -556,6 +983,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updateProfile,
         uploadAvatar,
         refreshProfile,
+        recordStreak,
         logout,
       }}
     >
