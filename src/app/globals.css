@@ -257,9 +257,22 @@ body {
   }
 }
 
-.animate-logo-breathe {
-  animation: logoBreathe 2.4s ease-in-out infinite;
+/* Animated Left-to-Right Text Gradient Pulse Flow */
+@keyframes textPulseFlow {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -100% 50%;
+  }
 }
+
+.animate-gradient-flow,
+.animate-text-flow {
+  background-size: 200% auto;
+  animation: textPulseFlow 3.5s linear infinite;
+}
+
 
 
 

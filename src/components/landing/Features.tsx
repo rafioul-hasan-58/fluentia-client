@@ -148,7 +148,7 @@ export function Features() {
         </div>
 
         {/* 6-Step Connected Workflow Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-12 sm:gap-y-14 md:gap-y-10 lg:gap-y-10 gap-x-7 sm:gap-x-9 md:gap-x-10 lg:gap-x-12 xl:gap-x-13 relative">
           {LEARNING_STEPS.map((step, idx) => {
             const Icon = step.icon;
             const isLast = idx === LEARNING_STEPS.length - 1;
@@ -203,7 +203,7 @@ export function Features() {
                     </div>
                   </div>
 
-                  {/* Bottom Step Indicator & Flow Arrow */}
+                  {/* Bottom Step Indicator */}
                   <div className="pt-5 mt-4 border-t border-slate-200/80 dark:border-white/5 flex items-center justify-between text-xs font-semibold text-ink-soft group-hover:text-ink relative z-10 transition-colors">
                     <span className="text-[11px] tracking-wide text-ink-soft/80 font-mono">
                       Step {idx + 1} of 6
@@ -216,8 +216,7 @@ export function Features() {
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-primary dark:text-purple-300 text-[11px] font-semibold transform group-hover:translate-x-1 transition-transform">
-                        {/* <span>Next Step</span> */}
-                        {/* <ArrowRight className="w-3.5 h-3.5" /> */}
+                        {/* Next Step placeholder / clean finish */}
                       </span>
                     )}
                   </div>
@@ -225,22 +224,22 @@ export function Features() {
 
                 {/* Desktop (3-column) Connected Flow Arrow between horizontal cards */}
                 {showLgArrow && (
-                  <div className="hidden lg:flex absolute top-1/2 -right-3 sm:-right-3.5 -translate-y-1/2 translate-x-1/2 z-20 pointer-events-none items-center justify-center">
-                    <FlowArrow className="w-9 sm:w-10 h-6 text-emerald-500 dark:text-emerald-400 drop-shadow-xs group-hover/card-wrapper:translate-x-0.5 transition-transform duration-300" />
+                  <div className="hidden lg:flex absolute top-1/2 -right-6 xl:-right-6.5 -translate-y-1/2 translate-x-1/2 z-20 pointer-events-none items-center justify-center">
+                    <FlowArrow className="w-11 sm:w-11.5 lg:w-12 h-6 sm:h-6.5 lg:h-7 drop-shadow-xs group-hover/card-wrapper:translate-x-1 transition-transform duration-300" />
                   </div>
                 )}
 
                 {/* Tablet (2-column) Connected Flow Arrow */}
                 {showMdArrow && (
-                  <div className="hidden md:flex lg:hidden absolute top-1/2 -right-3 sm:-right-3.5 -translate-y-1/2 translate-x-1/2 z-20 pointer-events-none items-center justify-center">
-                    <FlowArrow className="w-9 sm:w-10 h-6 text-emerald-500 dark:text-emerald-400 drop-shadow-xs group-hover/card-wrapper:translate-x-0.5 transition-transform duration-300" />
+                  <div className="hidden md:flex lg:hidden absolute top-1/2 -right-5 -translate-y-1/2 translate-x-1/2 z-20 pointer-events-none items-center justify-center">
+                    <FlowArrow className="w-10 sm:w-10.5 h-5.5 sm:h-6 drop-shadow-xs group-hover/card-wrapper:translate-x-1 transition-transform duration-300" />
                   </div>
                 )}
 
                 {/* Mobile (1-column) Vertical Down Arrow */}
                 {showMobileArrow && (
-                  <div className="flex md:hidden absolute -bottom-3 sm:-bottom-3.5 left-1/2 -translate-x-1/2 translate-y-1/2 z-20 pointer-events-none items-center justify-center">
-                    <FlowArrow direction="down" className="w-8 h-5.5 text-emerald-500 dark:text-emerald-400 drop-shadow-xs" />
+                  <div className="flex md:hidden absolute -bottom-6 left-1/2 -translate-x-1/2 translate-y-1/2 z-20 pointer-events-none items-center justify-center">
+                    <FlowArrow direction="down" className="w-6 h-9 drop-shadow-xs" />
                   </div>
                 )}
               </div>
@@ -306,7 +305,7 @@ export function Features() {
                 href="/register"
                 className="ml-auto lg:ml-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-xs shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/40 transition-all hover:scale-[1.02] active:scale-95 text-center shrink-0"
               >
-                Experience The Loop →
+                Experience The Loop
               </Link>
             </div>
           </div>

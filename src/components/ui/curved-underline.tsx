@@ -9,6 +9,8 @@ export interface CurvedUnderlineProps {
   strokeWidth?: number;
   /** Curve style variant: 'arc' (gentle curve), 'wave' (smooth hand-drawn wave), 'double' (double stroke) */
   variant?: "arc" | "wave" | "double";
+  /** Optional animation on the stroke */
+  animated?: boolean;
 }
 
 export const CurvedUnderline: React.FC<CurvedUnderlineProps> = ({
@@ -16,8 +18,10 @@ export const CurvedUnderline: React.FC<CurvedUnderlineProps> = ({
   color,
   strokeWidth = 3.5,
   variant = "arc",
+  animated = false,
 }) => {
-  const gradientId = React.useId();
+  const reactId = React.useId();
+  const id = reactId.replace(/[^a-zA-Z0-9]/g, "");
 
   return (
     <svg
@@ -29,7 +33,7 @@ export const CurvedUnderline: React.FC<CurvedUnderlineProps> = ({
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={`grad_${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="var(--primary, #7c3aed)" />
           <stop offset="50%" stopColor="#a855f7" />
           <stop offset="100%" stopColor="#ec4899" />
@@ -39,7 +43,7 @@ export const CurvedUnderline: React.FC<CurvedUnderlineProps> = ({
       {variant === "arc" && (
         <path
           d="M 3 15 Q 130 3 257 15"
-          stroke={color || `url(#${gradientId})`}
+          stroke={color || `url(#grad_${id})`}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
@@ -48,7 +52,7 @@ export const CurvedUnderline: React.FC<CurvedUnderlineProps> = ({
       {variant === "wave" && (
         <path
           d="M 3 14 Q 65 4, 130 14 T 257 14"
-          stroke={color || `url(#${gradientId})`}
+          stroke={color || `url(#grad_${id})`}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
@@ -58,13 +62,13 @@ export const CurvedUnderline: React.FC<CurvedUnderlineProps> = ({
         <>
           <path
             d="M 3 11 Q 130 2 257 11"
-            stroke={color || `url(#${gradientId})`}
+            stroke={color || `url(#grad_${id})`}
             strokeWidth={strokeWidth * 0.8}
             strokeLinecap="round"
           />
           <path
             d="M 12 17 Q 130 9 248 17"
-            stroke={color || `url(#${gradientId})`}
+            stroke={color || `url(#grad_${id})`}
             strokeWidth={strokeWidth * 0.6}
             strokeLinecap="round"
             opacity="0.8"
