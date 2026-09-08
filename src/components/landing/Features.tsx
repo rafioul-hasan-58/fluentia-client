@@ -31,9 +31,9 @@ const LEARNING_STEPS: LearningStep[] = [
   {
     stepNumber: "01",
     category: "ASSESS",
-    title: "Find Your Level",
+    title: "Find Your English Level",
     description:
-      "Start with a quick assessment that reveals your current level, strengths, grammar gaps, and vocabulary needs.",
+      "একটি quick assessment দিন এবং discover করুন আপনার current level, strengths, grammar gaps ও vocabulary needs।",
     badgeStyle:
       "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
     iconBg: "bg-purple-500/10 dark:bg-purple-500/20",
@@ -47,7 +47,7 @@ const LEARNING_STEPS: LearningStep[] = [
     category: "LEARN",
     title: "Learn What You Need",
     description:
-      "Get focused lessons for the grammar, vocabulary, pronunciation, and language patterns you actually need.",
+      "Grammar, vocabulary, pronunciation এবং language patterns-এর যেসব জায়গায় আপনার improvement দরকার, সেগুলো নিয়ে focused lessons নিন আপনার level ও needs অনুযায়ী।",
     badgeStyle:
       "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
     iconBg: "bg-indigo-500/10 dark:bg-indigo-500/20",
@@ -61,7 +61,7 @@ const LEARNING_STEPS: LearningStep[] = [
     category: "APPLY",
     title: "Use It in Context",
     description:
-      "Practice immediately in conversations, roleplays, sentence generation, and real-life tasks.",
+      "Conversations, roleplays, sentence generation এবং real-life tasks-এর মাধ্যমে শেখা বিষয়গুলো immediately practice করুন যাতে English শুধু জানা নয়, ব্যবহার করতেও পারেন।",
     badgeStyle:
       "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/20",
     iconBg: "bg-fuchsia-500/10 dark:bg-fuchsia-500/20",
@@ -75,7 +75,7 @@ const LEARNING_STEPS: LearningStep[] = [
     category: "FEEDBACK",
     title: "Instant Diagnostic Feedback",
     description:
-      "Receive real-time correction for grammatical slips, unnatural phrasing, and word-choice errors.",
+      "আপনার grammar, phrasing এবং word choice-এর ভুলগুলো practice-এর সময়ই instantly identify করুন এবং তাৎক্ষণিক feedback-এর মাধ্যমে সঠিকভাবে ব্যবহার করা শিখুন।",
     badgeStyle:
       "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
     iconBg: "bg-rose-500/10 dark:bg-rose-500/20",
@@ -89,7 +89,7 @@ const LEARNING_STEPS: LearningStep[] = [
     category: "RETAIN",
     title: "Mastery Tracking",
     description:
-      "Every mistake is recorded into your personalized error profile and tracked until full mastery.",
+      "প্রতিটি mistake আপনার personalized error profile-এ save হবে এবং নিয়মিত track করা হবে যতক্ষণ না আপনি সেই concept সঠিকভাবে ব্যবহার করতে পারেন।",
     badgeStyle:
       "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     iconBg: "bg-emerald-500/10 dark:bg-emerald-500/20",
@@ -103,7 +103,7 @@ const LEARNING_STEPS: LearningStep[] = [
     category: "PRACTICE",
     title: "Targeted Weakness Drills",
     description:
-      "Generate custom follow-up exercises focused exactly on the gaps you struggled with before.",
+      "আপনার আগের mistakes ও learning gaps-এর ওপর ভিত্তি করে পান custom follow-up exercises যাতে ঠিক যে জায়গাগুলোতে struggle করছেন, সেগুলোই targeted practice-এর মাধ্যমে improve করতে পারেন।",
     badgeStyle:
       "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     iconBg: "bg-amber-500/10 dark:bg-amber-500/20",
@@ -266,8 +266,7 @@ export function Features() {
                   </span>
                 </h4>
                 <p className="text-xs sm:text-sm text-ink-soft leading-relaxed">
-                  Fluentia never puts you on a rigid, static track. Every practice
-                  session automatically recalibrates around your real mistakes.
+                  Fluentia কোনো fixed learning path follow করে না। প্রতিটি practice session আপনার real mistakes-এর ওপর ভিত্তি করে automatically adapt হয়—যাতে আপনার learning সবসময় আপনার current needs-এর সঙ্গে aligned থাকে।
                 </p>
               </div>
             </div>
