@@ -36,8 +36,8 @@ const TEST_OPTIONS: TestCardInfo[] = [
     subtitle: "দৈনন্দিন ইংরেজি, Grammar ও Vocabulary দক্ষতা যাচাই",
     description:
       "Assess your everyday communication proficiency across Grammar accuracy, Vocabulary range, Reading comprehension, and Sentence construction based on the international CEFR standard.",
-    duration: "25 - 30 Mins",
-    questions: "40 Questions",
+    duration: "15 - 20 Mins",
+    questions: "20 Questions",
     benchmark: "CEFR Level (A1 - C2)",
     ratingLabel: "CEFR Benchmark",
     features: [

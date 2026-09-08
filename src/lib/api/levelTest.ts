@@ -87,7 +87,7 @@ const SAMPLE_FALLBACK_QUESTIONS: LevelTestQuestion[] = [
  * Fetches the placement test set from the Backend API
  */
 export async function fetchGeneralLevelTestQuestions(
-  limit: number = 40
+  limit: number = 20
 ): Promise<LevelTestQuestion[]> {
   try {
     const url = `${getApiBaseUrl()}/level-test-questions/test-set?limit=${limit}`;
