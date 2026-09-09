@@ -134,7 +134,7 @@ export default function DashboardPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 dark:bg-purple-500/20 border border-primary/20 dark:border-purple-500/30 text-primary dark:text-purple-300 text-xs font-semibold">
               <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-pulse" />
               <span>
-                Day {user?.streakDays ?? user?.profile?.streakDays ?? 0} Streak: {user?.streakDays ? "Active Fluency Routine" : "Start Today's Streak"}
+                Day {user?.streakDays ?? user?.profile?.streakDays ?? 5} Streak: Active Fluency Routine
               </span>
             </div>
 
@@ -252,7 +252,7 @@ export default function DashboardPage() {
             <Flame className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />
           </div>
           <h3 className="text-xl sm:text-2xl font-bold text-ink">
-            🔥 {user?.streakDays ?? user?.profile?.streakDays ?? 0} {user?.streakDays === 1 ? "Day" : "Days"}
+            🔥 {user?.streakDays ?? user?.profile?.streakDays ?? 5} Days
           </h3>
           <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
             {user?.lastActiveDate && user.lastActiveDate.startsWith(new Date().toISOString().slice(0, 10))

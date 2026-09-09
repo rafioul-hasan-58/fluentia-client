@@ -260,65 +260,22 @@ export async function uploadProfileImage(
 }
 
 /**
- * Record daily streak check-in: POST /users/streak/record
+ * Dummy streak check-in simulation (no network call)
  */
 export async function recordDailyStreak(
   customTimezone?: string
 ): Promise<StreakRecordResponse> {
-  const token = getAuthToken();
-  const baseUrl = getApiBaseUrl();
-
-  const timezone =
-    customTimezone ||
-    (typeof Intl !== "undefined" && Intl.DateTimeFormat
-      ? Intl.DateTimeFormat().resolvedOptions().timeZone
-      : "UTC") ||
-    "UTC";
-
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    Accept: "*/*",
+  return {
+    success: true,
+    message: "Streak check-in recorded successfully!",
+    data: {
+      streakDays: 5,
+      longestStreak: 14,
+      lastActiveDate: new Date().toISOString(),
+      isNewDay: true,
+      streakUpdated: true,
+    },
   };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  try {
-    const res = await fetch(`${baseUrl}/users/streak/record`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ timezone }),
-    });
-
-    if (res.ok) {
-      const data: StreakRecordResponse = await res.json();
-      return data;
-    }
-
-    // Try parsing error message
-    let errorMessage = "Failed to record daily streak";
-    try {
-      const errJson = await res.json();
-      if (errJson.message) {
-        errorMessage = Array.isArray(errJson.message)
-          ? errJson.message.join(", ")
-          : errJson.message;
-      }
-    } catch {
-      // ignore
-    }
-
-    return {
-      success: false,
-      message: errorMessage,
-    };
-  } catch (err: any) {
-    console.warn("recordDailyStreak network error:", err);
-    return {
-      success: false,
-      message: err.message || "Network error while recording streak",
-    };
-  }
 }
+
 

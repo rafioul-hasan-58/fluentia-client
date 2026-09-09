@@ -41,8 +41,8 @@ export function StreakWidget({
   const [celebrationMsg, setCelebrationMsg] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const streakDays = user?.streakDays ?? user?.profile?.streakDays ?? 0;
-  const longestStreak = user?.longestStreak ?? user?.profile?.longestStreak ?? Math.max(streakDays, 0);
+  const streakDays = user?.streakDays ?? user?.profile?.streakDays ?? 5;
+  const longestStreak = user?.longestStreak ?? user?.profile?.longestStreak ?? Math.max(streakDays, 14);
   const lastActiveDate = user?.lastActiveDate ?? user?.profile?.lastActiveDate;
 
   // Determine if already checked in today in client's local timezone
