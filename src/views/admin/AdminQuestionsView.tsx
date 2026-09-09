@@ -14,7 +14,7 @@ import {
   CreateLevelTestQuestionDto,
   MOCK_LEVEL_TEST_QUESTIONS,
 } from "@/lib/api/admin";
-import { Pencil, Trash2, Eye, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Eye, Loader2, Plus, RotateCw } from "lucide-react";
 
 interface OptionFormState {
   id: string;
@@ -432,22 +432,20 @@ export function AdminQuestionsView() {
               size="sm"
               onClick={loadQuestions}
               disabled={isLoading}
-              className="text-xs font-semibold"
+              className="text-xs font-semibold gap-1.5"
               title="Reload questions from backend"
             >
-              <span className={isLoading ? "animate-spin mr-1.5 inline-block" : "mr-1.5"}>
-                🔄
-              </span>
+              <RotateCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
               <span>Refresh</span>
             </Button>
             <Button
               variant="gradient"
               size="sm"
               onClick={handleOpenAddModal}
-              className="text-xs font-bold shadow-sm"
+              className="text-xs font-bold shadow-sm gap-1.5"
             >
-              <span>➕</span>
-              <span className="ml-1.5">Add Question</span>
+              <Plus className="w-4 h-4" />
+              <span>Add Question</span>
             </Button>
           </div>
         }
