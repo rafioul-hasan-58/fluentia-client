@@ -14,6 +14,7 @@ import {
   CreateLevelTestQuestionDto,
   MOCK_LEVEL_TEST_QUESTIONS,
 } from "@/lib/api/admin";
+import { Pencil, Trash2, Eye, Loader2 } from "lucide-react";
 
 interface OptionFormState {
   id: string;
@@ -680,34 +681,38 @@ export function AdminQuestionsView() {
               </div>
 
               {/* Card Footer */}
-              <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
-                <span className="text-[10px] text-ink-soft font-mono truncate max-w-[120px]" title={q.id}>
-                  ID: {q.id}
-                </span>
+              <div className="pt-2.5 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPreviewQuestion(q)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-ink-soft hover:text-ink bg-slate-100 dark:bg-white/5 hover:bg-slate-200/70 dark:hover:bg-white/10 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5 text-ink-soft" />
+                  <span>Inspect</span>
+                </button>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={(e) => handleOpenEditModal(q, e)}
-                    className="p-1.5 text-ink-soft hover:text-primary hover:bg-primary/10 rounded-lg transition-colors text-xs"
-                    title="Edit Question"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-primary dark:text-purple-300 bg-primary/10 hover:bg-primary/20 dark:bg-primary/15 dark:hover:bg-primary/25 border border-primary/20 transition-all shadow-xs"
+                    title="Update Question"
                   >
-                    ✏️
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Update</span>
                   </button>
                   <button
                     type="button"
                     onClick={(e) => handleDeleteQuestion(q.id, e)}
                     disabled={deletingId === q.id}
-                    className="p-1.5 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors text-xs"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 disabled:opacity-50 transition-all shadow-xs"
                     title="Delete Question"
                   >
-                    {deletingId === q.id ? "⏳" : "🗑️"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewQuestion(q)}
-                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-primary hover:text-white dark:hover:bg-primary font-semibold transition-colors"
-                  >
-                    Inspect →
+                    {deletingId === q.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5" />
+                    )}
+                    <span>Delete</span>
                   </button>
                 </div>
               </div>
@@ -754,27 +759,35 @@ export function AdminQuestionsView() {
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         type="button"
-                        onClick={(e) => handleOpenEditModal(q, e)}
-                        className="p-1 text-ink-soft hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
-                        title="Edit Question"
+                        onClick={() => setPreviewQuestion(q)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-ink-soft hover:text-ink bg-slate-100 dark:bg-white/5 hover:bg-slate-200/70 dark:hover:bg-white/10 transition-colors"
+                        title="Inspect Question"
                       >
-                        ✏️
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Inspect</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenEditModal(q, e)}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold text-primary dark:text-purple-300 bg-primary/10 hover:bg-primary/20 border border-primary/20 transition-colors"
+                        title="Update Question"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        <span>Update</span>
                       </button>
                       <button
                         type="button"
                         onClick={(e) => handleDeleteQuestion(q.id, e)}
                         disabled={deletingId === q.id}
-                        className="p-1 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-md transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold text-rose-500 hover:text-rose-600 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 disabled:opacity-50 transition-colors"
                         title="Delete Question"
                       >
-                        {deletingId === q.id ? "⏳" : "🗑️"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPreviewQuestion(q)}
-                        className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-primary hover:text-white dark:hover:bg-primary font-semibold transition-colors"
-                      >
-                        Inspect
+                        {deletingId === q.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
+                        <span>Delete</span>
                       </button>
                     </div>
                   </td>
@@ -868,17 +881,19 @@ export function AdminQuestionsView() {
                     setPreviewQuestion(null);
                     handleOpenEditModal(q);
                   }}
-                  className="text-primary hover:bg-primary/10 border-primary/30 text-xs font-semibold"
+                  className="text-primary hover:bg-primary/10 border-primary/30 text-xs font-semibold gap-1.5"
                 >
-                  ✏️ Edit Question
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>Update Question</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleDeleteQuestion(previewQuestion.id)}
-                  className="text-rose-500 hover:text-rose-600 border-rose-500/30 hover:bg-rose-500/10 text-xs"
+                  className="text-rose-500 hover:text-rose-600 border-rose-500/30 hover:bg-rose-500/10 text-xs gap-1.5"
                 >
-                  🗑️ Delete
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete</span>
                 </Button>
               </div>
               <Button
