@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "./config";
+import { getApiBaseUrl, resolveImageUrl } from "./config";
 import { LevelTestQuestion } from "@/types/level-test";
 
 export interface AdminStats {
@@ -413,13 +413,38 @@ export function normalizeUserItem(item: any): AdminUserRecord {
   const authProvider = String(item.authProvider || item.provider || "EMAIL").toLowerCase();
   const profile = item.profile || null;
 
+  const rawAvatar =
+    item.profileImage ||
+    item.avatar ||
+    item.profileImageUrl ||
+    item.avatarUrl ||
+    item.image ||
+    item.imageUrl ||
+    item.picture ||
+    item.pictureUrl ||
+    item.photo ||
+    item.photoUrl ||
+    item.profile?.profileImage ||
+    item.profile?.avatar ||
+    item.profile?.profileImageUrl ||
+    item.profile?.avatarUrl ||
+    item.profile?.image ||
+    item.profile?.imageUrl ||
+    item.profile?.picture ||
+    item.profile?.photo ||
+    item.user?.profileImage ||
+    item.user?.avatar ||
+    null;
+
+  const resolvedAvatar = resolveImageUrl(rawAvatar);
+
   return {
     id: item.id || `usr-${Date.now()}`,
     name: fullName,
     firstName: item.firstName || "",
     lastName: item.lastName || "",
     email: item.email || "",
-    avatar: item.profileImage || item.avatar || null,
+    avatar: resolvedAvatar,
     role: item.role === "ADMIN" ? "ADMIN" : "USER",
     level: profLabel,
     proficiencyLevel: profLevel,
@@ -456,6 +481,23 @@ function normalizeSubmissionItem(item: any): RecentTestAttempt {
   const fName = learner.firstName || "";
   const lName = learner.lastName || "";
   const fullName = learner.fullName || (fName || lName ? `${fName} ${lName}`.trim() : item.userName || "Learner");
+
+  const rawLearnerAvatar =
+    learner.profileImage ||
+    learner.avatar ||
+    learner.profileImageUrl ||
+    learner.avatarUrl ||
+    learner.image ||
+    learner.imageUrl ||
+    learner.picture ||
+    learner.photo ||
+    learner.profile?.profileImage ||
+    item.avatar ||
+    item.profileImage ||
+    item.profileImageUrl ||
+    null;
+
+  const resolvedLearnerAvatar = resolveImageUrl(rawLearnerAvatar);
 
   const scoreObj = item.score || {};
   const correct = scoreObj.correct ?? item.score ?? 0;
@@ -514,7 +556,7 @@ function normalizeSubmissionItem(item: any): RecentTestAttempt {
     id: item.id || `att-${Date.now()}`,
     userName: fullName,
     userEmail: learner.email || item.userEmail || "",
-    avatar: learner.profileImage || item.avatar || null,
+    avatar: resolvedLearnerAvatar,
     score: correct,
     totalQuestions: total,
     percentage,

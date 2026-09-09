@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { resolveImageUrl } from "@/lib/api/config";
 
 export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string | null;
@@ -18,9 +19,11 @@ export function Avatar({
 }: AvatarProps) {
   const [imageError, setImageError] = React.useState(false);
 
+  const resolvedSrc = React.useMemo(() => resolveImageUrl(src), [src]);
+
   React.useEffect(() => {
     setImageError(false);
-  }, [src]);
+  }, [resolvedSrc]);
 
   const sizeClasses = {
     sm: "w-8 h-8 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] text-xs",
@@ -38,12 +41,13 @@ export function Avatar({
       )}
       {...props}
     >
-      {src && !imageError ? (
+      {resolvedSrc && !imageError ? (
         <img
-          src={src}
+          src={resolvedSrc}
           alt={alt}
           className="w-full h-full object-cover object-center aspect-square rounded-[inherit] block pointer-events-none select-none"
           onError={() => setImageError(true)}
+          referrerPolicy="no-referrer"
           loading="lazy"
         />
       ) : (

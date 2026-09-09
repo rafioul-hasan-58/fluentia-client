@@ -4,6 +4,7 @@ export interface UserProfileData {
   lastName?: string | null;
   email: string;
   profileImage?: string | null;
+  avatar?: string | null;
   bio?: string | null;
   phoneNumber?: string | null;
   country?: string | null;
