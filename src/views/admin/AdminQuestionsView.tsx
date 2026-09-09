@@ -31,7 +31,7 @@ export function AdminQuestionsView() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(40);
   const [totalPages, setTotalPages] = useState(2);
 

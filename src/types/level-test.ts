@@ -5,6 +5,7 @@ export type QuestionDifficulty = "EASY" | "MEDIUM" | "HARD" | string;
 export interface QuestionOption {
   id: string;
   content: string;
+  isCorrect: boolean;
 }
 
 export interface LevelTestQuestion {

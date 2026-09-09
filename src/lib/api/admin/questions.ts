@@ -101,7 +101,7 @@ export async function fetchAdminLevelTestQuestions(query?: {
   }
 
   const page = query?.page || 1;
-  const limit = query?.limit || 5;
+  const limit = query?.limit || 10;
   const total = filtered.length;
   const totalPages = Math.ceil(total / limit) || 1;
   const paginated = filtered.slice((page - 1) * limit, page * limit);
