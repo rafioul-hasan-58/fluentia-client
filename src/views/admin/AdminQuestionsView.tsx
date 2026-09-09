@@ -798,9 +798,6 @@ export function AdminQuestionsView() {
         </div>
       )}
 
-      {/* BOTTOM PAGINATION BAR */}
-      {renderPaginationControls(false)}
-
       {/* Inspect Modal */}
       {previewQuestion && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
