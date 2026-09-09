@@ -3,9 +3,8 @@ import {
   UserProfileResponse,
   UpdateUserProfileDto,
   UpdateUserProfileResponse,
-  StreakRecordResponse,
 } from "@/types/user";
-import { getApiBaseUrl } from "./config";
+import { getApiBaseUrl } from "../config";
 
 const getAuthToken = (): string | null => {
   if (typeof window === "undefined") return null;
@@ -258,24 +257,3 @@ export async function uploadProfileImage(
     return { profileImageUrl: localUrl };
   }
 }
-
-/**
- * Dummy streak check-in simulation (no network call)
- */
-export async function recordDailyStreak(
-  customTimezone?: string
-): Promise<StreakRecordResponse> {
-  return {
-    success: true,
-    message: "Streak check-in recorded successfully!",
-    data: {
-      streakDays: 5,
-      longestStreak: 14,
-      lastActiveDate: new Date().toISOString(),
-      isNewDay: true,
-      streakUpdated: true,
-    },
-  };
-}
-
-
