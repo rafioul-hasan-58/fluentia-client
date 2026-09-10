@@ -24,8 +24,6 @@ import {
   Minimize2,
   Clock,
   Columns,
-  ListFilter,
-  CheckCircle2,
 } from "lucide-react";
 import {
   VocabStoryItem,
@@ -38,7 +36,7 @@ import {
   fetchMyVocabularies,
 } from "@/lib/api/vocabulary";
 
-// Helper to highlight and underline target vocabulary keywords within story text
+// Helper to underline target vocabulary keywords within story text (pure underline, no background color)
 function renderHighlightedStory(text: string, keywords: string[]) {
   if (!text) return null;
   if (!keywords || keywords.length === 0) {
@@ -86,7 +84,7 @@ function renderHighlightedStory(text: string, keywords: string[]) {
       parts.push(
         <span
           key={`match-${pIdx}-${match.index}-${matchedWord}`}
-          className="font-bold underline decoration-amber-500/90 dark:decoration-amber-400 decoration-[2.5px] underline-offset-4 text-amber-950 dark:text-amber-200 bg-amber-500/15 dark:bg-amber-400/20 px-1.5 py-0.5 rounded-md transition-all duration-150 hover:bg-amber-500/25 inline-block mx-0.5 shadow-2xs"
+          className="font-bold underline decoration-amber-500 dark:decoration-amber-400 decoration-2 underline-offset-4 text-amber-700 dark:text-amber-300 transition-colors"
           title={`Target Keyword: ${matchedWord}`}
         >
           {matchedWord}
@@ -721,14 +719,14 @@ export default function VocabStoryPage() {
                   <div className="flex items-center justify-between">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Target Vocabulary in this Story (Underlined below):</span>
+                      <span>Target Vocabulary in this Story:</span>
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {activeStory.usedVocabulary.map((word) => (
                       <span
                         key={word}
-                        className="px-3 py-1.5 rounded-xl bg-amber-500/10 dark:bg-amber-400/15 text-amber-900 dark:text-amber-200 text-xs sm:text-sm font-bold border border-amber-500/30 capitalize underline decoration-amber-500/80 decoration-2 underline-offset-4 shadow-2xs"
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-amber-700 dark:text-amber-300 text-xs sm:text-sm font-bold border border-slate-200 dark:border-slate-700 capitalize underline decoration-amber-500 decoration-2 underline-offset-4 shadow-2xs"
                       >
                         {word}
                       </span>
@@ -775,7 +773,7 @@ export default function VocabStoryPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] text-slate-400 hidden sm:inline">
-                    💡 Keywords are <span className="font-bold underline decoration-amber-500 underline-offset-4 text-amber-600 dark:text-amber-400">underlined</span> for quick recognition
+                    💡 Target words are <span className="font-bold underline decoration-amber-500 underline-offset-4 text-amber-600 dark:text-amber-400">underlined</span> throughout the story
                   </span>
                 </div>
               </div>
@@ -784,7 +782,6 @@ export default function VocabStoryPage() {
               {viewTab === "bangla" ? (
                 /* Single View: Bangla-English Mixed */
                 <div className="p-6 sm:p-10 rounded-3xl bg-white dark:bg-[#141226] border border-amber-500/25 dark:border-amber-500/20 space-y-6 shadow-sm relative overflow-hidden">
-                  {/* Subtle decorative glow */}
                   <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
 
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
@@ -818,7 +815,7 @@ export default function VocabStoryPage() {
                     </button>
                   </div>
 
-                  {/* Story Text with Highlighted/Underlined Keywords */}
+                  {/* Story Text with Underlined Keywords (No background color) */}
                   <div className="text-base sm:text-lg text-slate-800 dark:text-slate-200 font-sans">
                     {renderHighlightedStory(activeStory.storyBangla, activeStory.usedVocabulary)}
                   </div>
@@ -826,7 +823,6 @@ export default function VocabStoryPage() {
               ) : viewTab === "english" ? (
                 /* Single View: Full English */
                 <div className="p-6 sm:p-10 rounded-3xl bg-white dark:bg-[#141226] border border-indigo-500/25 dark:border-indigo-500/20 space-y-6 shadow-sm relative overflow-hidden">
-                  {/* Subtle decorative glow */}
                   <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
 
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
@@ -860,7 +856,7 @@ export default function VocabStoryPage() {
                     </button>
                   </div>
 
-                  {/* Story Text with Highlighted/Underlined Keywords */}
+                  {/* Story Text with Underlined Keywords (No background color) */}
                   <div className="text-base sm:text-lg text-slate-800 dark:text-slate-200 font-sans">
                     {renderHighlightedStory(activeStory.storyEnglish, activeStory.usedVocabulary)}
                   </div>
