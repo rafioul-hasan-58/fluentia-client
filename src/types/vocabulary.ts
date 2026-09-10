@@ -11,6 +11,11 @@ export type PartOfSpeech =
   | "NUMERAL"
   | "PARTICLE";
 
+export interface WordRelationItem {
+  word: string;
+  partOfSpeech?: PartOfSpeech | string;
+}
+
 export interface VocabularyItem {
   id: string;
   word: string;
@@ -19,11 +24,12 @@ export interface VocabularyItem {
   partOfSpeech: PartOfSpeech;
   collocations: string[];
   exampleSentences: string[];
-  wordFamily: string[];
-  synonyms: string[];
-  antonyms: string[];
-  ipa?: string;
+  wordFamily: (WordRelationItem | string)[] | any;
+  synonyms: (WordRelationItem | string)[] | any;
+  antonyms: (WordRelationItem | string)[] | any;
+  englishLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | string;
   cefrLevel?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | string;
+  ipa?: string;
   audioUrl?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -46,27 +52,25 @@ export interface MyVocabularyItem {
   updatedAt: string;
 }
 
-export interface AddVocabularyDto {
-  words: string[];
+export interface GenerateVocabularyDto {
+  word: string;
   notes?: string;
   mySentences?: string[];
 }
 
-export interface AddVocabularyResponseItem {
-  word: string;
-  status: "success" | "exists" | "error";
-  data?: MyVocabularyItem;
-  message?: string;
+export interface AddVocabularyDto {
+  word?: string;
+  words?: string[];
+  notes?: string;
+  mySentences?: string[];
 }
 
-export interface AddVocabularyResponse {
+export interface GenerateVocabularyResponse {
   success: boolean;
+  statusCode: number;
   message: string;
-  data: {
-    processed: number;
-    items: MyVocabularyItem[];
-    failedWords?: string[];
-  };
+  data: VocabularyItem;
+  timestamp?: string;
 }
 
 export interface VocabularyFilterOptions {
@@ -74,4 +78,23 @@ export interface VocabularyFilterOptions {
   partOfSpeech?: PartOfSpeech | "ALL";
   sortBy?: "recent" | "alphabetical" | "mastery";
   favoritesOnly?: boolean;
+}
+
+export function getWordRelationText(item: string | WordRelationItem | any): string {
+  if (!item) return "";
+  if (typeof item === "string") return item;
+  if (typeof item === "object") {
+    if (item.partOfSpeech) {
+      return `${item.word} (${item.partOfSpeech.toLowerCase()})`;
+    }
+    return item.word || "";
+  }
+  return String(item);
+}
+
+export function getWordRelationWord(item: string | WordRelationItem | any): string {
+  if (!item) return "";
+  if (typeof item === "string") return item;
+  if (typeof item === "object") return item.word || "";
+  return String(item);
 }

@@ -9,9 +9,12 @@ import {
   PartOfSpeech,
   VocabularyStatus,
   VocabularyFilterOptions,
+  getWordRelationText,
+  getWordRelationWord,
 } from "@/types/vocabulary";
 import {
   fetchMyVocabularies,
+  addSingleVocabulary,
   addVocabularyWithAi,
   updateMyVocabulary,
   deleteMyVocabulary,
@@ -152,13 +155,11 @@ export default function VocabularyPage() {
   // Fullscreen Single Vocab View State
   const [fullscreenVocabId, setFullscreenVocabId] = useState<string | null>(null);
 
-  // Modal State
+  // Modal State (Single Word Focused)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [inputWordText, setInputWordText] = useState<string>("");
-  const [pendingChips, setPendingChips] = useState<string[]>([]);
   const [userNote, setUserNote] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [generationProgress, setGenerationProgress] = useState<string>("");
   const [feedbackMessage, setFeedbackMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -193,7 +194,6 @@ export default function VocabularyPage() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!fullscreenVocabId) return;
 
-      // Don't trigger shortcuts if user is typing in an input or textarea
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
         if (e.key === "Escape") {
@@ -366,66 +366,31 @@ export default function VocabularyPage() {
     setFullscreenVocabId(vocabularies[nextIndex].id);
   };
 
-  // Chip input handlers
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addChipFromInput();
-    }
-  };
+  // Execute Single Word AI generation & addition
+  const handleExecuteAddSingleWord = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
-  const addChipFromInput = () => {
-    const raw = inputWordText.trim();
-    if (!raw) return;
-
-    // Support comma or newline separated pasting
-    const splitWords = raw
-      .split(/[,\n]/)
-      .map((w) => w.trim())
-      .filter((w) => w.length > 0 && !pendingChips.includes(w.toLowerCase()));
-
-    if (splitWords.length > 0) {
-      setPendingChips((prev) => [...prev, ...splitWords]);
-      setInputWordText("");
-    }
-  };
-
-  const removeChip = (indexToRemove: number) => {
-    setPendingChips((prev) => prev.filter((_, i) => i !== indexToRemove));
-  };
-
-  // Execute AI generation & addition
-  const handleExecuteAddVocabulary = async () => {
-    const allWordsToAdd = [...pendingChips];
-    if (inputWordText.trim()) {
-      const remaining = inputWordText
-        .split(/[,\n]/)
-        .map((w) => w.trim())
-        .filter((w) => w.length > 0 && !allWordsToAdd.includes(w.toLowerCase()));
-      allWordsToAdd.push(...remaining);
-    }
-
-    if (allWordsToAdd.length === 0) {
+    const targetWord = inputWordText.trim();
+    if (!targetWord) {
       setFeedbackMessage({
         type: "error",
-        text: "Please enter at least one word to analyze with AI.",
+        text: "Please enter a vocabulary word to generate with AI.",
       });
       return;
     }
 
     setIsGenerating(true);
     setFeedbackMessage(null);
-    setGenerationProgress(`AI is analyzing ${allWordsToAdd.length} vocabulary word(s)...`);
 
     try {
-      const response = await addVocabularyWithAi({
-        words: allWordsToAdd,
+      const response = await addSingleVocabulary({
+        word: targetWord,
         notes: userNote.trim() || undefined,
       });
 
       setFeedbackMessage({
         type: "success",
-        text: response.message || `Successfully generated and added ${allWordsToAdd.length} words!`,
+        text: response.message || `Successfully generated '${response.item.word.word}' with AI!`,
       });
 
       // Reload list
@@ -433,13 +398,12 @@ export default function VocabularyPage() {
 
       // Reset modal inputs after brief delay
       setTimeout(() => {
-        setPendingChips([]);
         setInputWordText("");
         setUserNote("");
         setIsModalOpen(false);
         setIsGenerating(false);
         setFeedbackMessage(null);
-      }, 1400);
+      }, 1200);
     } catch (err: any) {
       setIsGenerating(false);
       setFeedbackMessage({
@@ -572,7 +536,7 @@ export default function VocabularyPage() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -583,7 +547,7 @@ export default function VocabularyPage() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setFavoritesOnly(!favoritesOnly)}
-              className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all ${
+              className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${
                 favoritesOnly
                   ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm"
                   : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
@@ -600,7 +564,7 @@ export default function VocabularyPage() {
             <select
               value={selectedSort}
               onChange={(e) => setSelectedSort(e.target.value as any)}
-              className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+              className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
             >
               <option value="recent">Recently Added</option>
               <option value="alphabetical">Alphabetical (A - Z)</option>
@@ -610,7 +574,7 @@ export default function VocabularyPage() {
             <button
               onClick={loadVocabularies}
               title="Refresh vocabulary"
-              className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
+              className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
             </button>
@@ -621,7 +585,7 @@ export default function VocabularyPage() {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           <button
             onClick={() => setSelectedPos("ALL")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
               selectedPos === "ALL"
                 ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -638,7 +602,7 @@ export default function VocabularyPage() {
               <button
                 key={pos}
                 onClick={() => setSelectedPos(pos)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                   isSelected
                     ? `${config.bg} ${config.text} ${config.border} ring-2 ring-indigo-500/20 shadow-sm`
                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300"
@@ -674,7 +638,7 @@ export default function VocabularyPage() {
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
               {searchQuery || selectedPos !== "ALL" || favoritesOnly
                 ? "No words matched your current search or filter criteria. Try resetting filters."
-                : "You haven't added any words to your vault yet. Add single or multiple words with AI!"}
+                : "You haven't added any words to your vault yet. Add a word to generate with AI!"}
             </p>
           </div>
           <button
@@ -687,7 +651,7 @@ export default function VocabularyPage() {
                 setIsModalOpen(true);
               }
             }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md transition-colors cursor-pointer"
           >
             {searchQuery || selectedPos !== "ALL" || favoritesOnly ? (
               <>
@@ -709,6 +673,7 @@ export default function VocabularyPage() {
             const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
             const isAudioPlaying = playingWord === item.word.word;
             const isFav = item.isFavorite || item.isFavourate;
+            const displayLevel = item.word.englishLevel || item.word.cefrLevel;
 
             return (
               <div
@@ -722,7 +687,7 @@ export default function VocabularyPage() {
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <button
                           onClick={() => setFullscreenVocabId(item.id)}
-                          className="text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left"
+                          className="text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left cursor-pointer"
                         >
                           {item.word.word}
                         </button>
@@ -731,7 +696,7 @@ export default function VocabularyPage() {
                         <button
                           onClick={() => playPronunciation(item.word.word)}
                           title="Listen to pronunciation"
-                          className={`p-1.5 rounded-xl transition-all ${
+                          className={`p-1.5 rounded-xl transition-all cursor-pointer ${
                             isAudioPlaying
                               ? "bg-indigo-600 text-white scale-110 shadow-md shadow-indigo-500/30"
                               : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600"
@@ -759,9 +724,9 @@ export default function VocabularyPage() {
                         >
                           {posConfig.label}
                         </span>
-                        {item.word.cefrLevel && (
+                        {displayLevel && (
                           <span className="px-2 py-0.5 rounded-lg text-[11px] font-extrabold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                            CEFR {item.word.cefrLevel}
+                            CEFR {displayLevel}
                           </span>
                         )}
                         {item.status && item.status !== "LEARNING" && (
@@ -777,7 +742,7 @@ export default function VocabularyPage() {
                       <button
                         onClick={() => setFullscreenVocabId(item.id)}
                         title="Open Fullscreen View"
-                        className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all"
+                        className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all cursor-pointer"
                       >
                         <Maximize2 className="w-4 h-4" />
                       </button>
@@ -785,7 +750,7 @@ export default function VocabularyPage() {
                       <button
                         onClick={() => handleToggleFavorite(item)}
                         title={isFav ? "Remove from favorites" : "Add to favorites"}
-                        className={`p-2 rounded-xl transition-all ${
+                        className={`p-2 rounded-xl transition-all cursor-pointer ${
                           isFav
                             ? "bg-amber-500/15 text-amber-500 hover:bg-amber-500/25"
                             : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -799,7 +764,7 @@ export default function VocabularyPage() {
                       <button
                         onClick={() => handleDeleteWord(item.id, item.word.word)}
                         title="Delete word"
-                        className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all"
+                        className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -854,12 +819,12 @@ export default function VocabularyPage() {
                           Synonyms
                         </span>
                         <div className="flex flex-wrap gap-1">
-                          {item.word.synonyms.slice(0, 4).map((syn, idx) => (
+                          {item.word.synonyms.slice(0, 4).map((syn: any, idx: number) => (
                             <span
                               key={idx}
                               className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
                             >
-                              {syn}
+                              {getWordRelationWord(syn)}
                             </span>
                           ))}
                         </div>
@@ -872,12 +837,12 @@ export default function VocabularyPage() {
                           Antonyms
                         </span>
                         <div className="flex flex-wrap gap-1">
-                          {item.word.antonyms.slice(0, 3).map((ant, idx) => (
+                          {item.word.antonyms.slice(0, 3).map((ant: any, idx: number) => (
                             <span
                               key={idx}
                               className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
                             >
-                              {ant}
+                              {getWordRelationWord(ant)}
                             </span>
                           ))}
                         </div>
@@ -915,12 +880,12 @@ export default function VocabularyPage() {
                             Word Family
                           </p>
                           <div className="flex flex-wrap gap-1.5">
-                            {item.word.wordFamily.map((wf, idx) => (
+                            {item.word.wordFamily.map((wf: any, idx: number) => (
                               <span
                                 key={idx}
                                 className="px-2.5 py-1 rounded-lg text-xs bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
                               >
-                                {wf}
+                                {getWordRelationText(wf)}
                               </span>
                             ))}
                           </div>
@@ -967,7 +932,7 @@ export default function VocabularyPage() {
                           />
                           <button
                             onClick={() => handleAddSentence(item)}
-                            className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors"
+                            className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                           >
                             Save
                           </button>
@@ -985,7 +950,7 @@ export default function VocabularyPage() {
                               <button
                                 onClick={() => handleSaveNotes(item)}
                                 disabled={savingNoteId === item.id}
-                                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
+                                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
                               >
                                 {savingNoteId === item.id ? "Saving..." : "Save Note"}
                               </button>
@@ -1022,7 +987,7 @@ export default function VocabularyPage() {
                         key={star}
                         onClick={() => handleSetMastery(item, star)}
                         title={`Set mastery to ${star} stars`}
-                        className="p-0.5 hover:scale-125 transition-transform"
+                        className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
                       >
                         <Star
                           className={`w-3.5 h-3.5 ${
@@ -1047,7 +1012,7 @@ export default function VocabularyPage() {
 
                     <button
                       onClick={() => toggleCardExpand(item.id)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                       title={isExpanded ? "Collapse inline view" : "Expand inline view"}
                     >
                       {isExpanded ? (
@@ -1195,9 +1160,9 @@ export default function VocabularyPage() {
                           activeFullscreenVocab.word.partOfSpeech}
                       </span>
 
-                      {activeFullscreenVocab.word.cefrLevel && (
+                      {(activeFullscreenVocab.word.englishLevel || activeFullscreenVocab.word.cefrLevel) && (
                         <span className="px-3 py-1 rounded-xl text-xs font-black bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 text-slate-800 dark:text-indigo-200">
-                          CEFR {activeFullscreenVocab.word.cefrLevel}
+                          CEFR {activeFullscreenVocab.word.englishLevel || activeFullscreenVocab.word.cefrLevel}
                         </span>
                       )}
 
@@ -1265,12 +1230,12 @@ export default function VocabularyPage() {
                           Word Family
                         </span>
                         <div className="flex flex-wrap gap-2">
-                          {activeFullscreenVocab.word.wordFamily.map((wf, idx) => (
+                          {activeFullscreenVocab.word.wordFamily.map((wf: any, idx: number) => (
                             <span
                               key={idx}
                               className="px-3 py-1 rounded-xl text-xs font-semibold bg-purple-500/10 dark:bg-purple-500/15 text-purple-700 dark:text-purple-200 border border-purple-500/20 dark:border-purple-500/30"
                             >
-                              {wf}
+                              {getWordRelationText(wf)}
                             </span>
                           ))}
                         </div>
@@ -1333,17 +1298,18 @@ export default function VocabularyPage() {
                       Synonyms
                     </span>
                     <div className="flex flex-wrap gap-2">
-                      {(activeFullscreenVocab.word.synonyms && activeFullscreenVocab.word.synonyms.length > 0
-                        ? activeFullscreenVocab.word.synonyms
-                        : ["fluent", "expressive"]
-                      ).map((syn, idx) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
-                        >
-                          {syn}
-                        </span>
-                      ))}
+                      {activeFullscreenVocab.word.synonyms && activeFullscreenVocab.word.synonyms.length > 0 ? (
+                        activeFullscreenVocab.word.synonyms.map((syn: any, idx: number) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
+                          >
+                            {getWordRelationWord(syn)}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400">None listed</span>
+                      )}
                     </div>
                   </div>
 
@@ -1354,17 +1320,18 @@ export default function VocabularyPage() {
                       Antonyms
                     </span>
                     <div className="flex flex-wrap gap-2">
-                      {(activeFullscreenVocab.word.antonyms && activeFullscreenVocab.word.antonyms.length > 0
-                        ? activeFullscreenVocab.word.antonyms
-                        : ["opposite", "contrary"]
-                      ).map((ant, idx) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30"
-                        >
-                          {ant}
-                        </span>
-                      ))}
+                      {activeFullscreenVocab.word.antonyms && activeFullscreenVocab.word.antonyms.length > 0 ? (
+                        activeFullscreenVocab.word.antonyms.map((ant: any, idx: number) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30"
+                          >
+                            {getWordRelationWord(ant)}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400">None listed</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1509,15 +1476,14 @@ export default function VocabularyPage() {
           document.body
         )}
 
-
-      {/* 5. Add Vocabulary Modal (Supports Single & Multiple Words) */}
+      {/* 5. Add Vocabulary Modal (Single Word Focused) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
             {/* Modal Header */}
-            <div className="p-6 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div className="p-6 bg-gradient-to-r from-purple-600/10 via-primary/10 to-fuchsia-600/10 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/30">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
@@ -1525,96 +1491,73 @@ export default function VocabularyPage() {
                     Add Vocabulary with AI
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Enter one or multiple words to automatically generate deep linguistic profiles
+                    Generate definitions, Bengali meanings, collocations & examples
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => !isGenerating && setIsModalOpen(false)}
                 disabled={isGenerating}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 space-y-5">
-              {/* Chips Input Box */}
+            {/* Modal Body Form */}
+            <form onSubmit={handleExecuteAddSingleWord} className="p-6 space-y-5">
+              {/* Single Word Input */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center justify-between">
-                  <span>Enter Words (Single or Multiple)</span>
-                  <span className="text-[11px] font-normal text-slate-400">
-                    Press Enter or comma (,) to add chip
-                  </span>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Vocabulary Word</span>
+                  <span className="text-[11px] font-normal text-slate-400">e.g. significant</span>
                 </label>
 
-                <div className="min-h-[110px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-wrap content-start gap-2 focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
-                  {pendingChips.map((chip, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 text-xs font-semibold animate-in zoom-in-95 duration-150"
-                    >
-                      <span>{chip}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeChip(idx)}
-                        disabled={isGenerating}
-                        className="hover:text-rose-500 transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </span>
-                  ))}
-
+                <div className="relative">
                   <input
                     type="text"
                     value={inputWordText}
                     onChange={(e) => setInputWordText(e.target.value)}
-                    onKeyDown={handleInputKeyDown}
-                    onBlur={addChipFromInput}
                     disabled={isGenerating}
-                    placeholder={
-                      pendingChips.length === 0
-                        ? "e.g. Resilient, Pragmatic, Ephemeral (or paste a comma-separated list)..."
-                        : "Add another word..."
-                    }
-                    className="flex-1 min-w-[200px] bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none py-1"
+                    autoFocus
+                    placeholder="Enter an English word (e.g. significant)..."
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-base font-medium shadow-inner"
                   />
+                  {inputWordText && !isGenerating && (
+                    <button
+                      type="button"
+                      onClick={() => setInputWordText("")}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-
-                <p className="text-[11px] text-slate-400">
-                  Tip: You can paste a comma-separated list like{" "}
-                  <span className="font-mono text-indigo-500 dark:text-indigo-400">
-                    ubiquitous, articulate, meticulous
-                  </span>{" "}
-                  to batch process at once.
-                </p>
               </div>
 
               {/* Optional Notes */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                  Optional Study Note or Category (Applied to these words)
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  Optional Study Note / Context
                 </label>
                 <input
                   type="text"
                   value={userNote}
                   onChange={(e) => setUserNote(e.target.value)}
                   disabled={isGenerating}
-                  placeholder="e.g. IELTS Speaking Part 2 / Oxford 3000..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="e.g. Academic writing / IELTS Task 2 / Oxford 3000..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
               {/* Feedback / Progress Indicator */}
               {isGenerating && (
-                <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center gap-3 text-indigo-700 dark:text-indigo-300 animate-pulse">
-                  <Sparkles className="w-5 h-5 animate-spin text-indigo-500" />
+                <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center gap-3 text-purple-700 dark:text-purple-300 animate-pulse">
+                  <Sparkles className="w-5 h-5 animate-spin text-purple-500" />
                   <div className="text-xs font-semibold">
-                    <p>{generationProgress || "AI is generating linguistic analysis..."}</p>
+                    <p>AI is analyzing &apos;{inputWordText.trim()}&apos;...</p>
                     <p className="text-[11px] opacity-75">
-                      Extracting definitions, Bengali meanings, collocations, and example sentences.
+                      Extracting meaning, Bengali translation, collocations & CEFR level.
                     </p>
                   </div>
                 </div>
@@ -1636,40 +1579,37 @@ export default function VocabularyPage() {
                   <span>{feedbackMessage.text}</span>
                 </div>
               )}
-            </div>
 
-            {/* Modal Footer */}
-            <div className="p-6 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                disabled={isGenerating}
-                className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
+              {/* Modal Footer Actions */}
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isGenerating}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
 
-              <button
-                type="button"
-                onClick={handleExecuteAddVocabulary}
-                disabled={isGenerating || (pendingChips.length === 0 && !inputWordText.trim())}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-600 hover:via-purple-700 hover:to-pink-600 text-white text-sm font-bold shadow-lg shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-              >
-                {isGenerating ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Analyzing with AI...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 text-amber-300" />
-                    <span>
-                      Generate & Add {pendingChips.length > 0 ? `(${pendingChips.length + (inputWordText.trim() ? 1 : 0)})` : ""}
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
+                <button
+                  type="submit"
+                  disabled={isGenerating || !inputWordText.trim()}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-sm font-bold shadow-lg shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                  {isGenerating ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                      <span>Generate with AI</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
