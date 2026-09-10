@@ -1029,70 +1029,67 @@ export default function VocabularyPage() {
         </div>
       )}
 
-      {/* 4. True Edge-to-Edge Fullscreen Single Vocabulary Portal View (Dark & Light Theme) */}
+      {/* 4. Fullscreen Single Vocabulary Portal View (Natural, Clean, Theme-Aware & Scrollable) */}
       {isMounted &&
         activeFullscreenVocab &&
         createPortal(
-          <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col overflow-hidden select-none animate-in fade-in duration-200">
-            {/* Top Bar (Edge-to-Edge) */}
-            <div className="shrink-0 w-full px-6 py-3.5 bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 z-30 shadow-sm">
-              {/* Left: Exit Fullscreen + Counter */}
-              <div className="flex items-center gap-4">
+          <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col overflow-hidden animate-in fade-in duration-200">
+            {/* Top Bar */}
+            <div className="shrink-0 w-full px-5 sm:px-8 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 z-30">
+              {/* Left: Exit Fullscreen & Counter */}
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setFullscreenVocabId(null)}
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-800 dark:text-white text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer border border-slate-200 dark:border-white/10"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
                 >
-                  <Minimize2 className="w-4 h-4" />
-                  <span>Exit Fullscreen</span>
+                  <Minimize2 className="w-3.5 h-3.5" />
+                  <span>Exit</span>
                 </button>
 
-                <div className="hidden sm:flex items-center gap-2.5 text-xs">
-                  <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-bold border border-indigo-500/20 dark:border-indigo-500/30">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="font-semibold text-slate-600 dark:text-slate-400">
                     Word {activeFullscreenIndex + 1} of {vocabularies.length}
-                  </span>
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">
-                    ({stats.total} words in vault)
                   </span>
                 </div>
               </div>
 
-              {/* Center: Navigation Carousel Controls */}
-              <div className="flex items-center gap-2">
+              {/* Center: Carousel Navigation */}
+              <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => navigateFullscreen(-1)}
                   title="Previous Word (← Arrow key)"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/15 text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white border border-slate-200 dark:border-white/10 text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  <span className="hidden md:inline">Previous</span>
+                  <span className="hidden sm:inline">Prev</span>
                 </button>
 
-                <div className="text-xs font-black text-indigo-600 dark:text-indigo-300 px-2 font-mono">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-2 font-mono">
                   {activeFullscreenIndex + 1} / {vocabularies.length}
-                </div>
+                </span>
 
                 <button
                   onClick={() => navigateFullscreen(1)}
                   title="Next Word (→ Arrow key)"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/15 text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white border border-slate-200 dark:border-white/10 text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
                 >
-                  <span className="hidden md:inline">Next</span>
+                  <span className="hidden sm:inline">Next</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Right: Status Switcher, ThemeToggle, Favorite & Close */}
-              <div className="flex items-center gap-3">
+              {/* Right: Status Switcher, Theme Toggle, Favorite & Close */}
+              <div className="flex items-center gap-2 sm:gap-3">
                 {/* Status Switcher */}
-                <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl border border-slate-200 dark:border-white/10">
+                <div className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
                   {(["LEARNING", "REVIEWING", "MASTERED"] as VocabularyStatus[]).map((st) => (
                     <button
                       key={st}
                       onClick={() => handleSetStatus(activeFullscreenVocab, st)}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                         (activeFullscreenVocab.status || "LEARNING") === st
-                          ? "bg-indigo-600 text-white shadow-md"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                          ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
+                          : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                       }`}
                     >
                       {st}
@@ -1100,7 +1097,7 @@ export default function VocabularyPage() {
                   ))}
                 </div>
 
-                {/* Theme Toggle in Fullscreen Header */}
+                {/* Theme Toggle */}
                 <ThemeToggle />
 
                 {/* Favorite Toggle */}
@@ -1111,10 +1108,10 @@ export default function VocabularyPage() {
                       ? "Remove from favorites"
                       : "Add to favorites"
                   }
-                  className={`p-2 rounded-xl transition-all cursor-pointer ${
+                  className={`p-2 rounded-xl transition-colors cursor-pointer border ${
                     activeFullscreenVocab.isFavorite || activeFullscreenVocab.isFavourate
-                      ? "bg-amber-500/20 text-amber-500 border border-amber-500/30"
-                      : "bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-slate-700 dark:hover:text-white border border-slate-200 dark:border-white/10"
+                      ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-slate-200 dark:border-slate-700"
                   }`}
                 >
                   <Star
@@ -1129,29 +1126,27 @@ export default function VocabularyPage() {
                 {/* Close Button */}
                 <button
                   onClick={() => setFullscreenVocabId(null)}
-                  className="p-2 rounded-xl bg-slate-100 hover:bg-rose-500 hover:text-white dark:bg-white/10 dark:hover:bg-rose-600/80 text-slate-700 dark:text-white transition-colors cursor-pointer border border-slate-200 dark:border-transparent"
-                  title="Close Fullscreen (Esc)"
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                  title="Close (Esc)"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Edge-to-Edge Fullscreen Main Body (2-Column Expansive Workspace) */}
-            <div className="flex-1 w-full p-6 lg:p-10 overflow-y-auto lg:overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-8 z-10">
-              {/* Left Column: 5 Cols (Hero linguistic card, pronunciation, Bangla, definition) */}
-              <div className="lg:col-span-5 flex flex-col gap-6 lg:overflow-y-auto pr-0 lg:pr-2 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-white/10">
-                {/* Hero Header Box */}
-                <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-gradient-to-br dark:from-indigo-950/90 dark:via-purple-950/70 dark:to-slate-900 p-8 border border-slate-200 dark:border-white/15 shadow-xl dark:shadow-2xl space-y-6">
-                  <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 dark:bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
-
+            {/* Main Content Area (Two Columns with Independent Scroll) */}
+            <div className="flex-1 w-full min-h-0 overflow-y-auto lg:overflow-hidden p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 z-10">
+              {/* Left Column (Hero Card, Audio, Meaning, Word Family, Mastery) */}
+              <div className="lg:col-span-5 min-h-0 h-full overflow-y-auto pr-0 lg:pr-2 space-y-5 pb-8">
+                <div className="p-6 sm:p-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+                  {/* Top: Word, Level, POS, Audio Button */}
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className={`px-3 py-1 rounded-xl text-xs font-extrabold uppercase tracking-wider border ${
-                          POS_COLORS[activeFullscreenVocab.word.partOfSpeech]?.bg || "bg-indigo-500/20"
+                        className={`px-2.5 py-0.5 rounded-lg text-xs font-semibold border ${
+                          POS_COLORS[activeFullscreenVocab.word.partOfSpeech]?.bg || "bg-indigo-500/10"
                         } ${
-                          POS_COLORS[activeFullscreenVocab.word.partOfSpeech]?.text || "text-indigo-600 dark:text-indigo-300"
+                          POS_COLORS[activeFullscreenVocab.word.partOfSpeech]?.text || "text-indigo-600 dark:text-indigo-400"
                         } ${
                           POS_COLORS[activeFullscreenVocab.word.partOfSpeech]?.border || "border-indigo-500/30"
                         }`}
@@ -1161,79 +1156,78 @@ export default function VocabularyPage() {
                       </span>
 
                       {(activeFullscreenVocab.word.englishLevel || activeFullscreenVocab.word.cefrLevel) && (
-                        <span className="px-3 py-1 rounded-xl text-xs font-black bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 text-slate-800 dark:text-indigo-200">
+                        <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                           CEFR {activeFullscreenVocab.word.englishLevel || activeFullscreenVocab.word.cefrLevel}
                         </span>
                       )}
 
                       {activeFullscreenVocab.word.ipa && (
-                        <span className="text-sm font-mono text-slate-500 dark:text-slate-400">
+                        <span className="text-sm font-mono text-slate-400 dark:text-slate-500">
                           {activeFullscreenVocab.word.ipa}
                         </span>
                       )}
                     </div>
 
-                    {/* Word Typography */}
-                    <h1 className="text-4xl sm:text-6xl font-black tracking-tight bg-gradient-to-r from-slate-950 via-indigo-900 to-purple-900 dark:from-white dark:via-indigo-100 dark:to-purple-200 bg-clip-text text-transparent break-words">
-                      {activeFullscreenVocab.word.word}
-                    </h1>
+                    <div className="flex items-start justify-between gap-4">
+                      <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight capitalize">
+                        {activeFullscreenVocab.word.word}
+                      </h1>
+
+                      {/* Natural Pronounce Button */}
+                      <button
+                        onClick={() => playPronunciation(activeFullscreenVocab.word.word)}
+                        className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer border shrink-0 ${
+                          playingWord === activeFullscreenVocab.word.word
+                            ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                            : "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                        }`}
+                        title="Pronounce (Space / P)"
+                      >
+                        <Volume2
+                          className={`w-4 h-4 ${
+                            playingWord === activeFullscreenVocab.word.word ? "animate-pulse" : ""
+                          }`}
+                        />
+                        <span>
+                          {playingWord === activeFullscreenVocab.word.word ? "Playing..." : "Pronounce"}
+                        </span>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Pronunciation Audio Button */}
-                  <button
-                    onClick={() => playPronunciation(activeFullscreenVocab.word.word)}
-                    className={`w-full py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg ${
-                      playingWord === activeFullscreenVocab.word.word
-                        ? "bg-indigo-600 text-white scale-[1.02] shadow-indigo-500/40"
-                        : "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white border border-indigo-200 dark:border-white/20 hover:scale-[1.01]"
-                    }`}
-                  >
-                    <Volume2
-                      className={`w-6 h-6 ${
-                        playingWord === activeFullscreenVocab.word.word ? "animate-pulse" : ""
-                      }`}
-                    />
-                    <span className="text-base">
-                      {playingWord === activeFullscreenVocab.word.word
-                        ? "Playing Audio..."
-                        : "Listen Pronunciation (Space / P)"}
+                  {/* Bangla Meaning */}
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-1">
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Bangla Meaning (বাংলা অর্থ)
                     </span>
-                  </button>
-
-                  {/* Bangla Meaning Card */}
-                  <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 p-5 space-y-2 backdrop-blur-md">
-                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                      <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                      বাংলা অর্থ ও ভাবার্থ (Bangla Meaning)
-                    </div>
-                    <p className="text-xl sm:text-2xl font-bold text-emerald-950 dark:text-emerald-100 leading-snug">
+                    <p className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
                       {activeFullscreenVocab.word.banglaMeaning}
                     </p>
                   </div>
 
                   {/* English Definition */}
-                  <div className="space-y-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      English Meaning & Definition
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Definition
                     </span>
-                    <p className="text-base sm:text-lg text-slate-700 dark:text-slate-200 font-normal leading-relaxed">
+                    <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
                       {activeFullscreenVocab.word.meaning}
                     </p>
                   </div>
 
-                  {/* Word Family Tree */}
+                  {/* Word Family */}
                   {activeFullscreenVocab.word.wordFamily &&
                     activeFullscreenVocab.word.wordFamily.length > 0 && (
-                      <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-white/10">
-                        <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
-                          <GraduationCap className="w-4 h-4" />
+                      <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
                           Word Family
                         </span>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1.5">
                           {activeFullscreenVocab.word.wordFamily.map((wf: any, idx: number) => (
                             <span
                               key={idx}
-                              className="px-3 py-1 rounded-xl text-xs font-semibold bg-purple-500/10 dark:bg-purple-500/15 text-purple-700 dark:text-purple-200 border border-purple-500/20 dark:border-purple-500/30"
+                              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80"
                             >
                               {getWordRelationText(wf)}
                             </span>
@@ -1243,9 +1237,11 @@ export default function VocabularyPage() {
                     )}
 
                   {/* Mastery Rating */}
-                  <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Mastery Level:</span>
-                    <div className="flex items-center gap-1.5">
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Mastery Level:
+                    </span>
+                    <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
@@ -1253,10 +1249,10 @@ export default function VocabularyPage() {
                           className="p-1 hover:scale-125 transition-transform cursor-pointer"
                         >
                           <Star
-                            className={`w-5 h-5 ${
+                            className={`w-4 h-4 ${
                               star <= (activeFullscreenVocab.masteryLevel || 1)
                                 ? "fill-amber-400 text-amber-400"
-                                : "text-slate-300 dark:text-slate-600"
+                                : "text-slate-300 dark:text-slate-700"
                             }`}
                           />
                         </button>
@@ -1266,23 +1262,23 @@ export default function VocabularyPage() {
                 </div>
               </div>
 
-              {/* Right Column: 7 Cols (Collocations, Synonyms/Antonyms, Examples, Practice Sentences, Study Notes) */}
-              <div className="lg:col-span-7 flex flex-col gap-6 lg:overflow-y-auto pr-0 lg:pr-2 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-white/10">
-                {/* Collocations & Natural Phrases */}
+              {/* Right Column (Collocations, Synonyms/Antonyms, Examples, Notes, Sentences) */}
+              <div className="lg:col-span-7 min-h-0 h-full overflow-y-auto pr-0 lg:pr-2 space-y-5 pb-8">
+                {/* Collocations */}
                 {activeFullscreenVocab.word.collocations &&
                   activeFullscreenVocab.word.collocations.length > 0 && (
-                    <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-300 flex items-center gap-2">
-                        <Layers className="w-4 h-4" />
-                        Collocations & Natural Pairings
+                    <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-indigo-500" />
+                        Collocations & Common Phrases
                       </h3>
-                      <div className="flex flex-wrap gap-2.5 pt-1">
+                      <div className="flex flex-wrap gap-2">
                         {activeFullscreenVocab.word.collocations.map((col, idx) => (
                           <span
                             key={idx}
-                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-200"
                           >
-                            🔗 {col}
+                            {col}
                           </span>
                         ))}
                       </div>
@@ -1292,17 +1288,17 @@ export default function VocabularyPage() {
                 {/* Synonyms & Antonyms Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Synonyms */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+                  <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                     <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                       Synonyms
                     </span>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {activeFullscreenVocab.word.synonyms && activeFullscreenVocab.word.synonyms.length > 0 ? (
                         activeFullscreenVocab.word.synonyms.map((syn: any, idx: number) => (
                           <span
                             key={idx}
-                            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
+                            className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80"
                           >
                             {getWordRelationWord(syn)}
                           </span>
@@ -1314,17 +1310,17 @@ export default function VocabularyPage() {
                   </div>
 
                   {/* Antonyms */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+                  <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                     <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                      <X className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                      <X className="w-4 h-4 text-rose-500" />
                       Antonyms
                     </span>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {activeFullscreenVocab.word.antonyms && activeFullscreenVocab.word.antonyms.length > 0 ? (
                         activeFullscreenVocab.word.antonyms.map((ant: any, idx: number) => (
                           <span
                             key={idx}
-                            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30"
+                            className="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80"
                           >
                             {getWordRelationWord(ant)}
                           </span>
@@ -1339,16 +1335,16 @@ export default function VocabularyPage() {
                 {/* Example Sentences */}
                 {activeFullscreenVocab.word.exampleSentences &&
                   activeFullscreenVocab.word.exampleSentences.length > 0 && (
-                    <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-amber-600 dark:text-amber-300 flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4" />
-                        Contextual Example Sentences
+                    <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4 text-amber-500" />
+                        Contextual Examples
                       </h3>
-                      <div className="space-y-2.5">
+                      <div className="space-y-2">
                         {activeFullscreenVocab.word.exampleSentences.map((sent, idx) => (
                           <div
                             key={idx}
-                            className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-sm text-slate-800 dark:text-slate-200 italic leading-relaxed"
+                            className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 text-xs sm:text-sm text-slate-700 dark:text-slate-300 italic leading-relaxed"
                           >
                             &ldquo;{sent}&rdquo;
                           </div>
@@ -1357,10 +1353,10 @@ export default function VocabularyPage() {
                     </div>
                   )}
 
-                {/* Personal Practice Sentences Workspace */}
-                <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-300 flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4" />
+                {/* Practice Sentences */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-indigo-500" />
                     My Practice Sentences ({activeFullscreenVocab.mySentences?.length || 0})
                   </h3>
 
@@ -1370,9 +1366,9 @@ export default function VocabularyPage() {
                         {activeFullscreenVocab.mySentences.map((s, idx) => (
                           <div
                             key={idx}
-                            className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-500/10 border border-purple-200/80 dark:border-purple-500/20 text-xs text-purple-900 dark:text-purple-200"
+                            className="flex items-start gap-2.5 p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-900/60 text-xs text-slate-800 dark:text-slate-200"
                           >
-                            <CheckCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+                            <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
                             <span className="leading-relaxed">{s}</span>
                           </div>
                         ))}
@@ -1382,7 +1378,7 @@ export default function VocabularyPage() {
                   <div className="flex items-center gap-2 pt-1">
                     <input
                       type="text"
-                      placeholder="Write your own sentence using this word..."
+                      placeholder="Write a practice sentence using this word..."
                       value={newSentenceInputs[activeFullscreenVocab.id] || ""}
                       onChange={(e) =>
                         setNewSentenceInputs((prev) => ({
@@ -1396,22 +1392,22 @@ export default function VocabularyPage() {
                           handleAddSentence(activeFullscreenVocab);
                         }
                       }}
-                      className="flex-1 px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
                     <button
                       onClick={() => handleAddSentence(activeFullscreenVocab)}
-                      className="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition-colors cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                     >
-                      Save Sentence
+                      Save
                     </button>
                   </div>
                 </div>
 
-                {/* Personal Study Notes & Mnemonics */}
-                <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+                {/* Personal Study Notes */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-indigo-500" />
                       Study Notes & Mnemonics
                     </h3>
                     <button
@@ -1425,7 +1421,7 @@ export default function VocabularyPage() {
 
                   <textarea
                     rows={3}
-                    placeholder="Add your mnemonics, exam tips, memory triggers or IELTS writing ideas..."
+                    placeholder="Add mnemonics, exam tips, usage notes or IELTS ideas..."
                     value={
                       editingNotes[activeFullscreenVocab.id] !== undefined
                         ? editingNotes[activeFullscreenVocab.id]
@@ -1437,38 +1433,38 @@ export default function VocabularyPage() {
                         [activeFullscreenVocab.id]: e.target.value,
                       }))
                     }
-                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Edge-to-Edge Bottom Controls Bar */}
-            <div className="shrink-0 w-full px-8 py-3.5 bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 z-30 text-xs font-semibold text-slate-500 dark:text-slate-400 shadow-sm">
+            {/* Bottom Controls Bar */}
+            <div className="shrink-0 w-full px-6 py-2.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 z-30 text-xs text-slate-500 dark:text-slate-400">
               <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 font-mono text-[11px] text-slate-700 dark:text-slate-300">
-                  <Keyboard className="w-3.5 h-3.5" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[11px] text-slate-600 dark:text-slate-300">
+                  <Keyboard className="w-3 h-3" />
                   <span>← / →</span>
                 </span>
-                <span>Navigate words</span>
+                <span className="hidden sm:inline">Navigate</span>
 
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 font-mono text-[11px] text-slate-700 dark:text-slate-300 ml-2">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[11px] text-slate-600 dark:text-slate-300 ml-1">
                   <span>Space</span>
                 </span>
-                <span>Pronounce</span>
+                <span className="hidden sm:inline">Pronounce</span>
 
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 font-mono text-[11px] text-slate-700 dark:text-slate-300 ml-2">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[11px] text-slate-600 dark:text-slate-300 ml-1">
                   <span>Esc</span>
                 </span>
-                <span>Exit</span>
+                <span className="hidden sm:inline">Exit</span>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div>
                 <button
                   onClick={() => setFullscreenVocabId(null)}
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all cursor-pointer shadow-md"
+                  className="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700 text-xs"
                 >
-                  Close Fullscreen
+                  Close
                 </button>
               </div>
             </div>
