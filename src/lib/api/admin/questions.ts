@@ -331,7 +331,7 @@ export async function fetchAdminQuestionSetById(
     const headers: Record<string, string> = { Accept: "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/sets/${setId}`, {
+    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/sets/get-single/${setId}`, {
       headers,
       cache: "no-store",
     });
@@ -413,7 +413,7 @@ export async function updateAdminQuestionSetApi(
     };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/sets/${setId}`, {
+    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/sets/update/${setId}`, {
       method: "PATCH",
       headers,
       body: JSON.stringify(dto),
@@ -453,7 +453,7 @@ export async function deleteAdminQuestionSetApi(
     const headers: Record<string, string> = { Accept: "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/sets/${setId}`, {
+    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/sets/delete/${setId}`, {
       method: "DELETE",
       headers,
     });
@@ -478,4 +478,94 @@ export async function toggleAdminQuestionSetStatusApi(
 ): Promise<{ success: boolean; data?: LevelTestQuestionSet; message?: string }> {
   return updateAdminQuestionSetApi(setId, { isActive });
 }
+
+/**
+ * Adds questions to an existing set via POST /level-test-questions/sets/:id/add-questions
+ */
+export async function addQuestionsToSetApi(
+  setId: string,
+  questionIds: string[]
+): Promise<{ success: boolean; data?: LevelTestQuestionSet; message?: string }> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/sets/${setId}/add-questions`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ questionIds }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      const updated = json.data || json;
+      return {
+        success: true,
+        data: updated ? normalizeQuestionSet(updated) : undefined,
+        message: json.message || "Questions added to set successfully!",
+      };
+    }
+
+    return {
+      success: false,
+      message: json.message || `Failed to add questions to set (Status: ${res.status})`,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Network error while adding questions to set.",
+    };
+  }
+}
+
+/**
+ * Removes questions from an existing set via POST /level-test-questions/sets/:id/questions/remove
+ */
+export async function removeQuestionsFromSetApi(
+  setId: string,
+  questionIds: string[]
+): Promise<{ success: boolean; data?: LevelTestQuestionSet; message?: string }> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fluentia_auth_token") : null;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${getApiBaseUrl()}/level-test-questions/sets/${setId}/questions/remove`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ questionIds }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      const updated = json.data || json;
+      return {
+        success: true,
+        data: updated ? normalizeQuestionSet(updated) : undefined,
+        message: json.message || "Questions removed from set successfully!",
+      };
+    }
+
+    return {
+      success: false,
+      message: json.message || `Failed to remove questions from set (Status: ${res.status})`,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Network error while removing questions from set.",
+    };
+  }
+}
+
+
 
