@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { ThemeToggle } from "@/components/shared";
 import {
-  VocabStoryItem,
   MyVocabularyItem,
   VocabularyItem,
   PartOfSpeech,
@@ -14,7 +13,6 @@ import {
   getWordRelationWord,
 } from "@/types/vocabulary";
 import {
-  generateVocabStoryApi,
   fetchMyVocabularies,
   addSingleVocabulary,
   addVocabularyWithAi,
@@ -168,17 +166,7 @@ export default function VocabularyPage() {
   const [inputWordText, setInputWordText] = useState<string>("");
   const [userNote, setUserNote] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-    // Story Generation Selection State
-  const [isStorySelectionMode, setIsStorySelectionMode] = useState<boolean>(false);
-  const [selectedStoryVocabIds, setSelectedStoryVocabIds] = useState<string[]>([]);
-  const [storyContext, setStoryContext] = useState<string>("");
-  const [isGeneratingStory, setIsGeneratingStory] = useState<boolean>(false);
-  const [generatedStory, setGeneratedStory] = useState<VocabStoryItem | null>(null);
-  const [isStoryModalOpen, setIsStoryModalOpen] = useState<boolean>(false);
-  const [storyError, setStoryError] = useState<string | null>(null);
-  const [copiedStoryType, setCopiedStoryType] = useState<"bangla" | "english" | null>(null);
-
-  const [feedbackMessage, setFeedbackMessage] = useState<{
+    const [feedbackMessage, setFeedbackMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
@@ -480,64 +468,6 @@ export default function VocabularyPage() {
   };
 
 
-  // Toggle Selection for Story Generation
-  const handleToggleSelectForStory = (vocabId: string) => {
-    setSelectedStoryVocabIds((prev) => {
-      if (prev.includes(vocabId)) {
-        return prev.filter((id) => id !== vocabId);
-      }
-      if (prev.length >= 10) {
-        alert("You can select up to 10 vocabulary words for a story.");
-        return prev;
-      }
-      return [...prev, vocabId];
-    });
-  };
-
-  const handleCancelStorySelection = () => {
-    setIsStorySelectionMode(false);
-    setSelectedStoryVocabIds([]);
-    setStoryContext("");
-    setStoryError(null);
-  };
-
-  const handleExecuteGenerateStory = async () => {
-    if (selectedStoryVocabIds.length < 5) {
-      setStoryError("Please select at least 5 vocabulary words.");
-      return;
-    }
-
-    setIsGeneratingStory(true);
-    setStoryError(null);
-
-    try {
-      const storyResult = await generateVocabStoryApi({
-        vocabularyIds: selectedStoryVocabIds,
-        context: storyContext.trim() || undefined,
-      });
-
-      setGeneratedStory(storyResult);
-      setIsStoryModalOpen(true);
-      setIsStorySelectionMode(false);
-      setSelectedStoryVocabIds([]);
-      setStoryContext("");
-    } catch (err: any) {
-      setStoryError(
-        err.message || "Failed to generate vocabulary story. Please try again."
-      );
-    } finally {
-      setIsGeneratingStory(false);
-    }
-  };
-
-  const handleCopyStory = (text: string, type: "bangla" | "english") => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      setCopiedStoryType(type);
-      setTimeout(() => setCopiedStoryType(null), 2000);
-    }
-  };
-
   // Fullscreen Navigation (Prev / Next)
   const navigateFullscreen = (direction: -1 | 1) => {
     if (!fullscreenVocabId || vocabularies.length === 0) return;
@@ -749,29 +679,6 @@ export default function VocabularyPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {!isStorySelectionMode ? (
-              <button
-                onClick={() => setIsStorySelectionMode(true)}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-95 text-center cursor-pointer"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Create Story</span>
-                <Sparkles className="w-3.5 h-3.5 text-yellow-200 animate-pulse" />
-              </button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-sm font-bold px-3 py-2 rounded-xl bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
-                  Selected: {selectedStoryVocabIds.length}/5 (Max 10)
-                </span>
-                <button
-                  onClick={handleCancelStorySelection}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 transition cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-
             <button
               onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40 dark:shadow-[0_0_20px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-95 text-center cursor-pointer"
@@ -1042,23 +949,10 @@ export default function VocabularyPage() {
             const isAudioPlaying = playingWord === item.word.word;
             const isFav = item.isFavorite || item.isFavourate;
             const displayLevel = item.word.englishLevel || item.word.cefrLevel;
-            const vocabTargetId = item.word.id || item.wordId || item.id;
-            const isStorySelected = selectedStoryVocabIds.includes(vocabTargetId);
-
-            return (
+                        return (
               <div
                 key={item.id}
-                onClick={(e) => {
-                  if (isStorySelectionMode) {
-                    e.preventDefault();
-                    handleToggleSelectForStory(vocabTargetId);
-                  }
-                }}
-                className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border transition-all duration-300 overflow-hidden hover:-translate-y-0.5 ${
-                  isStorySelected
-                    ? "ring-2 ring-indigo-500 border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/40 shadow-lg shadow-indigo-500/20"
-                    : "border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40"
-                } ${isStorySelectionMode ? "cursor-pointer" : ""}`}
+                className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all duration-300 overflow-hidden hover:-translate-y-0.5"
               >
                 {/* Top Accent Strip by Part of Speech */}
                 <div
@@ -1082,22 +976,6 @@ export default function VocabularyPage() {
                     <div className="flex items-start justify-between gap-2">
                       {/* Word Title & Audio */}
                       <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                        {isStorySelectionMode && (
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleSelectForStory(vocabTargetId);
-                            }}
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${
-                              isStorySelected
-                                ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
-                                : "border-slate-400 dark:border-slate-600 hover:border-indigo-500 bg-white dark:bg-slate-900"
-                            }`}
-                            title={isStorySelected ? "Deselect word" : "Select word for story"}
-                          >
-                            {isStorySelected && <div className="w-2 h-2 rounded-full bg-white" />}
-                          </div>
-                        )}
                         <button
                           onClick={() => setFullscreenVocabId(item.id)}
                           className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left cursor-pointer capitalize truncate"
@@ -2231,189 +2109,6 @@ export default function VocabularyPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Floating Story Selection Action Bar */}
-      {isStorySelectionMode && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-11/12 max-w-2xl bg-white dark:bg-[#141226] border border-indigo-500/40 shadow-[0_20px_60px_-15px_rgba(99,102,241,0.35)] rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col gap-3 z-50 animate-in fade-in slide-in-from-bottom-6 backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
-                {selectedStoryVocabIds.length}
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                  {selectedStoryVocabIds.length < 5
-                    ? `Select at least ${5 - selectedStoryVocabIds.length} more word${5 - selectedStoryVocabIds.length > 1 ? "s" : ""}`
-                    : `${selectedStoryVocabIds.length} words selected (5 to 10)`}
-                </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  AI will weave these words into bilingual & full English stories
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={handleCancelStorySelection}
-              className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer"
-            >
-              Exit
-            </button>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-2.5">
-            <input
-              type="text"
-              placeholder="Theme / context (optional, e.g. 'Give me a cricket example')"
-              value={storyContext}
-              onChange={(e) => setStoryContext(e.target.value)}
-              className="w-full sm:flex-1 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-
-            <button
-              onClick={handleExecuteGenerateStory}
-              disabled={selectedStoryVocabIds.length < 5 || isGeneratingStory}
-              className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                selectedStoryVocabIds.length >= 5 && !isGeneratingStory
-                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 hover:scale-[1.02] cursor-pointer"
-                  : "bg-slate-300 dark:bg-slate-800 text-slate-500 dark:text-slate-600 cursor-not-allowed"
-              }`}
-            >
-              {isGeneratingStory ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Generating Story...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 text-amber-300" />
-                  <span>Create Story ({selectedStoryVocabIds.length}/5-10)</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {storyError && (
-            <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{storyError}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Generated Story Modal */}
-      {isStoryModalOpen && generatedStory && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-3xl rounded-3xl bg-white dark:bg-[#141226] border border-indigo-500/30 shadow-2xl p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-150">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-bold mb-2">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>AI-Generated Vocabulary Story</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                  Interactive Contextual Stories
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsStoryModalOpen(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Target Words Included */}
-            <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Target Vocabulary Words Used:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {generatedStory.usedVocabulary?.map((word) => (
-                  <span
-                    key={word}
-                    className="px-3 py-1 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-500/20 capitalize"
-                  >
-                    {word}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Story 1: Bangla-English Mixed */}
-            <div className="p-5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-500/30 dark:border-amber-500/30 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">🇧🇩</span>
-                  <h4 className="font-bold text-amber-900 dark:text-amber-300 text-sm sm:text-base">
-                    Bangla-English Mixed Story
-                  </h4>
-                </div>
-                <button
-                  onClick={() => handleCopyStory(generatedStory.storyBangla, "bangla")}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 dark:text-amber-300 hover:underline cursor-pointer"
-                >
-                  {copiedStoryType === "bangla" ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
-              </div>
-              <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line">
-                {generatedStory.storyBangla}
-              </p>
-            </div>
-
-            {/* Story 2: Full English */}
-            <div className="p-5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-500/30 dark:border-indigo-500/30 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">🇬🇧</span>
-                  <h4 className="font-bold text-indigo-900 dark:text-indigo-300 text-sm sm:text-base">
-                    Full English Story
-                  </h4>
-                </div>
-                <button
-                  onClick={() => handleCopyStory(generatedStory.storyEnglish, "english")}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-800 dark:text-indigo-300 hover:underline cursor-pointer"
-                >
-                  {copiedStoryType === "english" ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
-              </div>
-              <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line">
-                {generatedStory.storyEnglish}
-              </p>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end pt-2">
-              <button
-                onClick={() => setIsStoryModalOpen(false)}
-                className="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs sm:text-sm shadow-md hover:scale-[1.02] transition cursor-pointer"
-              >
-                Close Story
-              </button>
-            </div>
           </div>
         </div>
       )}
