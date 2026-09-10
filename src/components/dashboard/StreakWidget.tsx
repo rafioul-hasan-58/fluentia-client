@@ -83,7 +83,7 @@ export function StreakWidget({
     )
   );
 
-  // Generate 7-day week schedule (Mon - Sun)
+  // Generate 7-day rolling week schedule starting dynamically from when streak started/reset
   const getWeekDays = () => {
     // Determine today's day of week (0 = Monday, 1 = Tuesday, ..., 6 = Sunday)
     let currentDayOfWeek = 0;
@@ -114,24 +114,27 @@ export function StreakWidget({
       currentDayOfWeek = (new Date().getDay() + 6) % 7;
     }
 
-    const days = ["M", "T", "W", "T", "F", "S", "S"];
-    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const ALL_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
+    const ALL_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    return days.map((letter, idx) => {
-      const isPast = idx < currentDayOfWeek;
-      const isToday = idx === currentDayOfWeek;
-      const isFuture = idx > currentDayOfWeek;
-      
-      // How many days prior to today is this day (0 = today, 1 = yesterday, 2 = 2 days ago, <0 = future)
-      const daysFromToday = currentDayOfWeek - idx;
+    // Offset of the streak start day relative to today (0 for today, 1 for yesterday, ..., max 6)
+    const startDayOffset = streakDays === 0 ? 0 : (streakDays - 1) % 7;
+    // The calendar day where this 7-day sequence begins (e.g. Wednesday if streak started on W)
+    const startDayIndex = (currentDayOfWeek - startDayOffset + 7) % 7;
 
-      // If streak is active (streakDays >= 1), today is active (daysFromToday = 0)
-      // and previous days (daysFromToday > 0) are active up to streakDays - 1
-      const isDone = streakDays > 0 && daysFromToday >= 0 && daysFromToday < streakDays;
+    // Active days count in this current 7-day cycle
+    const activeDaysInCycle = streakDays === 0 ? 0 : Math.min(7, ((streakDays - 1) % 7) + 1);
+
+    return Array.from({ length: 7 }, (_, i) => {
+      const dayOfWeekIndex = (startDayIndex + i) % 7;
+      const isPast = i < startDayOffset;
+      const isToday = i === startDayOffset;
+      const isFuture = i > startDayOffset;
+      const isDone = i < activeDaysInCycle;
 
       return {
-        letter,
-        name: dayNames[idx],
+        letter: ALL_LETTERS[dayOfWeekIndex],
+        name: ALL_NAMES[dayOfWeekIndex],
         isPast,
         isToday,
         isFuture,
