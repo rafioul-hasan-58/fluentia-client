@@ -88,6 +88,7 @@ export interface GenerateVocabStoryDto {
 
 export interface VocabStoryItem {
   id: string;
+  title?: string;
   userId: string;
   storyEnglish: string;
   storyBangla: string;
