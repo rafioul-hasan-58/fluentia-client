@@ -41,14 +41,14 @@ export function StreakWidget({
   const [celebrationMsg, setCelebrationMsg] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const streakDays = user?.streakDays ?? user?.profile?.streakDays ?? 5;
-  const longestStreak = user?.longestStreak ?? user?.profile?.longestStreak ?? Math.max(streakDays, 14);
+  const streakDays = Number(user?.streakDays ?? user?.profile?.streakDays ?? 0);
+  const longestStreak = Number(user?.longestStreak ?? user?.profile?.longestStreak ?? streakDays);
   const lastActiveDate = user?.lastActiveDate ?? user?.profile?.lastActiveDate;
 
-  // Determine if already checked in today in client's local timezone
+  // Determine if already checked in today
   const todayStr = new Date().toISOString().slice(0, 10);
   const isCheckedInToday = Boolean(
-    lastActiveDate && lastActiveDate.startsWith(todayStr)
+    streakDays > 0 || (lastActiveDate && lastActiveDate.startsWith(todayStr))
   );
 
   const handleCheckIn = async (e?: React.MouseEvent) => {
@@ -75,26 +75,45 @@ export function StreakWidget({
   // Find next milestone
   const nextMilestone =
     MILESTONES.find((m) => m.days > streakDays) || MILESTONES[MILESTONES.length - 1];
-  const prevMilestoneDays =
-    MILESTONES.slice()
-      .reverse()
-      .find((m) => m.days <= streakDays)?.days || 0;
   const milestoneProgress = Math.min(
     100,
     Math.max(
-      10,
-      Math.round(
-        ((streakDays - prevMilestoneDays) /
-          Math.max(1, nextMilestone.days - prevMilestoneDays)) *
-          100
-      )
+      streakDays > 0 ? 8 : 0,
+      Math.round((streakDays / nextMilestone.days) * 100)
     )
   );
 
   // Generate 7-day week schedule (Mon - Sun)
   const getWeekDays = () => {
-    const today = new Date();
-    const currentDayOfWeek = (today.getDay() + 6) % 7; // 0 = Mon, 6 = Sun
+    // Determine today's day of week (0 = Monday, 1 = Tuesday, ..., 6 = Sunday)
+    let currentDayOfWeek = 0;
+    try {
+      if (user?.timezone) {
+        const dayShort = new Intl.DateTimeFormat("en-US", {
+          weekday: "short",
+          timeZone: user.timezone,
+        }).format(new Date());
+        const dayMap: Record<string, number> = {
+          Mon: 0,
+          Tue: 1,
+          Wed: 2,
+          Thu: 3,
+          Fri: 4,
+          Sat: 5,
+          Sun: 6,
+        };
+        if (dayShort in dayMap) {
+          currentDayOfWeek = dayMap[dayShort];
+        } else {
+          currentDayOfWeek = (new Date().getDay() + 6) % 7;
+        }
+      } else {
+        currentDayOfWeek = (new Date().getDay() + 6) % 7;
+      }
+    } catch {
+      currentDayOfWeek = (new Date().getDay() + 6) % 7;
+    }
+
     const days = ["M", "T", "W", "T", "F", "S", "S"];
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -102,7 +121,13 @@ export function StreakWidget({
       const isPast = idx < currentDayOfWeek;
       const isToday = idx === currentDayOfWeek;
       const isFuture = idx > currentDayOfWeek;
-      const isDone = isPast || (isToday && isCheckedInToday);
+      
+      // How many days prior to today is this day (0 = today, 1 = yesterday, 2 = 2 days ago, <0 = future)
+      const daysFromToday = currentDayOfWeek - idx;
+
+      // If streak is active (streakDays >= 1), today is active (daysFromToday = 0)
+      // and previous days (daysFromToday > 0) are active up to streakDays - 1
+      const isDone = streakDays > 0 && daysFromToday >= 0 && daysFromToday < streakDays;
 
       return {
         letter,
@@ -251,7 +276,9 @@ export function StreakWidget({
                 key={idx}
                 className={`flex flex-col items-center justify-center p-2 rounded-xl text-center border transition-all ${
                   day.isDone
-                    ? "bg-gradient-to-b from-amber-500/20 to-orange-500/20 border-amber-500/40 text-amber-700 dark:text-amber-300 font-bold shadow-2xs"
+                    ? `bg-gradient-to-b from-amber-500/20 to-orange-500/20 border-amber-500/40 text-amber-700 dark:text-amber-300 font-bold shadow-2xs ${
+                        day.isToday ? "ring-2 ring-amber-500/50" : ""
+                      }`
                     : day.isToday
                     ? "bg-slate-100 dark:bg-white/10 border-amber-500/60 text-ink ring-2 ring-amber-500/30 animate-pulse"
                     : "bg-slate-50 dark:bg-white/[0.02] border-slate-200/60 dark:border-white/5 text-ink-soft"

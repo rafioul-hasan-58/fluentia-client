@@ -208,7 +208,7 @@ export function Hero() {
             </div>
 
             {/* Trust Checkmarks Checklist */}
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-5 pt-1 text-xs text-ink-soft dark:text-slate-300 font-medium">
+            {/* <div className="flex flex-wrap items-center gap-y-2 gap-x-5 pt-1 text-xs text-ink-soft dark:text-slate-300 font-medium">
               <div className="flex items-center gap-1.5">
                 <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span>
                 <span>Personalized Practice</span>
@@ -221,7 +221,7 @@ export function Hero() {
                 <span className="text-emerald-500 dark:text-emerald-400 font-bold">✓</span>
                 <span>IELTS Band 7.5+ Benchmarks</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Column: Interactive AI Learning Product Visualization */}

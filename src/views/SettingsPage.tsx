@@ -503,6 +503,13 @@ export default function SettingsPage() {
                   <span className="font-semibold text-ink">{level}</span>
                 </span>
                 <span>•</span>
+                <span className="flex items-center gap-1">
+                  <span>🔥</span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">
+                    {user?.streakDays ?? user?.profile?.streakDays ?? 0} Day Streak (Best: {user?.longestStreak ?? user?.profile?.longestStreak ?? user?.streakDays ?? 0}d)
+                  </span>
+                </span>
+                <span>•</span>
                 <span className="flex items-center gap-1 text-slate-400">
                   <span>Member since:</span>
                   <span className="font-medium text-ink-soft">{formattedCreatedAt}</span>
