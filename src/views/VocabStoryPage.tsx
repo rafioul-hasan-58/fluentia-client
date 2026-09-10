@@ -51,7 +51,7 @@ function renderHighlightedStory(text: string, keywords: string[]) {
 
   // Filter and sort keywords by length descending so multi-word or longer keywords match first
   const validKeywords = keywords
-    .map((k) => k.trim())
+    .map((k) => k.replace(/^['"‘’“”]+|['"‘’“”]+$/g, "").trim())
     .filter((k) => k.length > 0)
     .sort((a, b) => b.length - a.length);
 
@@ -64,8 +64,8 @@ function renderHighlightedStory(text: string, keywords: string[]) {
   }
 
   const escaped = validKeywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  // Match keyword with possible inflectional variations (s, es, ed, d, ing, ly)
-  const regex = new RegExp(`\\b(${escaped.join("|")})(?:s|es|ed|d|ing|ly)?\\b`, "gi");
+  // Match keyword with optional surrounding quotes ('word' or "word") and possible inflectional variations
+  const regex = new RegExp(`['"‘’“”]?\\b(${escaped.join("|")}(?:s|es|ed|d|ing|ly)?)\\b['"‘’“”]?`, "gi");
 
   // Split into paragraphs for editorial reading rhythm
   const paragraphs = text.split(/\n+/);
@@ -82,17 +82,18 @@ function renderHighlightedStory(text: string, keywords: string[]) {
       if (match.index > lastIndex) {
         parts.push(paragraph.substring(lastIndex, match.index));
       }
-      const matchedWord = match[0];
+      // Extract the clean word without surrounding quotes
+      const matchedWord = match[1] || match[0].replace(/^['"‘’“”]+|['"‘’“”]+$/g, "");
       parts.push(
         <span
           key={`match-${pIdx}-${match.index}-${matchedWord}`}
-          className="font-bold underline decoration-amber-500 dark:decoration-amber-400 decoration-2 underline-offset-4 text-amber-700 dark:text-amber-300 transition-colors"
+          className="font-bold underline dark:decoration-amber-400 decoration-2 underline-offset-2 transition-colors"
           title={`Target Keyword: ${matchedWord}`}
         >
           {matchedWord}
         </span>
       );
-      lastIndex = match.index + matchedWord.length;
+      lastIndex = match.index + match[0].length;
     }
 
     if (lastIndex < paragraph.length) {
@@ -548,14 +549,17 @@ export default function VocabStoryPage() {
                     {/* Target Words Pill Tags (First 3 + more) */}
                     <div className="space-y-1.5 pt-1">
                       <div className="flex flex-wrap gap-1.5">
-                        {story.usedVocabulary.slice(0, 3).map((word) => (
-                          <span
-                            key={word}
-                            className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 text-[11px] font-medium border border-slate-200 dark:border-slate-700 capitalize"
-                          >
-                            {word}
-                          </span>
-                        ))}
+                        {story.usedVocabulary.slice(0, 3).map((word) => {
+                          const clean = word.replace(/^['"‘’“”]+|['"‘’“”]+$/g, "");
+                          return (
+                            <span
+                              key={clean}
+                              className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 text-[11px] font-medium border border-slate-200 dark:border-slate-700 capitalize"
+                            >
+                              {clean}
+                            </span>
+                          );
+                        })}
                         {story.usedVocabulary.length > 3 && (
                           <span className="px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[11px] font-bold border border-amber-500/20">
                             +{story.usedVocabulary.length - 3} more
@@ -725,14 +729,17 @@ export default function VocabStoryPage() {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {activeStory.usedVocabulary.map((word) => (
-                      <span
-                        key={word}
-                        className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-amber-700 dark:text-amber-300 text-xs sm:text-sm font-bold border border-slate-200 dark:border-slate-700 capitalize underline decoration-amber-500 decoration-2 underline-offset-4 shadow-2xs"
-                      >
-                        {word}
-                      </span>
-                    ))}
+                    {activeStory.usedVocabulary.map((word) => {
+                      const cleanWord = word.replace(/^['"‘’“”]+|['"‘’“”]+$/g, "");
+                      return (
+                        <span
+                          key={cleanWord}
+                          className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-slate-800/80 text-purple-700 dark:text-amber-300 text-xs sm:text-sm font-bold border border-slate-200 dark:border-slate-700 capitalize shadow-2xs"
+                        >
+                          {cleanWord}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -924,9 +931,9 @@ export default function VocabStoryPage() {
                       <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
                         Keyword Usage Analysis
                       </h3>
-                      <p className="text-[11px] text-slate-400">
+                      {/* <p className="text-[11px] text-slate-400">
                         ????? ??????? ?????? ??????? ? ????????
-                      </p>
+                      </p> */}
                     </div>
                   </div>
 
@@ -940,7 +947,7 @@ export default function VocabStoryPage() {
                         {/* Keyword Badge */}
                         <div className="shrink-0 mt-0.5">
                           <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-700 dark:text-violet-300 text-xs font-bold capitalize">
-                            {item.word}
+                            {item.word.replace(/^['"‘’“”]+|['"‘’“”]+$/g, "")}
                           </span>
                         </div>
                         {/* Explanation Text */}
