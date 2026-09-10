@@ -168,8 +168,6 @@ export default function VocabularyPage() {
     text: string;
   } | null>(null);
 
-  // Expanded card details tracker
-  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
 
   // Editing notes tracker
   const [editingNotes, setEditingNotes] = useState<Record<string, string>>({});
@@ -454,10 +452,6 @@ export default function VocabularyPage() {
     }
   };
 
-  // Toggle card expanded
-  const toggleCardExpand = (id: string) => {
-    setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   // Fullscreen Navigation (Prev / Next)
   const navigateFullscreen = (direction: -1 | 1) => {
@@ -891,7 +885,6 @@ export default function VocabularyPage() {
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {vocabularies.map((item) => {
-            const isExpanded = !!expandedCards[item.id];
             const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
             const isAudioPlaying = playingWord === item.word.word;
             const isFav = item.isFavorite || item.isFavourate;
@@ -900,9 +893,7 @@ export default function VocabularyPage() {
             return (
               <div
                 key={item.id}
-                className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all duration-300 overflow-hidden ${
-                  isExpanded ? "ring-2 ring-indigo-500/20 dark:ring-indigo-500/30" : "hover:-translate-y-0.5"
-                }`}
+                className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all duration-300 overflow-hidden hover:-translate-y-0.5"
               >
                 {/* Top Accent Strip by Part of Speech */}
                 <div
@@ -1009,212 +1000,20 @@ export default function VocabularyPage() {
                     </div>
                   </div>
 
-                  {/* Bangla Meaning Box (Clean & Short) */}
+                  {/* Bangla Meaning Box */}
                   <div className="p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-500/20 dark:border-emerald-500/30">
                     <p className="text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-300 truncate">
                       {item.word.banglaMeaning}
                     </p>
                   </div>
 
-                  {/* English Definition (Clamped in short mode, full in expanded mode) */}
-                  <p
-                    className={`text-xs text-slate-600 dark:text-slate-300 leading-relaxed ${
-                      isExpanded ? "" : "line-clamp-2"
-                    }`}
-                  >
+                  {/* English Definition (Clean 2-line clamped preview) */}
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
                     {item.word.meaning}
                   </p>
-
-                  {/* Elaborated Details Section (Shown when bottom arrow is clicked) */}
-                  {isExpanded && (
-                    <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800 space-y-3.5 animate-in fade-in duration-200">
-                      {/* Collocations */}
-                      {item.word.collocations && item.word.collocations.length > 0 && (
-                        <div className="space-y-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                            Collocations
-                          </span>
-                          <div className="flex flex-wrap gap-1">
-                            {item.word.collocations.slice(0, 4).map((col, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80"
-                              >
-                                {col}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Synonyms & Antonyms */}
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Synonyms */}
-                        <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80 space-y-1">
-                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
-                            Synonyms
-                          </span>
-                          <div className="flex flex-wrap gap-1">
-                            {item.word.synonyms && item.word.synonyms.length > 0 ? (
-                              item.word.synonyms.slice(0, 2).map((syn: any, idx: number) => (
-                                <span
-                                  key={idx}
-                                  className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/70"
-                                >
-                                  {getWordRelationWord(syn)}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-[10px] text-slate-400">—</span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Antonyms */}
-                        <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80 space-y-1">
-                          <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
-                            Antonyms
-                          </span>
-                          <div className="flex flex-wrap gap-1">
-                            {item.word.antonyms && item.word.antonyms.length > 0 ? (
-                              item.word.antonyms.slice(0, 2).map((ant: any, idx: number) => (
-                                <span
-                                  key={idx}
-                                  className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-300 border border-rose-200/70 dark:border-rose-800/70"
-                                >
-                                  {getWordRelationWord(ant)}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-[10px] text-slate-400">—</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Examples */}
-                      {item.word.exampleSentences && item.word.exampleSentences.length > 0 && (
-                        <div className="space-y-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                            <Lightbulb className="w-3 h-3 text-amber-500" />
-                            Example
-                          </span>
-                          <div className="border-l-2 border-indigo-500 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-r-lg text-xs text-slate-700 dark:text-slate-300 italic">
-                            &ldquo;{item.word.exampleSentences[0]}&rdquo;
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Word Family */}
-                      {item.word.wordFamily && item.word.wordFamily.length > 0 && (
-                        <div className="space-y-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                            <GraduationCap className="w-3 h-3 text-indigo-500" />
-                            Word Family
-                          </span>
-                          <div className="flex flex-wrap gap-1">
-                            {item.word.wordFamily.map((wf: any, idx: number) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80"
-                              >
-                                {getWordRelationText(wf)}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Practice Sentences Preview & Add */}
-                      <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                          <MessageSquare className="w-3 h-3 text-indigo-500" />
-                          My Sentences ({item.mySentences?.length || 0})
-                        </span>
-                        {item.mySentences && item.mySentences.length > 0 && (
-                          <div className="p-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-900/50 text-[11px] text-slate-700 dark:text-slate-300">
-                            {item.mySentences[item.mySentences.length - 1]}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="text"
-                            placeholder="Write a practice sentence..."
-                            value={newSentenceInputs[item.id] || ""}
-                            onChange={(e) =>
-                              setNewSentenceInputs((prev) => ({
-                                ...prev,
-                                [item.id]: e.target.value,
-                              }))
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                handleAddSentence(item);
-                              }
-                            }}
-                            className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          />
-                          <button
-                            onClick={() => handleAddSentence(item)}
-                            className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
-                          >
-                            Save
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Study Notes */}
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                            <FileText className="w-3 h-3 text-indigo-500" />
-                            Study Notes
-                          </span>
-                          {editingNotes[item.id] !== undefined &&
-                            editingNotes[item.id] !== item.notes && (
-                              <button
-                                onClick={() => handleSaveNotes(item)}
-                                disabled={savingNoteId === item.id}
-                                className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                              >
-                                {savingNoteId === item.id ? "Saving..." : "Save"}
-                              </button>
-                            )}
-                        </div>
-                        <textarea
-                          rows={2}
-                          placeholder="Add study notes..."
-                          value={
-                            editingNotes[item.id] !== undefined
-                              ? editingNotes[item.id]
-                              : item.notes || ""
-                          }
-                          onChange={(e) =>
-                            setEditingNotes((prev) => ({
-                              ...prev,
-                              [item.id]: e.target.value,
-                            }))
-                          }
-                          className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
-                        />
-                      </div>
-
-                      {/* Fullscreen Button */}
-                      <div className="pt-1 flex justify-end">
-                        <button
-                          onClick={() => setFullscreenVocabId(item.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200 dark:border-indigo-800 transition-colors cursor-pointer"
-                        >
-                          <Maximize2 className="w-3 h-3" />
-                          <span>Open Fullscreen</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                {/* Card Bottom Bar: Mastery Stars + Bottom Arrow / Elaborate Button */}
+                {/* Card Bottom Bar: Mastery Stars + Details (Full Screen) Button */}
                 <div className="px-4 py-2.5 bg-slate-50/90 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                   {/* Mastery Rating */}
                   <div className="flex items-center gap-1">
@@ -1236,18 +1035,14 @@ export default function VocabularyPage() {
                     ))}
                   </div>
 
-                  {/* Bottom Arrow / Elaborate Toggle */}
+                  {/* Details -> Full Screen Button */}
                   <button
-                    onClick={() => toggleCardExpand(item.id)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 transition-all cursor-pointer"
-                    title={isExpanded ? "Collapse card" : "Elaborate card details"}
+                    onClick={() => setFullscreenVocabId(item.id)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200/80 dark:border-indigo-800/80 transition-all hover:scale-[1.02] cursor-pointer"
+                    title="View full screen details"
                   >
-                    <span className="text-[11px]">{isExpanded ? "Less" : "Details"}</span>
-                    <ChevronDown
-                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                        isExpanded ? "rotate-180 text-indigo-500" : "text-slate-400"
-                      }`}
-                    />
+                    <Maximize2 className="w-3 h-3" />
+                    <span>Details</span>
                   </button>
                 </div>
               </div>
@@ -2123,48 +1918,6 @@ export default function VocabularyPage() {
                     />
                     <span>{editIsFavorite ? "Marked as Favorite" : "Add to Favorites"}</span>
                   </button>
-                </div>
-              </div>
-
-              {/* Mastery Level (0-100%) */}
-              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <TrendingUp className="w-3.5 h-3.5 text-indigo-500" />
-                    Mastery Level
-                  </label>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-mono">
-                    {editMastery}%
-                  </span>
-                </div>
-
-                {/* Slider */}
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="10"
-                  value={editMastery}
-                  onChange={(e) => setEditMastery(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                />
-
-                {/* Quick preset buttons */}
-                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                  {[20, 40, 60, 80, 100].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setEditMastery(preset)}
-                      className={`px-2 py-0.5 rounded-md transition-colors font-medium cursor-pointer ${
-                        editMastery === preset
-                          ? "bg-indigo-600 text-white"
-                          : "bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
-                      }`}
-                    >
-                      {preset}%
-                    </button>
-                  ))}
                 </div>
               </div>
 
