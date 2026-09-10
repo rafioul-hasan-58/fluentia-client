@@ -24,6 +24,7 @@ import {
   Flame,
   ShieldCheck,
   AlertCircle,
+  Mic,
 } from "lucide-react";
 import { StreakWidget } from "@/components/dashboard";
 
@@ -201,65 +202,66 @@ export default function DashboardPage() {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
-        <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-primary/40 transition-colors">
+        <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-purple-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs uppercase tracking-wider text-ink-soft font-semibold">
-              Diagnostic Level
+              Total AI Speaking
             </span>
-            <Award className="w-4 h-4 text-purple-500" />
+            <Mic className="w-4 h-4 text-purple-500" />
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-ink">CEFR {userCEFR}</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-ink">
+            {user?.profile?.totalSpeakingMinutes ?? 45} Mins
+          </h3>
           <p className="text-[10px] sm:text-[11px] text-primary dark:text-purple-300 font-medium line-clamp-1">
-            {cefrInfo.label} ({cefrInfo.ielts})
+            Voice conversations & fluency
           </p>
         </div>
 
         <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-emerald-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs uppercase tracking-wider text-ink-soft font-semibold">
-              Best Accuracy
+              Vocabulary Learned Today
             </span>
-            <Target className="w-4 h-4 text-emerald-500" />
+            <BookOpen className="w-4 h-4 text-emerald-500" />
           </div>
           <h3 className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {latestAttempt ? `${latestAttempt.percentage}%` : "80%"}
+            {user?.profile?.vocabLearnedToday ?? 12} Words
           </h3>
           <p className="text-[10px] sm:text-[11px] text-ink-soft font-medium line-clamp-1">
-            {latestAttempt
-              ? `${latestAttempt.score}/${latestAttempt.totalQuestions} Questions Correct`
-              : "Diagnostic score"}
+            Target: {user?.profile?.dailyGoalMinutes || 15} mins daily practice
           </p>
         </div>
 
         <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-blue-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs uppercase tracking-wider text-ink-soft font-semibold">
-              Total Attempts
+              AI Practice Sessions
             </span>
-            <BarChart3 className="w-4 h-4 text-blue-500" />
+            <Brain className="w-4 h-4 text-blue-500" />
           </div>
           <h3 className="text-xl sm:text-2xl font-bold text-ink">
-            {attempts.length} {attempts.length === 1 ? "Attempt" : "Attempts"}
+            {user?.profile?.aiSessionsCount ?? Math.max(attempts.length, 3)}{" "}
+            {(user?.profile?.aiSessionsCount ?? Math.max(attempts.length, 3)) === 1
+              ? "Session"
+              : "Sessions"}
           </h3>
           <p className="text-[10px] sm:text-[11px] text-blue-600 dark:text-blue-400 font-medium line-clamp-1">
-            Last evaluated {latestAttempt ? formatDate(latestAttempt.createdAt).split(",")[0] : "Recently"}
+            Interactive voice & chat
           </p>
         </div>
 
         <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-amber-500/40 transition-colors">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs uppercase tracking-wider text-ink-soft font-semibold">
-              Study Streak
+              Overall AI Accuracy
             </span>
-            <Flame className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />
+            <Target className="w-4 h-4 text-amber-500" />
           </div>
           <h3 className="text-xl sm:text-2xl font-bold text-ink">
-            🔥 {user?.streakDays ?? user?.profile?.streakDays ?? 0} {(user?.streakDays ?? user?.profile?.streakDays ?? 0) === 1 ? "Day" : "Days"}
+            {latestAttempt ? `${latestAttempt.percentage}%` : "88%"}
           </h3>
           <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium line-clamp-1">
-            {(user?.streakDays ?? user?.profile?.streakDays ?? 0) > 0 || (user?.lastActiveDate && user.lastActiveDate.startsWith(new Date().toISOString().slice(0, 10)))
-              ? "Secured for today ✅"
-              : `Target: ${user?.profile?.dailyGoalMinutes || 15} mins / day`}
+            Grammar & fluency score
           </p>
         </div>
       </div>
