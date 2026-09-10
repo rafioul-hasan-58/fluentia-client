@@ -1,4 +1,4 @@
-﻿export type PartOfSpeech =
+export type PartOfSpeech =
   | "NOUN"
   | "PRONOUN"
   | "VERB"
@@ -86,6 +86,11 @@ export interface GenerateVocabStoryDto {
   context?: string;
 }
 
+export interface KeywordExplanationItem {
+  word: string;
+  explanation: string;
+}
+
 export interface VocabStoryItem {
   id: string;
   title?: string;
@@ -93,6 +98,7 @@ export interface VocabStoryItem {
   storyEnglish: string;
   storyBangla: string;
   usedVocabulary: string[];
+  keywordExplanations?: KeywordExplanationItem[] | null;
   createdAt: string;
   updatedAt: string;
 }

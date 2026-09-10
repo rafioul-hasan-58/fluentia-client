@@ -24,10 +24,12 @@ import {
   Minimize2,
   Clock,
   Columns,
+  GraduationCap,
 } from "lucide-react";
 import {
   VocabStoryItem,
   MyVocabularyItem,
+  KeywordExplanationItem,
 } from "@/types/vocabulary";
 import {
   fetchVocabStoriesApi,
@@ -906,6 +908,47 @@ export default function VocabStoryPage() {
                     <div className="text-sm sm:text-base text-slate-800 dark:text-slate-200">
                       {renderHighlightedStory(activeStory.storyEnglish, activeStory.usedVocabulary)}
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Keyword Analysis Section */}
+              {Array.isArray(activeStory.keywordExplanations) && (activeStory.keywordExplanations as unknown[]).length > 0 && (
+                <div className="rounded-3xl bg-white dark:bg-[#141226] border border-violet-500/25 dark:border-violet-500/20 shadow-sm overflow-hidden">
+                  {/* Section Header */}
+                  <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-500 to-purple-600 flex items-center justify-center text-white shadow-sm">
+                      <GraduationCap className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+                        Keyword Usage Analysis
+                      </h3>
+                      <p className="text-[11px] text-slate-400">
+                        ????? ??????? ?????? ??????? ? ????????
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Keyword Cards Grid */}
+                  <div className="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {(activeStory.keywordExplanations as KeywordExplanationItem[]).map((item, idx) => (
+                      <div
+                        key={`kw-${item.word}-${idx}`}
+                        className="group flex gap-3.5 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-violet-400/50 dark:hover:border-violet-500/40 transition-all duration-200"
+                      >
+                        {/* Keyword Badge */}
+                        <div className="shrink-0 mt-0.5">
+                          <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-700 dark:text-violet-300 text-xs font-bold capitalize">
+                            {item.word}
+                          </span>
+                        </div>
+                        {/* Explanation Text */}
+                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                          {item.explanation}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
