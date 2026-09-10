@@ -217,20 +217,30 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-emerald-500/40 transition-colors">
+        <Link
+          href="/dashboard/vocabulary"
+          className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-emerald-500/40 hover:shadow-md transition-all cursor-pointer block"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs uppercase tracking-wider text-ink-soft font-semibold">
-              Vocabulary Learned Today
+            <span className="text-[10px] sm:text-xs uppercase tracking-wider text-ink-soft font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+              Vocabulary Vault
             </span>
-            <BookOpen className="w-4 h-4 text-emerald-500" />
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+              <BookOpen className="w-4 h-4" />
+            </div>
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {user?.profile?.vocabLearnedToday ?? 12} Words
-          </h3>
+          <div className="flex items-baseline justify-between">
+            <h3 className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              {user?.profile?.vocabLearnedToday ?? 12} Words
+            </h3>
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              Open Vault <ArrowRight className="w-3 h-3" />
+            </span>
+          </div>
           <p className="text-[10px] sm:text-[11px] text-ink-soft font-medium line-clamp-1">
-            Target: {user?.profile?.dailyGoalMinutes || 15} mins daily practice
+            Explore definitions, collocations & AI practice
           </p>
-        </div>
+        </Link>
 
         <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-blue-500/40 transition-colors">
           <div className="flex items-center justify-between">
