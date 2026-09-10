@@ -699,26 +699,55 @@ export async function addVocabularyWithAi(dto: AddVocabularyDto) {
 
 /**
  * Update personal notes, practice sentences, favorite status or mastery
+ * Endpoint: PATCH /api/v1/my-vocabularies/:id/update
  */
 export async function updateMyVocabulary(
   id: string,
-  updates: Partial<MyVocabularyItem>
+  updates: Partial<MyVocabularyItem> & { vocabularyStatus?: string }
 ): Promise<MyVocabularyItem> {
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 
+  const payload: Record<string, any> = {};
+  if (updates.mySentences !== undefined) payload.mySentences = updates.mySentences;
+  if (updates.notes !== undefined) payload.notes = updates.notes;
+  if (updates.masteryLevel !== undefined) {
+    payload.masteryLevel = updates.masteryLevel;
+  }
+  if (updates.status !== undefined || updates.vocabularyStatus !== undefined) {
+    payload.vocabularyStatus = updates.vocabularyStatus || updates.status;
+  }
+  if (updates.isFavourate !== undefined || updates.isFavorite !== undefined) {
+    payload.isFavourate = updates.isFavourate ?? updates.isFavorite;
+  }
+
   try {
-    let res = await fetch(`${baseUrl}/my-vocabularies/${id}`, {
+    // 1. Primary endpoint: PATCH /my-vocabularies/:id/update
+    let res = await fetch(`${baseUrl}/my-vocabularies/${id}/update`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify(updates),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
+      // Fallback 1: PATCH /my-vocabularies/:id
+      res = await fetch(`${baseUrl}/my-vocabularies/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+    }
+
+    if (!res.ok) {
+      // Fallback 2: PATCH /vocabularies/my/:id
       res = await fetch(`${baseUrl}/vocabularies/my/${id}`, {
         method: "PATCH",
         headers: {
@@ -726,18 +755,29 @@ export async function updateMyVocabulary(
           Accept: "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(updates),
+        body: JSON.stringify(payload),
       });
     }
 
     if (res.ok) {
       const data = await res.json();
       if (data?.data) {
+        const vault = getLocalVault();
+        const idx = vault.findIndex((item) => item.id === id);
+        if (idx !== -1) {
+          vault[idx] = {
+            ...vault[idx],
+            ...updates,
+            ...data.data,
+            updatedAt: new Date().toISOString(),
+          };
+          saveLocalVault(vault);
+        }
         return data.data;
       }
     }
-  } catch {
-    // Fallback to local
+  } catch (err) {
+    console.warn("Could not sync remote update:", err);
   }
 
   const vault = getLocalVault();
@@ -764,13 +804,23 @@ export async function deleteMyVocabulary(id: string): Promise<boolean> {
   const token = getAuthToken();
 
   try {
-    let res = await fetch(`${baseUrl}/my-vocabularies/${id}`, {
+    let res = await fetch(`${baseUrl}/my-vocabularies/${id}/delete`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
+
+    if (!res.ok) {
+      res = await fetch(`${baseUrl}/my-vocabularies/${id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+    }
 
     if (!res.ok) {
       await fetch(`${baseUrl}/vocabularies/my/${id}`, {
