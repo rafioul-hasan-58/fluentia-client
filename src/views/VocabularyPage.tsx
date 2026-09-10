@@ -258,14 +258,103 @@ export default function VocabularyPage() {
     }
   };
 
-  // Pronounce word using Web Speech API
+  // Voice caching state for speech synthesis
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  // Preload and register SpeechSynthesis voices
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+    const updateVoices = () => {
+      const available = window.speechSynthesis.getVoices();
+      if (available && available.length > 0) {
+        setVoices(available);
+      }
+    };
+
+    updateVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
+
+  /**
+   * Helper to retrieve the best high-quality female English voice available on device
+   */
+  const getFemaleVoice = (): SpeechSynthesisVoice | null => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+    const voiceList = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+    if (!voiceList || voiceList.length === 0) return null;
+
+    // Prioritized list of known high-quality female voice identifiers across Chrome, Edge, Safari, iOS, macOS, and Windows
+    const preferredFemalePatterns = [
+      "microsoft jenny online (natural)",
+      "microsoft aria online (natural)",
+      "microsoft ava online (natural)",
+      "microsoft emma online (natural)",
+      "microsoft zira",
+      "google us english",
+      "google uk english female",
+      "samantha",
+      "victoria",
+      "karen",
+      "moira",
+      "fiona",
+      "serena",
+      "tessa",
+      "allison",
+      "ava",
+      "nora",
+      "susan",
+      "female",
+    ];
+
+    // 1. Search for preferred natural female voices in English
+    for (const pattern of preferredFemalePatterns) {
+      const match = voiceList.find((v) => {
+        const nameLower = v.name.toLowerCase();
+        const langLower = v.lang.toLowerCase();
+        return langLower.startsWith("en") && nameLower.includes(pattern);
+      });
+      if (match) return match;
+    }
+
+    // 2. Search for any English voice explicitly tagged or named 'female' or 'woman'
+    const anyFemaleEnglish = voiceList.find((v) => {
+      const nameLower = v.name.toLowerCase();
+      const langLower = v.lang.toLowerCase();
+      return (
+        langLower.startsWith("en") &&
+        (nameLower.includes("female") || nameLower.includes("woman") || nameLower.includes("girl"))
+      );
+    });
+    if (anyFemaleEnglish) return anyFemaleEnglish;
+
+    // 3. Fallback to standard US/UK English voices
+    const fallbackEn = voiceList.find(
+      (v) => v.lang.startsWith("en-US") || v.lang.startsWith("en-GB") || v.lang.startsWith("en")
+    );
+    return fallbackEn || voiceList[0] || null;
+  };
+
+  // Pronounce word using Web Speech API with female voice
   const playPronunciation = (word: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
+
     const utterance = new SpeechSynthesisUtterance(word);
     utterance.lang = "en-US";
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
+    utterance.rate = 0.88; // clear natural pace
+    utterance.pitch = 1.08; // clear female pitch
+
+    const femaleVoice = getFemaleVoice();
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
+    }
 
     setPlayingWord(word);
     utterance.onend = () => setPlayingWord(null);
@@ -800,7 +889,7 @@ export default function VocabularyPage() {
           </button>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {vocabularies.map((item) => {
             const isExpanded = !!expandedCards[item.id];
             const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
@@ -811,7 +900,9 @@ export default function VocabularyPage() {
             return (
               <div
                 key={item.id}
-                className="group relative flex flex-col justify-between rounded-3xl bg-white dark:bg-[#141226] border border-slate-200/90 dark:border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all duration-300 overflow-hidden hover:-translate-y-0.5"
+                className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all duration-300 overflow-hidden ${
+                  isExpanded ? "ring-2 ring-indigo-500/20 dark:ring-indigo-500/30" : "hover:-translate-y-0.5"
+                }`}
               >
                 {/* Top Accent Strip by Part of Speech */}
                 <div
@@ -829,215 +920,203 @@ export default function VocabularyPage() {
                 />
 
                 {/* Main Card Content */}
-                <div className="p-6 space-y-4">
-                  {/* Header: Word Name, Audio, Badges, & Actions */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
+                  {/* Top: Word, Pronounce & Quick Action Icons */}
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      {/* Word Title & Audio */}
+                      <div className="flex items-center gap-2 min-w-0 flex-wrap">
                         <button
                           onClick={() => setFullscreenVocabId(item.id)}
-                          className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left cursor-pointer capitalize"
+                          className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left cursor-pointer capitalize truncate"
+                          title={`View ${item.word.word} full details`}
                         >
                           {item.word.word}
                         </button>
 
-                        {/* Pronunciation Audio Button */}
                         <button
                           onClick={() => playPronunciation(item.word.word)}
                           title="Listen pronunciation"
-                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer border ${
+                          className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 border ${
                             isAudioPlaying
                               ? "bg-indigo-600 text-white border-indigo-600 scale-105 shadow-sm shadow-indigo-500/40"
                               : "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-800/80"
                           }`}
                         >
-                          <Volume2 className={`w-3.5 h-3.5 ${isAudioPlaying ? "animate-pulse" : ""}`} />
+                          <Volume2 className={`w-3 h-3 ${isAudioPlaying ? "animate-pulse" : ""}`} />
                         </button>
-
-                        {/* Phonetic IPA */}
-                        {item.word.ipa && (
-                          <span className="text-xs font-mono text-slate-400 dark:text-slate-500">
-                            {item.word.ipa}
-                          </span>
-                        )}
                       </div>
 
-                      {/* Part of Speech & CEFR Badges */}
-                      <div className="flex items-center gap-2 pt-0.5">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-lg text-xs font-semibold border ${posConfig.bg} ${posConfig.text} ${posConfig.border}`}
+                      {/* Action Icons: Edit / Favorite / Delete */}
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <button
+                          onClick={() => handleOpenEditModal(item)}
+                          title="Update vocabulary"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         >
-                          {posConfig.label}
-                        </span>
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
 
-                        {displayLevel && (
-                          <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                            CEFR {displayLevel}
-                          </span>
-                        )}
+                        <button
+                          onClick={() => handleToggleFavorite(item)}
+                          title={isFav ? "Remove from favorites" : "Add to favorites"}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer border ${
+                            isFav
+                              ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                              : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          <Star
+                            className={`w-3.5 h-3.5 ${isFav ? "fill-amber-400 text-amber-400" : ""}`}
+                          />
+                        </button>
 
-                        {item.status && item.status !== "LEARNING" && (
-                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 uppercase tracking-wider">
-                            {item.status}
-                          </span>
-                        )}
+                        <button
+                          onClick={() => handleDeleteWord(item.id, item.word.word)}
+                          title="Delete word"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
 
-                    {/* Quick Action Buttons: Update, Favorite, Delete */}
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleOpenEditModal(item)}
-                        title="Update vocabulary"
-                        className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    {/* Tags: Part of Speech & CEFR & Status */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${posConfig.bg} ${posConfig.text} ${posConfig.border}`}
                       >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                        {posConfig.label}
+                      </span>
 
-                      <button
-                        onClick={() => handleToggleFavorite(item)}
-                        title={isFav ? "Remove from favorites" : "Add to favorites"}
-                        className={`p-2 rounded-xl transition-colors cursor-pointer border ${
-                          isFav
-                            ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
-                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        <Star
-                          className={`w-4 h-4 ${isFav ? "fill-amber-400 text-amber-400" : ""}`}
-                        />
-                      </button>
+                      {displayLevel && (
+                        <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {displayLevel}
+                        </span>
+                      )}
 
-                      <button
-                        onClick={() => handleDeleteWord(item.id, item.word.word)}
-                        title="Delete word"
-                        className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {item.status && item.status !== "LEARNING" && (
+                        <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                          {item.status}
+                        </span>
+                      )}
+
+                      {item.word.ipa && (
+                        <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 ml-auto">
+                          {item.word.ipa}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Bangla Meaning Card */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/8 via-teal-500/5 to-slate-50 dark:from-emerald-950/30 dark:via-slate-900/60 dark:to-slate-900 border border-emerald-500/20 dark:border-emerald-500/30 space-y-1">
-                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-                      Bangla Meaning (বাংলা অর্থ)
-                    </span>
-                    <p className="text-base sm:text-lg font-bold text-emerald-950 dark:text-emerald-200 leading-snug">
+                  {/* Bangla Meaning Box (Clean & Short) */}
+                  <div className="p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-500/20 dark:border-emerald-500/30">
+                    <p className="text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-300 truncate">
                       {item.word.banglaMeaning}
                     </p>
                   </div>
 
-                  {/* English Definition */}
-                  <div className="space-y-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                      Definition
-                    </span>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
-                      {item.word.meaning}
-                    </p>
-                  </div>
+                  {/* English Definition (Clamped in short mode, full in expanded mode) */}
+                  <p
+                    className={`text-xs text-slate-600 dark:text-slate-300 leading-relaxed ${
+                      isExpanded ? "" : "line-clamp-2"
+                    }`}
+                  >
+                    {item.word.meaning}
+                  </p>
 
-                  {/* Collocations Chips */}
-                  {item.word.collocations && item.word.collocations.length > 0 && (
-                    <div className="space-y-1.5">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Collocations & Phrases
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {item.word.collocations.slice(0, 4).map((col, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80"
-                          >
-                            <span className="text-indigo-500 text-[10px]">●</span>
-                            {col}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Synonyms & Antonyms Shelves */}
-                  <div className="grid grid-cols-2 gap-3 pt-1">
-                    {/* Synonyms */}
-                    <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80 space-y-1.5">
-                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
-                        Synonyms
-                      </span>
-                      <div className="flex flex-wrap gap-1">
-                        {item.word.synonyms && item.word.synonyms.length > 0 ? (
-                          item.word.synonyms.slice(0, 3).map((syn: any, idx: number) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/70"
-                            >
-                              {getWordRelationWord(syn)}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-[11px] text-slate-400">—</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Antonyms */}
-                    <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80 space-y-1.5">
-                      <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
-                        Antonyms
-                      </span>
-                      <div className="flex flex-wrap gap-1">
-                        {item.word.antonyms && item.word.antonyms.length > 0 ? (
-                          item.word.antonyms.slice(0, 3).map((ant: any, idx: number) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-300 border border-rose-200/70 dark:border-rose-800/70"
-                            >
-                              {getWordRelationWord(ant)}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-[11px] text-slate-400">—</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Expanded Section: Examples, Word Family, Practice Sentences, Notes */}
+                  {/* Elaborated Details Section (Shown when bottom arrow is clicked) */}
                   {isExpanded && (
-                    <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 space-y-4 animate-in fade-in duration-200">
-                      {/* Contextual Examples */}
-                      {item.word.exampleSentences && item.word.exampleSentences.length > 0 && (
-                        <div className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                            <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-                            Contextual Examples
+                    <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800 space-y-3.5 animate-in fade-in duration-200">
+                      {/* Collocations */}
+                      {item.word.collocations && item.word.collocations.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            Collocations
                           </span>
-                          <div className="space-y-1.5">
-                            {item.word.exampleSentences.map((sent, idx) => (
-                              <div
+                          <div className="flex flex-wrap gap-1">
+                            {item.word.collocations.slice(0, 4).map((col, idx) => (
+                              <span
                                 key={idx}
-                                className="border-l-2 border-indigo-500 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-r-xl text-xs text-slate-700 dark:text-slate-300 italic leading-relaxed"
+                                className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80"
                               >
-                                &ldquo;{sent}&rdquo;
-                              </div>
+                                {col}
+                              </span>
                             ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Synonyms & Antonyms */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Synonyms */}
+                        <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80 space-y-1">
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
+                            Synonyms
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {item.word.synonyms && item.word.synonyms.length > 0 ? (
+                              item.word.synonyms.slice(0, 2).map((syn: any, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/70"
+                                >
+                                  {getWordRelationWord(syn)}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-[10px] text-slate-400">—</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Antonyms */}
+                        <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800/80 space-y-1">
+                          <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
+                            Antonyms
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {item.word.antonyms && item.word.antonyms.length > 0 ? (
+                              item.word.antonyms.slice(0, 2).map((ant: any, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-300 border border-rose-200/70 dark:border-rose-800/70"
+                                >
+                                  {getWordRelationWord(ant)}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-[10px] text-slate-400">—</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Examples */}
+                      {item.word.exampleSentences && item.word.exampleSentences.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                            <Lightbulb className="w-3 h-3 text-amber-500" />
+                            Example
+                          </span>
+                          <div className="border-l-2 border-indigo-500 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-r-lg text-xs text-slate-700 dark:text-slate-300 italic">
+                            &ldquo;{item.word.exampleSentences[0]}&rdquo;
                           </div>
                         </div>
                       )}
 
                       {/* Word Family */}
                       {item.word.wordFamily && item.word.wordFamily.length > 0 && (
-                        <div className="space-y-1.5">
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                            <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                            <GraduationCap className="w-3 h-3 text-indigo-500" />
                             Word Family
                           </span>
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className="flex flex-wrap gap-1">
                             {item.word.wordFamily.map((wf: any, idx: number) => (
                               <span
                                 key={idx}
-                                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80"
+                                className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80"
                               >
                                 {getWordRelationText(wf)}
                               </span>
@@ -1046,30 +1125,21 @@ export default function VocabularyPage() {
                         </div>
                       )}
 
-                      {/* User's Practice Sentences */}
-                      <div className="space-y-2">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                          <MessageSquare className="w-3.5 h-3.5 text-indigo-500" />
-                          My Practice Sentences ({item.mySentences?.length || 0})
+                      {/* Practice Sentences Preview & Add */}
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3 text-indigo-500" />
+                          My Sentences ({item.mySentences?.length || 0})
                         </span>
                         {item.mySentences && item.mySentences.length > 0 && (
-                          <div className="space-y-1.5">
-                            {item.mySentences.map((s, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-start gap-2 p-2.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-900/60 text-xs text-slate-800 dark:text-slate-200"
-                              >
-                                <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 mt-0.5 shrink-0" />
-                                <span>{s}</span>
-                              </div>
-                            ))}
+                          <div className="p-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-900/50 text-[11px] text-slate-700 dark:text-slate-300">
+                            {item.mySentences[item.mySentences.length - 1]}
                           </div>
                         )}
-
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <input
                             type="text"
-                            placeholder="Write your own sentence using this word..."
+                            placeholder="Write a practice sentence..."
                             value={newSentenceInputs[item.id] || ""}
                             onChange={(e) =>
                               setNewSentenceInputs((prev) => ({
@@ -1083,22 +1153,22 @@ export default function VocabularyPage() {
                                 handleAddSentence(item);
                               }
                             }}
-                            className="flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                           />
                           <button
                             onClick={() => handleAddSentence(item)}
-                            className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                           >
                             Save
                           </button>
                         </div>
                       </div>
 
-                      {/* Personal Study Notes */}
-                      <div className="space-y-1.5">
+                      {/* Study Notes */}
+                      <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                            <FileText className="w-3 h-3 text-indigo-500" />
                             Study Notes
                           </span>
                           {editingNotes[item.id] !== undefined &&
@@ -1106,15 +1176,15 @@ export default function VocabularyPage() {
                               <button
                                 onClick={() => handleSaveNotes(item)}
                                 disabled={savingNoteId === item.id}
-                                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                               >
-                                {savingNoteId === item.id ? "Saving..." : "Save Note"}
+                                {savingNoteId === item.id ? "Saving..." : "Save"}
                               </button>
                             )}
                         </div>
                         <textarea
                           rows={2}
-                          placeholder="Add your mnemonics, exam tips, or usage context..."
+                          placeholder="Add study notes..."
                           value={
                             editingNotes[item.id] !== undefined
                               ? editingNotes[item.id]
@@ -1126,69 +1196,59 @@ export default function VocabularyPage() {
                               [item.id]: e.target.value,
                             }))
                           }
-                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                          className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
                         />
+                      </div>
+
+                      {/* Fullscreen Button */}
+                      <div className="pt-1 flex justify-end">
+                        <button
+                          onClick={() => setFullscreenVocabId(item.id)}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200 dark:border-indigo-800 transition-colors cursor-pointer"
+                        >
+                          <Maximize2 className="w-3 h-3" />
+                          <span>Open Fullscreen</span>
+                        </button>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Card Footer with Mastery Stars, Update & Full View Details Button */}
-                <div className="px-6 py-3.5 bg-slate-50/90 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                {/* Card Bottom Bar: Mastery Stars + Bottom Arrow / Elaborate Button */}
+                <div className="px-4 py-2.5 bg-slate-50/90 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                   {/* Mastery Rating */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-semibold text-slate-400">Mastery:</span>
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onClick={() => handleSetMastery(item, star)}
-                          title={`Set mastery to ${star} stars`}
-                          className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
-                        >
-                          <Star
-                            className={`w-3.5 h-3.5 ${
-                              star <= (item.masteryLevel || 1)
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-slate-300 dark:text-slate-600"
-                            }`}
-                          />
-                        </button>
-                      ))}
-                    </div>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => handleSetMastery(item, star)}
+                        title={`Set mastery to ${star} stars`}
+                        className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
+                      >
+                        <Star
+                          className={`w-3.5 h-3.5 ${
+                            star <= (item.masteryLevel || 1)
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-slate-300 dark:text-slate-600"
+                          }`}
+                        />
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Actions: Update, Full View Details & Toggle Accordion */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleOpenEditModal(item)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
-                      title="Update vocabulary"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Update</span>
-                    </button>
-
-                    <button
-                      onClick={() => setFullscreenVocabId(item.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
-                    >
-                      <Maximize2 className="w-3.5 h-3.5" />
-                      <span>Full Details</span>
-                    </button>
-
-                    <button
-                      onClick={() => toggleCardExpand(item.id)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                      title={isExpanded ? "Collapse inline view" : "Expand inline view"}
-                    >
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                  {/* Bottom Arrow / Elaborate Toggle */}
+                  <button
+                    onClick={() => toggleCardExpand(item.id)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 transition-all cursor-pointer"
+                    title={isExpanded ? "Collapse card" : "Elaborate card details"}
+                  >
+                    <span className="text-[11px]">{isExpanded ? "Less" : "Details"}</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        isExpanded ? "rotate-180 text-indigo-500" : "text-slate-400"
+                      }`}
+                    />
+                  </button>
                 </div>
               </div>
             );
@@ -1343,6 +1403,15 @@ export default function VocabularyPage() {
                           </button>
 
                           <button
+                            onClick={() => handleOpenEditModal(item)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                            title="Update vocabulary"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span className="hidden xl:inline">Update</span>
+                          </button>
+
+                          <button
                             onClick={() => setFullscreenVocabId(item.id)}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 transition-colors cursor-pointer"
                             title="Open full details"
@@ -1436,6 +1505,16 @@ export default function VocabularyPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Update Vocabulary Button */}
+                <button
+                  onClick={() => handleOpenEditModal(activeFullscreenVocab)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                  title="Update Vocabulary"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-indigo-500" />
+                  <span className="hidden sm:inline">Update</span>
+                </button>
 
                 {/* Theme Toggle */}
                 <ThemeToggle />
@@ -1949,6 +2028,279 @@ export default function VocabularyPage() {
           </div>
         </div>
       )}
+
+      {/* 6. Update / Edit Vocabulary Modal */}
+      {editingItem && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 bg-gradient-to-r from-indigo-600/10 via-purple-600/10 to-pink-600/10 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white capitalize">
+                      Update &apos;{editingItem.word.word}&apos;
+                    </h3>
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                        POS_COLORS[editingItem.word.partOfSpeech]?.bg || "bg-indigo-500/10"
+                      } ${
+                        POS_COLORS[editingItem.word.partOfSpeech]?.text || "text-indigo-600 dark:text-indigo-400"
+                      } ${
+                        POS_COLORS[editingItem.word.partOfSpeech]?.border || "border-indigo-500/30"
+                      }`}
+                    >
+                      {POS_COLORS[editingItem.word.partOfSpeech]?.label || editingItem.word.partOfSpeech}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {editingItem.word.banglaMeaning}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => !isSavingEdit && setEditingItem(null)}
+                disabled={isSavingEdit}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body - Scrollable Form */}
+            <form onSubmit={handleSaveEdit} className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
+              {/* Status & Favorite Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Status Switcher */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Vocabulary Status
+                  </label>
+                  <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                    {[
+                      { id: "LEARNING", label: "Learning" },
+                      { id: "REVIEWING", label: "Reviewing" },
+                      { id: "LEARNED", label: "Learned" },
+                    ].map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setEditStatus(st.id)}
+                        className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center ${
+                          editStatus === st.id
+                            ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm"
+                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                        }`}
+                      >
+                        {st.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Favorite Toggle */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Favorite Status
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setEditIsFavorite((prev) => !prev)}
+                    className={`w-full py-2 px-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-semibold transition-all cursor-pointer ${
+                      editIsFavorite
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                  >
+                    <Star
+                      className={`w-4 h-4 ${
+                        editIsFavorite ? "fill-amber-400 text-amber-400" : "text-slate-400"
+                      }`}
+                    />
+                    <span>{editIsFavorite ? "Marked as Favorite" : "Add to Favorites"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Mastery Level (0-100%) */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <TrendingUp className="w-3.5 h-3.5 text-indigo-500" />
+                    Mastery Level
+                  </label>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-mono">
+                    {editMastery}%
+                  </span>
+                </div>
+
+                {/* Slider */}
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="10"
+                  value={editMastery}
+                  onChange={(e) => setEditMastery(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+
+                {/* Quick preset buttons */}
+                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                  {[20, 40, 60, 80, 100].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setEditMastery(preset)}
+                      className={`px-2 py-0.5 rounded-md transition-colors font-medium cursor-pointer ${
+                        editMastery === preset
+                          ? "bg-indigo-600 text-white"
+                          : "bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
+                      }`}
+                    >
+                      {preset}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* My Practice Sentences */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-indigo-500" />
+                    Practice Sentences ({editSentences.length})
+                  </label>
+                  <span className="text-[11px] text-slate-400">Add personal usage</span>
+                </div>
+
+                {/* Sentences List */}
+                {editSentences.length > 0 ? (
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    {editSentences.map((sentence, idx) => (
+                      <div
+                        key={idx}
+                        className="group flex items-start justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200"
+                      >
+                        <div className="flex items-start gap-2 flex-1 min-w-0">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                          <span className="leading-relaxed break-words">{sentence}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSentence(idx)}
+                          className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer shrink-0 rounded"
+                          title="Remove sentence"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic py-1">
+                    No practice sentences added yet. Write one below!
+                  </p>
+                )}
+
+                {/* Add Sentence Input */}
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="text"
+                    placeholder="Write a new sentence with this word..."
+                    value={editNewSentence}
+                    onChange={(e) => setEditNewSentence(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSentenceToEdit();
+                      }
+                    }}
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddSentenceToEdit}
+                    disabled={!editNewSentence.trim()}
+                    className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed border border-indigo-200 dark:border-indigo-800 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Study Notes */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                  Study Notes & Mnemonics
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder='e.g. Remember to use with prepositions "in" or "for". IELTS Speaking Part 2...'
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                />
+              </div>
+
+              {/* Feedback Banner */}
+              {editFeedback && (
+                <div
+                  className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-semibold border ${
+                    editFeedback.type === "success"
+                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
+                      : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20"
+                  }`}
+                >
+                  {editFeedback.type === "success" ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                  )}
+                  <span>{editFeedback.text}</span>
+                </div>
+              )}
+
+              {/* Modal Footer Actions */}
+              <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingItem(null)}
+                  disabled={isSavingEdit}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isSavingEdit}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                  {isSavingEdit ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
