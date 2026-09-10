@@ -89,3 +89,18 @@ export interface CreateLevelTestQuestionDto {
     isCorrect: boolean;
   }>;
 }
+
+export interface CreateQuestionSetDto {
+  name: string;
+  description?: string;
+  isActive?: boolean;
+  questionIds: string[];
+}
+
+export interface UpdateQuestionSetDto {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+  questionIds?: string[];
+}
+

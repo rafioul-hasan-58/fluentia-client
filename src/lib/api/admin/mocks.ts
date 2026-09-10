@@ -1,4 +1,4 @@
-import { LevelTestQuestion } from "@/types/level-test";
+import { LevelTestQuestion, LevelTestQuestionSet } from "@/types/level-test";
 import {
   AdminStats,
   RecentTestAttempt,
@@ -609,3 +609,27 @@ export const MOCK_LEVEL_TEST_QUESTIONS: LevelTestQuestion[] = [
     ],
   },
 ];
+
+export const MOCK_LEVEL_TEST_SETS: LevelTestQuestionSet[] = [
+  {
+    id: "6aa26cc1ef9f1cc80f8c0812",
+    name: "Standard CEFR Placement Set 1",
+    description: "Standard diagnostic placement test covering A1 to C1 proficiency levels across Grammar, Vocabulary, and Reading.",
+    isActive: true,
+    questionsCount: 20,
+    attemptsCount: 42,
+    createdAt: "2026-09-07T12:00:00.000Z",
+    updatedAt: "2026-09-08T15:30:00.000Z",
+  },
+  {
+    id: "6aa26cc1ef9f1cc80f8c0813",
+    name: "Advanced Diagnostic Set 2",
+    description: "In-depth diagnostic benchmark with elevated focus on B2-C2 nuances and complex sentence structure.",
+    isActive: false,
+    questionsCount: 15,
+    attemptsCount: 18,
+    createdAt: "2026-09-08T10:00:00.000Z",
+    updatedAt: "2026-09-09T09:15:00.000Z",
+  },
+];
+

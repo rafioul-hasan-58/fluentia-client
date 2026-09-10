@@ -10,6 +10,7 @@ export interface QuestionOption {
 
 export interface LevelTestQuestion {
   id: string;
+  setId?: string | null;
   question: string;
   passage?: string | null;
   sectionType: TestSectionType;
@@ -20,6 +21,19 @@ export interface LevelTestQuestion {
   createdAt?: string;
   updatedAt?: string;
   questionOptions: QuestionOption[];
+  set?: LevelTestQuestionSet | null;
+}
+
+export interface LevelTestQuestionSet {
+  id: string;
+  name: string;
+  description?: string | null;
+  isActive: boolean;
+  questionsCount?: number;
+  attemptsCount?: number;
+  questions?: LevelTestQuestion[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface LevelTestResponse {
