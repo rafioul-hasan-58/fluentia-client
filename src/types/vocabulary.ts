@@ -35,7 +35,7 @@ export interface VocabularyItem {
   updatedAt?: string;
 }
 
-export type VocabularyStatus = "LEARNING" | "MASTERED" | "REVIEWING";
+export type VocabularyStatus = "LEARNING" | "LEARNED" | "MASTERED";
 
 export interface MyVocabularyItem {
   id: string;
