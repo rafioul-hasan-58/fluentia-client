@@ -1,4 +1,4 @@
-export type PartOfSpeech =
+﻿export type PartOfSpeech =
   | "NOUN"
   | "PRONOUN"
   | "VERB"
@@ -47,7 +47,7 @@ export interface MyVocabularyItem {
   status?: VocabularyStatus | string;
   isFavourate?: boolean;
   isFavorite?: boolean;
-  masteryLevel?: number; // 0 to 100 percentage or 1-5 rating
+  masteryLevel?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -79,6 +79,21 @@ export interface VocabularyFilterOptions {
   sortBy?: "recent" | "alphabetical" | "mastery";
   favoritesOnly?: boolean;
   todayOnly?: boolean;
+}
+
+export interface GenerateVocabStoryDto {
+  vocabularyIds: string[];
+  context?: string;
+}
+
+export interface VocabStoryItem {
+  id: string;
+  userId: string;
+  storyEnglish: string;
+  storyBangla: string;
+  usedVocabulary: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function getWordRelationText(item: string | WordRelationItem | any): string {

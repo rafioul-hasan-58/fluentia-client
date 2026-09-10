@@ -854,3 +854,32 @@ export async function deleteMyVocabulary(id: string): Promise<boolean> {
   saveLocalVault(updated);
   return true;
 }
+
+/**
+ * Generate Bilingual and Full English Vocabulary Story via AI
+ * Endpoint: POST /api/v1/vocab-stories/generate
+ */
+export async function generateVocabStoryApi(
+  dto: { vocabularyIds: string[]; context?: string }
+): Promise<any> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
+
+  const res = await fetch(`${baseUrl}/vocab-stories/generate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(dto),
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => null);
+    throw new Error(errData?.message || "Failed to generate vocabulary story.");
+  }
+
+  const json = await res.json();
+  return json.data || json;
+}
