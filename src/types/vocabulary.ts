@@ -114,3 +114,17 @@ export function getWordRelationWord(item: string | WordRelationItem | any): stri
   if (typeof item === "object") return item.word || "";
   return String(item);
 }
+
+export interface GetVocabStoriesQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface VocabStoryListResponse {
+  items: VocabStoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

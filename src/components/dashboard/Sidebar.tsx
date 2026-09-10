@@ -8,11 +8,19 @@ import { ThemeToggle } from "@/components/shared";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar } from "@/components/ui/avatar";
 
-interface NavItem {
+interface SubNavItem {
   name: string;
   href: string;
   badge?: string;
+  icon?: (props: { className?: string }) => React.JSX.Element;
+}
+
+interface NavItem {
+  name: string;
+  href?: string;
+  badge?: string;
   icon: (props: { className?: string }) => React.JSX.Element;
+  children?: SubNavItem[];
 }
 
 const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
@@ -60,7 +68,6 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "Vocabulary",
-        href: "/dashboard/vocabulary",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
@@ -68,6 +75,31 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
             <path d="M6 10h10" />
           </svg>
         ),
+        children: [
+          {
+            name: "Vocabulary Vault",
+            href: "/dashboard/vocabulary",
+            icon: ({ className }) => (
+              <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            ),
+          },
+          {
+            name: "Vocab Story",
+            href: "/dashboard/vocabulary/stories",
+            badge: "AI",
+            icon: ({ className }) => (
+              <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+                <path d="M8 7h6" />
+                <path d="M8 11h8" />
+                <path d="m14 16 2 2 4-4" />
+              </svg>
+            ),
+          },
+        ],
       },
       {
         name: "Reading",
@@ -76,16 +108,6 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
             <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-          </svg>
-        ),
-      },
-      {
-        name: "Writing",
-        href: "/dashboard/writing",
-        icon: ({ className }) => (
-          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
           </svg>
         ),
       },
@@ -101,27 +123,27 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
         ),
       },
       {
-        name: "Listening",
-        href: "/dashboard/listening",
+        name: "Writing",
+        href: "/dashboard/writing",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
           </svg>
         ),
       },
     ],
   },
   {
-    category: "Preferences",
+    category: "Assessment & Test",
     items: [
       {
-        name: "Settings & Profile",
-        href: "/dashboard/settings",
+        name: "Level Test",
+        href: "/dashboard/level-test",
+        badge: "Adaptive",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-            <circle cx="12" cy="12" r="3" />
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
           </svg>
         ),
       },
@@ -129,88 +151,66 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  setMobileOpen?: (open: boolean) => void;
+}
+
+export function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }: SidebarProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
 
-  const displayName =
-    user?.name && user.name !== "Google User" && user.name !== "Google"
-      ? user.name
-      : user?.firstName && user.firstName !== "Google"
-        ? `${user.firstName} ${user.lastName && user.lastName !== "Learner" ? user.lastName : ""}`.trim()
-        : user?.email
-          ? user.email.split("@")[0].replace(/[._0-9]/g, " ").trim().replace(/\b\w/g, (c: string) => c.toUpperCase())
-          : "Learner";
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({
+    Vocabulary: true,
+  });
 
-  const initials = displayName
-    .split(" ")
-    .filter(Boolean)
-    .map((n: string) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || "FL";
+  const toggleDropdown = (name: string) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  };
+
+  const displayName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user?.firstName || user?.name || user?.email?.split("@")[0] || "Learner";
+
+  const initials =
+    user?.firstName && user?.lastName
+      ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+      : (displayName[0] || "U").toUpperCase();
 
   return (
     <>
-      {/* Mobile Top App Bar */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-paper/95 dark:bg-[#070510]/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 z-30 flex items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="relative w-8 h-8">
-            <Image
-              src="/logo.png"
-              alt="Fluentia Logo"
-              width={32}
-              height={32}
-              className="object-contain w-full h-full"
-            />
-          </div>
-          <span className="font-brand text-lg font-bold tracking-tight text-ink">
-            Fluentia
-          </span>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            className="p-2 rounded-xl text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-            aria-label="Open Navigation Menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-      </header>
-
-      {/* Mobile Backdrop Overlay */}
+      {/* Mobile Backdrop */}
       {mobileOpen && (
         <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden animate-fade-in"
           onClick={() => setMobileOpen(false)}
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
-          aria-hidden="true"
         />
       )}
 
-      {/* Sidebar Container (Desktop fixed + Mobile slide-out drawer) */}
+      {/* Main Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 max-w-[85vw] bg-paper-card border-r border-slate-200 dark:border-white/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-surface border-r border-slate-200 dark:border-white/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 lg:h-20 flex items-center justify-between px-5 border-b border-slate-200 dark:border-white/10">
-          <Link href="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 group-hover:scale-105 transition-transform duration-200">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200 dark:border-white/10">
+          <Link
+            href="/dashboard"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 group"
+          >
+            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-purple-500 p-0.5 shadow-sm group-hover:scale-105 transition-transform flex items-center justify-center">
               <Image
-                src="/logo.png"
-                alt="Fluentia Logo"
-                width={40}
-                height={40}
-                className="object-contain w-full h-full"
-                priority
+                src="/icon.png"
+                alt="Fluentia"
+                width={28}
+                height={28}
+                className="w-full h-full object-contain rounded-[10px]"
               />
             </div>
             <div className="flex flex-col">
@@ -246,15 +246,131 @@ export function Sidebar() {
                 </div>
               )}
               {section.items.map((item) => {
+                const Icon = item.icon;
+
+                // Handle Dropdown Menu (items with children)
+                if (item.children && item.children.length > 0) {
+                  const isAnyChildActive = item.children.some((child) => {
+                    if (child.href === "/dashboard/vocabulary") {
+                      return pathname === "/dashboard/vocabulary";
+                    }
+                    return pathname === child.href || pathname?.startsWith(child.href);
+                  });
+
+                  const isDropdownOpen =
+                    openDropdowns[item.name] !== undefined
+                      ? openDropdowns[item.name]
+                      : isAnyChildActive;
+
+                  return (
+                    <div key={item.name} className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleDropdown(item.name)}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group cursor-pointer ${
+                          isAnyChildActive
+                            ? "bg-slate-100 dark:bg-white/[0.08] text-ink font-semibold"
+                            : "text-ink-soft hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-ink"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon
+                            className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
+                              isAnyChildActive
+                                ? "text-primary dark:text-purple-400"
+                                : "text-ink-soft group-hover:text-primary dark:group-hover:text-purple-300"
+                            }`}
+                          />
+                          <span>{item.name}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {item.badge && (
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-amber-500/20 text-amber-500 dark:text-amber-300 border border-amber-500/30">
+                              {item.badge}
+                            </span>
+                          )}
+                          <svg
+                            className={`w-4 h-4 text-ink-soft transition-transform duration-200 ${
+                              isDropdownOpen ? "rotate-180 text-primary dark:text-purple-400" : ""
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </button>
+
+                      {/* Dropdown Options */}
+                      {isDropdownOpen && (
+                        <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-primary/20 dark:border-purple-500/20 ml-5 my-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                          {item.children.map((child) => {
+                            const isChildActive =
+                              child.href === "/dashboard/vocabulary"
+                                ? pathname === "/dashboard/vocabulary"
+                                : pathname === child.href || pathname?.startsWith(child.href);
+
+                            const SubIcon = child.icon;
+
+                            return (
+                              <Link
+                                key={child.name}
+                                href={child.href}
+                                onClick={() => setMobileOpen(false)}
+                                className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                                  isChildActive
+                                    ? "bg-primary text-white shadow-xs font-semibold"
+                                    : "text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/[0.05]"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  {SubIcon ? (
+                                    <SubIcon
+                                      className={`w-3.5 h-3.5 ${
+                                        isChildActive ? "text-white" : "text-ink-soft"
+                                      }`}
+                                    />
+                                  ) : (
+                                    <span
+                                      className={`w-1.5 h-1.5 rounded-full ${
+                                        isChildActive ? "bg-white" : "bg-ink-soft/50"
+                                      }`}
+                                    />
+                                  )}
+                                  <span>{child.name}</span>
+                                </div>
+
+                                {child.badge && (
+                                  <span
+                                    className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
+                                      isChildActive
+                                        ? "bg-white/20 text-white"
+                                        : "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
+                                    }`}
+                                  >
+                                    {child.badge}
+                                  </span>
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                // Regular Nav Item
                 const isActive =
                   pathname === item.href ||
-                  (item.href !== "/dashboard" && pathname?.startsWith(item.href));
-                const Icon = item.icon;
+                  (item.href !== "/dashboard" && pathname?.startsWith(item.href || ""));
 
                 return (
                   <Link
                     key={item.name}
-                    href={item.href}
+                    href={item.href || "#"}
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 group ${
                       isActive
