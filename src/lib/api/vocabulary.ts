@@ -561,6 +561,20 @@ function filterAndSortList(
     filtered = filtered.filter((item) => item.isFavorite || item.isFavourate);
   }
 
+  if (options.todayOnly) {
+    const today = new Date();
+    filtered = filtered.filter((item) => {
+      const dateStr = item.createdAt || item.updatedAt;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return (
+        d.getFullYear() === today.getFullYear() &&
+        d.getMonth() === today.getMonth() &&
+        d.getDate() === today.getDate()
+      );
+    });
+  }
+
   if (options.sortBy === "alphabetical") {
     filtered.sort((a, b) => a.word.word.localeCompare(b.word.word));
   } else if (options.sortBy === "mastery") {

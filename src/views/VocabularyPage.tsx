@@ -56,6 +56,7 @@ import {
   Keyboard,
   LayoutGrid,
   Table,
+  Clock,
 } from "lucide-react";
 
 const POS_COLORS: Record<
@@ -151,6 +152,7 @@ export default function VocabularyPage() {
   const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">("ALL");
   const [selectedSort, setSelectedSort] = useState<"recent" | "alphabetical" | "mastery">("recent");
   const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false);
+  const [todayOnly, setTodayOnly] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [playingWord, setPlayingWord] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState<boolean>(false);
@@ -200,7 +202,7 @@ export default function VocabularyPage() {
 
   useEffect(() => {
     loadVocabularies();
-  }, [searchQuery, selectedPos, selectedSort, favoritesOnly]);
+  }, [searchQuery, selectedPos, selectedSort, favoritesOnly, todayOnly]);
 
   // Handle Fullscreen Scroll Lock & Keyboard Navigation
   useEffect(() => {
@@ -251,6 +253,7 @@ export default function VocabularyPage() {
         partOfSpeech: selectedPos,
         sortBy: selectedSort,
         favoritesOnly,
+        todayOnly,
       });
       setVocabularies(items);
     } catch (err) {
@@ -620,6 +623,17 @@ export default function VocabularyPage() {
     const favorites = vocabularies.filter((v) => v.isFavorite || v.isFavourate).length;
     const posCounts: Partial<Record<PartOfSpeech, number>> = {};
     let masteredCount = 0;
+    const today = new Date();
+    const todayCount = vocabularies.filter((v) => {
+      const d = v.createdAt || v.updatedAt;
+      if (!d) return false;
+      const date = new Date(d);
+      return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+    }).length;
 
     vocabularies.forEach((v) => {
       const pos = v.word.partOfSpeech;
@@ -627,7 +641,7 @@ export default function VocabularyPage() {
       if ((v.masteryLevel || 0) >= 4 || v.status === "MASTERED") masteredCount++;
     });
 
-    return { total, favorites, posCounts, masteredCount };
+    return { total, favorites, todayCount, posCounts, masteredCount };
   }, [vocabularies]);
 
   // Active fullscreen vocabulary object & index
@@ -762,6 +776,33 @@ export default function VocabularyPage() {
               <span>Favorites</span>
             </button>
 
+            <button
+              onClick={() => setTodayOnly(!todayOnly)}
+              className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${
+                todayOnly
+                  ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
+              }`}
+            >
+              <Clock
+                className={`w-4 h-4 ${
+                  todayOnly ? "text-indigo-500" : "text-slate-400"
+                }`}
+              />
+              <span>Today&apos;s Words</span>
+              {stats.todayCount > 0 && (
+                <span
+                  className={`ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold ${
+                    todayOnly
+                      ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  {stats.todayCount}
+                </span>
+              )}
+            </button>
+
             <select
               value={selectedSort}
               onChange={(e) => setSelectedSort(e.target.value as any)}
@@ -863,24 +904,25 @@ export default function VocabularyPage() {
               No Vocabulary Found
             </h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
-              {searchQuery || selectedPos !== "ALL" || favoritesOnly
+              {searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly
                 ? "No words matched your current search or filter criteria. Try resetting filters."
                 : "You haven't added any words to your vault yet. Add a word to generate with AI!"}
             </p>
           </div>
           <button
             onClick={() => {
-              if (searchQuery || selectedPos !== "ALL" || favoritesOnly) {
+              if (searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly) {
                 setSearchQuery("");
                 setSelectedPos("ALL");
                 setFavoritesOnly(false);
+                setTodayOnly(false);
               } else {
                 setIsModalOpen(true);
               }
             }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md transition-colors cursor-pointer"
           >
-            {searchQuery || selectedPos !== "ALL" || favoritesOnly ? (
+            {searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly ? (
               <>
                 <RefreshCw className="w-4 h-4" />
                 Reset Filters

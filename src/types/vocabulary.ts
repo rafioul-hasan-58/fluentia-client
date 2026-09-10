@@ -78,6 +78,7 @@ export interface VocabularyFilterOptions {
   partOfSpeech?: PartOfSpeech | "ALL";
   sortBy?: "recent" | "alphabetical" | "mastery";
   favoritesOnly?: boolean;
+  todayOnly?: boolean;
 }
 
 export function getWordRelationText(item: string | WordRelationItem | any): string {
