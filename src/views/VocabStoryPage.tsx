@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
   Sparkles,
@@ -109,6 +110,7 @@ function renderHighlightedStory(text: string, keywords: string[]) {
 }
 
 export default function VocabStoryPage() {
+  const router = useRouter();
   const [stories, setStories] = useState<VocabStoryItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -341,16 +343,14 @@ export default function VocabStoryPage() {
 
             <button
               onClick={() => {
-                setNewlyCreatedStory(null);
-                setGenerationError(null);
-                setIsGenerateModalOpen(true);
+                router.push("/dashboard/vocabulary?mode=create-story");
               }}
               className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-amber-200" />
-              <span>Generate New Story</span>
+              <span>Create Story</span>
             </button>
-          </div>
+          </div>  
         </div>
 
         {/* Quick Stats Strip */}
@@ -460,7 +460,7 @@ export default function VocabStoryPage() {
               if (searchQuery) {
                 setSearchQuery("");
               } else {
-                setIsGenerateModalOpen(true);
+                router.push("/dashboard/vocabulary?mode=create-story");
               }
             }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs sm:text-sm font-bold shadow-md transition cursor-pointer"
@@ -472,8 +472,8 @@ export default function VocabStoryPage() {
               </>
             ) : (
               <>
-                <Plus className="w-4 h-4" />
-                <span>Create Your First Story</span>
+                <Sparkles className="w-4 h-4" />
+                <span>Create Story</span>
               </>
             )}
           </button>

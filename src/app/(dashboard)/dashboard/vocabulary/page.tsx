@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import VocabularyPage from "@/views/VocabularyPage";
 
@@ -10,7 +11,9 @@ export const metadata: Metadata = {
 export default function VocabularyRoute() {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-      <VocabularyPage />
+      <Suspense fallback={null}>
+        <VocabularyPage />
+      </Suspense>
     </main>
   );
 }
