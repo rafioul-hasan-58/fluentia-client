@@ -22,6 +22,10 @@ import {
   ChevronRight,
   Eye,
   Minimize2,
+  Clock,
+  Columns,
+  ListFilter,
+  CheckCircle2,
 } from "lucide-react";
 import {
   VocabStoryItem,
@@ -34,6 +38,75 @@ import {
   fetchMyVocabularies,
 } from "@/lib/api/vocabulary";
 
+// Helper to highlight and underline target vocabulary keywords within story text
+function renderHighlightedStory(text: string, keywords: string[]) {
+  if (!text) return null;
+  if (!keywords || keywords.length === 0) {
+    return text.split("\n\n").map((para, i) => (
+      <p key={i} className="mb-4 last:mb-0 leading-relaxed sm:leading-8">
+        {para}
+      </p>
+    ));
+  }
+
+  // Filter and sort keywords by length descending so multi-word or longer keywords match first
+  const validKeywords = keywords
+    .map((k) => k.trim())
+    .filter((k) => k.length > 0)
+    .sort((a, b) => b.length - a.length);
+
+  if (validKeywords.length === 0) {
+    return text.split("\n\n").map((para, i) => (
+      <p key={i} className="mb-4 last:mb-0 leading-relaxed sm:leading-8">
+        {para}
+      </p>
+    ));
+  }
+
+  const escaped = validKeywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  // Match keyword with possible inflectional variations (s, es, ed, d, ing, ly)
+  const regex = new RegExp(`\\b(${escaped.join("|")})(?:s|es|ed|d|ing|ly)?\\b`, "gi");
+
+  // Split into paragraphs for editorial reading rhythm
+  const paragraphs = text.split(/\n+/);
+
+  return paragraphs.map((paragraph, pIdx) => {
+    const parts: (string | React.ReactNode)[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    // Reset regex index for each paragraph
+    regex.lastIndex = 0;
+
+    while ((match = regex.exec(paragraph)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(paragraph.substring(lastIndex, match.index));
+      }
+      const matchedWord = match[0];
+      parts.push(
+        <span
+          key={`match-${pIdx}-${match.index}-${matchedWord}`}
+          className="font-bold underline decoration-amber-500/90 dark:decoration-amber-400 decoration-[2.5px] underline-offset-4 text-amber-950 dark:text-amber-200 bg-amber-500/15 dark:bg-amber-400/20 px-1.5 py-0.5 rounded-md transition-all duration-150 hover:bg-amber-500/25 inline-block mx-0.5 shadow-2xs"
+          title={`Target Keyword: ${matchedWord}`}
+        >
+          {matchedWord}
+        </span>
+      );
+      lastIndex = match.index + matchedWord.length;
+    }
+
+    if (lastIndex < paragraph.length) {
+      parts.push(paragraph.substring(lastIndex));
+    }
+
+    return (
+      <p key={`p-${pIdx}`} className="mb-4 sm:mb-5 last:mb-0 leading-relaxed sm:leading-8 text-slate-800 dark:text-slate-200">
+        {parts}
+      </p>
+    );
+  });
+}
+
 export default function VocabStoryPage() {
   const [stories, setStories] = useState<VocabStoryItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -43,7 +116,7 @@ export default function VocabStoryPage() {
 
   // Fullscreen / Detailed View Modal State
   const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"bangla" | "english">("bangla");
+  const [viewTab, setViewTab] = useState<"bangla" | "english" | "split">("bangla");
 
   // Deletion Modal State
   const [storyToDelete, setStoryToDelete] = useState<VocabStoryItem | null>(null);
@@ -510,56 +583,58 @@ export default function VocabStoryPage() {
         </div>
       )}
 
-      {/* 4. Fullscreen Detailed View Modal */}
+      {/* 4. Professional Detailed View Modal (Fullscreen Reader) */}
       {isMounted &&
         activeStory &&
         createPortal(
-          <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col overflow-hidden animate-in fade-in duration-200">
-            {/* Top Bar */}
-            <div className="shrink-0 w-full px-5 sm:px-8 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 z-30">
-              {/* Left: Exit & Counter */}
-              <div className="flex items-center gap-3">
+          <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100/95 dark:bg-[#0c0a17]/95 backdrop-blur-md text-slate-900 dark:text-white flex flex-col overflow-hidden animate-in fade-in duration-200">
+            {/* Top Navigation & Controls Bar */}
+            <div className="shrink-0 w-full px-4 sm:px-8 py-3 bg-white/90 dark:bg-[#131024]/90 border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 sm:gap-4 z-30 shadow-xs">
+              {/* Left: Breadcrumbs / Back & Story Counter */}
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => setActiveStoryId(null)}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700/60"
                 >
-                  <Minimize2 className="w-3.5 h-3.5" />
-                  <span>Exit Details</span>
+                  <ChevronLeft className="w-4 h-4" />
+                  <span className="hidden xs:inline">Back</span>
                 </button>
 
-                <div className="hidden sm:flex items-center gap-2 text-xs">
+                <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+
+                <div className="flex items-center gap-2 text-xs">
                   <span className="font-semibold text-slate-600 dark:text-slate-400">
-                    Story {activeStoryIndex + 1} of {stories.length}
+                    Story <span className="font-bold text-amber-600 dark:text-amber-400">#{activeStoryIndex + 1}</span> of {stories.length}
                   </span>
                 </div>
               </div>
 
-              {/* Center: Navigation Controls */}
-              <div className="flex items-center gap-1.5">
+              {/* Center: Story Navigation Controls */}
+              <div className="flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-800/60 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60">
                 <button
                   onClick={() => navigateStory(-1)}
                   title="Previous Story (← Arrow key)"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer shadow-2xs"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Prev</span>
                 </button>
 
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-2 font-mono">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 px-1.5 font-mono">
                   {activeStoryIndex + 1} / {stories.length}
                 </span>
 
                 <button
                   onClick={() => navigateStory(1)}
                   title="Next Story (→ Arrow key)"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer shadow-2xs"
                 >
                   <span className="hidden sm:inline">Next</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              {/* Right: Quick Actions & Close */}
+              {/* Right: Copy All, Delete & Close */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() =>
@@ -570,7 +645,7 @@ export default function VocabStoryPage() {
                     )
                   }
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-semibold transition-colors cursor-pointer border border-amber-500/30"
-                  title="Copy complete bilingual story"
+                  title="Copy full story content"
                 >
                   {copiedState?.id === activeStory.id && copiedState?.type === "all" ? (
                     <>
@@ -588,63 +663,72 @@ export default function VocabStoryPage() {
                 <button
                   onClick={() => setStoryToDelete(activeStory)}
                   title="Delete story"
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer border border-transparent hover:border-rose-500/20"
+                  className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer border border-transparent hover:border-rose-500/20"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
 
                 <button
                   onClick={() => setActiveStoryId(null)}
-                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
-                  title="Close (Esc)"
+                  className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                  title="Close Reader (Esc)"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Detailed Content Scrollable Area */}
-            <div className="flex-1 w-full overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl mx-auto">
-              {/* Header Hero */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#141226] border border-slate-200/80 dark:border-white/10 shadow-sm space-y-4">
+            {/* Main Editorial Scrollable Area */}
+            <div className="flex-1 w-full overflow-y-auto p-4 sm:p-6 lg:p-10 space-y-6 max-w-5xl mx-auto">
+              {/* 1. Story Header Editorial Card */}
+              <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-[#141226] border border-slate-200/90 dark:border-white/10 p-6 sm:p-8 shadow-sm space-y-5">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-bold border border-amber-500/20 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>AI Generated Story</span>
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                      <span>AI Storyteller</span>
                     </span>
                     <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-xs font-bold border border-indigo-500/20">
                       {activeStory.usedVocabulary?.length || 0} Target Words
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>
-                      Created on{" "}
-                      {new Date(activeStory.createdAt).toLocaleDateString(undefined, {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                  <div className="flex items-center gap-4 text-xs text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>~1 min read</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>
+                        {new Date(activeStory.createdAt).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
                     </span>
                   </div>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight capitalize">
+                {/* Main Story Title */}
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight capitalize font-brand">
                   {activeStory.title || "Vocabulary Story"}
                 </h1>
 
-                {/* Target Words Pill Strip */}
+                {/* Target Words Underlined Pill Strip */}
                 <div className="space-y-2 pt-2">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Target Vocabulary Words:
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Target Vocabulary in this Story (Underlined below):</span>
+                    </p>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {activeStory.usedVocabulary.map((word) => (
                       <span
                         key={word}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-xs sm:text-sm font-bold border border-indigo-500/20 capitalize shadow-2xs"
+                        className="px-3 py-1.5 rounded-xl bg-amber-500/10 dark:bg-amber-400/15 text-amber-900 dark:text-amber-200 text-xs sm:text-sm font-bold border border-amber-500/30 capitalize underline decoration-amber-500/80 decoration-2 underline-offset-4 shadow-2xs"
                       >
                         {word}
                       </span>
@@ -653,13 +737,13 @@ export default function VocabStoryPage() {
                 </div>
               </div>
 
-              {/* View Switcher Tabs (Desktop / Mobile Friendly) */}
-              <div className="flex items-center justify-between gap-4">
+              {/* 2. Reader View Mode Switcher (Bangla / English / Side-by-Side) */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="inline-flex p-1.5 rounded-2xl bg-slate-200/80 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800">
                   <button
-                    onClick={() => setActiveTab("bangla")}
-                    className={`flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                      activeTab === "bangla"
+                    onClick={() => setViewTab("bangla")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      viewTab === "bangla"
                         ? "bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-300 shadow-sm"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
@@ -667,69 +751,166 @@ export default function VocabStoryPage() {
                     <span>🇧🇩 Bangla-English Mixed</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab("english")}
-                    className={`flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                      activeTab === "english"
+                    onClick={() => setViewTab("english")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      viewTab === "english"
                         ? "bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 shadow-sm"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
-                    <span>🇬🇧 Full English Story</span>
+                    <span>🇬🇧 Full English Narrative</span>
+                  </button>
+                  <button
+                    onClick={() => setViewTab("split")}
+                    className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      viewTab === "split"
+                        ? "bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-sm"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Columns className="w-3.5 h-3.5" />
+                    <span>Side-by-Side View</span>
                   </button>
                 </div>
 
-                <button
-                  onClick={() =>
-                    handleCopy(
-                      activeStory.id,
-                      activeTab === "bangla" ? activeStory.storyBangla : activeStory.storyEnglish,
-                      activeTab
-                    )
-                  }
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-xs"
-                >
-                  {copiedState?.id === activeStory.id && copiedState?.type === activeTab ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy Current Story</span>
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-slate-400 hidden sm:inline">
+                    💡 Keywords are <span className="font-bold underline decoration-amber-500 underline-offset-4 text-amber-600 dark:text-amber-400">underlined</span> for quick recognition
+                  </span>
+                </div>
               </div>
 
-              {/* Story Narrative Box */}
-              {activeTab === "bangla" ? (
-                <div className="p-6 sm:p-8 rounded-3xl bg-amber-50/50 dark:bg-amber-950/15 border border-amber-500/20 space-y-4 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-amber-500/15 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">🇧🇩</span>
-                      <h3 className="font-bold text-amber-900 dark:text-amber-200 text-sm sm:text-base">
-                        Bangla-English Contextual Narrative
-                      </h3>
+              {/* 3. Story Reader Container */}
+              {viewTab === "bangla" ? (
+                /* Single View: Bangla-English Mixed */
+                <div className="p-6 sm:p-10 rounded-3xl bg-white dark:bg-[#141226] border border-amber-500/25 dark:border-amber-500/20 space-y-6 shadow-sm relative overflow-hidden">
+                  {/* Subtle decorative glow */}
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
+
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-2xl">🇧🇩</span>
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
+                          Bangla-English Mixed Narrative
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Contextual storytelling blending natural Bangla with your English target words
+                        </p>
+                      </div>
                     </div>
+
+                    <button
+                      onClick={() => handleCopy(activeStory.id, activeStory.storyBangla, "bangla")}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
+                    >
+                      {copiedState?.id === activeStory.id && copiedState?.type === "bangla" ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy Story</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 leading-relaxed sm:leading-loose whitespace-pre-line font-sans">
-                    {activeStory.storyBangla}
-                  </p>
+
+                  {/* Story Text with Highlighted/Underlined Keywords */}
+                  <div className="text-base sm:text-lg text-slate-800 dark:text-slate-200 font-sans">
+                    {renderHighlightedStory(activeStory.storyBangla, activeStory.usedVocabulary)}
+                  </div>
+                </div>
+              ) : viewTab === "english" ? (
+                /* Single View: Full English */
+                <div className="p-6 sm:p-10 rounded-3xl bg-white dark:bg-[#141226] border border-indigo-500/25 dark:border-indigo-500/20 space-y-6 shadow-sm relative overflow-hidden">
+                  {/* Subtle decorative glow */}
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
+
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-2xl">🇬🇧</span>
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
+                          Natural Full English Narrative
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Complete English prose incorporating your target vocabulary words smoothly
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleCopy(activeStory.id, activeStory.storyEnglish, "english")}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
+                    >
+                      {copiedState?.id === activeStory.id && copiedState?.type === "english" ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy Story</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Story Text with Highlighted/Underlined Keywords */}
+                  <div className="text-base sm:text-lg text-slate-800 dark:text-slate-200 font-sans">
+                    {renderHighlightedStory(activeStory.storyEnglish, activeStory.usedVocabulary)}
+                  </div>
                 </div>
               ) : (
-                <div className="p-6 sm:p-8 rounded-3xl bg-indigo-50/50 dark:bg-indigo-950/15 border border-indigo-500/20 space-y-4 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-indigo-500/15 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">🇬🇧</span>
-                      <h3 className="font-bold text-indigo-900 dark:text-indigo-200 text-sm sm:text-base">
-                        Natural Full English Narrative
-                      </h3>
+                /* Side-by-Side Dual View */
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left: Bangla-English Mixed */}
+                  <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#141226] border border-amber-500/25 space-y-5 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🇧🇩</span>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+                          Bangla-English Mixed
+                        </h3>
+                      </div>
+                      <button
+                        onClick={() => handleCopy(activeStory.id, activeStory.storyBangla, "bangla")}
+                        className="text-xs text-amber-600 dark:text-amber-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                    <div className="text-sm sm:text-base text-slate-800 dark:text-slate-200">
+                      {renderHighlightedStory(activeStory.storyBangla, activeStory.usedVocabulary)}
                     </div>
                   </div>
-                  <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 leading-relaxed sm:leading-loose whitespace-pre-line font-sans">
-                    {activeStory.storyEnglish}
-                  </p>
+
+                  {/* Right: Full English */}
+                  <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#141226] border border-indigo-500/25 space-y-5 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🇬🇧</span>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+                          Full English Prose
+                        </h3>
+                      </div>
+                      <button
+                        onClick={() => handleCopy(activeStory.id, activeStory.storyEnglish, "english")}
+                        className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                    <div className="text-sm sm:text-base text-slate-800 dark:text-slate-200">
+                      {renderHighlightedStory(activeStory.storyEnglish, activeStory.usedVocabulary)}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -861,15 +1042,15 @@ export default function VocabStoryPage() {
                         </>
                       ) : (
                         <>
-                          <Copy className="w-3 h-3" />
+                          <Copy className="w-3.5 h-3.5" />
                           <span>Copy</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-4">
-                    {newlyCreatedStory.storyBangla}
-                  </p>
+                  <div className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-4">
+                    {renderHighlightedStory(newlyCreatedStory.storyBangla, newlyCreatedStory.usedVocabulary)}
+                  </div>
                 </div>
 
                 {/* Action Buttons */}
