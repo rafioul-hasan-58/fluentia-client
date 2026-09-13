@@ -7,6 +7,9 @@ import {
   GenerateVocabularyDto,
   GenerateVocabularyResponse,
   VocabularyFilterOptions,
+  getCollocationText,
+  getCollocationBangla,
+  getCollocationExample,
 } from "@/types/vocabulary";
 import { getApiBaseUrl } from "./config";
 
@@ -264,6 +267,76 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
     createdAt: new Date(Date.now() - 3600 * 1000 * 24 * 4).toISOString(),
     updatedAt: new Date(Date.now() - 3600 * 1000 * 24 * 4).toISOString(),
   },
+  {
+    id: "vocab-5",
+    wordId: "word-5",
+    userId: "user-default",
+    word: {
+      id: "word-5",
+      word: "Soothe",
+      meaning: "Gently calm a person or their feelings, or relieve pain, distress, or discomfort.",
+      banglaMeaning: "শান্ত করা, প্রশমিত করা বা ব্যথা-বেদনা উপশম করা",
+      banglaPronunciation: "সুদ",
+      partOfSpeech: "VERB",
+      collocations: [
+        {
+          collocation: "soothe a baby",
+          banglaMeaning: "শিশুকে শান্ত করা বা কান্না থামানো",
+          exampleSentence: "She sang a gentle lullaby to soothe a crying baby.",
+        },
+        {
+          collocation: "soothe feelings",
+          banglaMeaning: "মন বা অনুভূতি শান্ত করা / আশ্বস্ত করা",
+          exampleSentence: "A sincere apology helped soothe hurt feelings after the argument.",
+        },
+        {
+          collocation: "soothe the pain",
+          banglaMeaning: "ব্যথা উপশম করা বা কমানো",
+          exampleSentence: "Applying a cold compress will help soothe the pain quickly.",
+        },
+        {
+          collocation: "soothe the nerves",
+          banglaMeaning: "স্নায়ু বা মানসিক উদ্বেগ শান্ত করা",
+          exampleSentence: "Drinking chamomile tea can soothe frayed nerves after a stressful day.",
+        },
+        {
+          collocation: "soothe irritation",
+          banglaMeaning: "ত্বক বা কণ্ঠনালীর অস্বস্তি কমানো",
+          exampleSentence: "Aloe vera gel helps soothe skin irritation and sunburn.",
+        },
+      ],
+      exampleSentences: [
+        "The mother rocked the baby gently to soothe her to sleep.",
+        "A warm bath can help soothe tired muscles after strenuous exercise.",
+        "His reassuring words did much to soothe the anxious crowd.",
+      ],
+      wordFamily: [
+        { word: "soothing", partOfSpeech: "ADJECTIVE" },
+        { word: "soothingly", partOfSpeech: "ADVERB" },
+      ],
+      synonyms: [
+        { word: "calm", partOfSpeech: "VERB" },
+        { word: "comfort", partOfSpeech: "VERB" },
+        { word: "relieve", partOfSpeech: "VERB" },
+        { word: "pacify", partOfSpeech: "VERB" },
+      ],
+      antonyms: [
+        { word: "irritate", partOfSpeech: "VERB" },
+        { word: "aggravate", partOfSpeech: "VERB" },
+        { word: "upset", partOfSpeech: "VERB" },
+      ],
+      ipa: "/suːð/",
+      englishLevel: "B2",
+      cefrLevel: "B2",
+    },
+    mySentences: ["Listening to soft acoustic music helps soothe my mind after intensive study."],
+    notes: "Essential IELTS vocabulary for emotions, health, and wellbeing topics.",
+    status: "LEARNING",
+    masteryLevel: 4,
+    isFavorite: false,
+    createdAt: new Date(Date.now() - 3600 * 1000 * 24 * 1).toISOString(),
+    updatedAt: new Date(Date.now() - 3600 * 1000 * 24 * 1).toISOString(),
+  },
 ];
 
 /**
@@ -289,34 +362,57 @@ const getLocalVault = (): MyVocabularyItem[] => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Upgrade legacy cached items if they lack rich collocation details (e.g. for Significant)
+        // Upgrade legacy cached items if they lack rich collocation details (e.g. for Significant or Soothe)
         let hasUpgraded = false;
         const upgraded = parsed.map((item: MyVocabularyItem) => {
+          if (!item || !item.word) return item;
+
           const seedMatch = SEED_VOCABULARY.find(
             (s) => s.word?.word?.toLowerCase() === item.word?.word?.toLowerCase()
           );
-          if (seedMatch) {
-            const hasLegacyCollocations =
-              !item.word.collocations ||
-              item.word.collocations.length === 0 ||
-              typeof item.word.collocations[0] === "string" ||
-              !item.word.collocations.some(
-                (c: any) =>
-                  typeof c === "object" &&
-                  (c.collocation === "significant amount" || c.banglaMeaning || c.exampleSentence)
-              );
 
-            if (hasLegacyCollocations && seedMatch.word.collocations) {
-              hasUpgraded = true;
-              return {
-                ...item,
-                word: {
-                  ...item.word,
-                  collocations: seedMatch.word.collocations,
-                },
-              };
-            }
+          const hasUnenrichedCollocations =
+            !item.word.collocations ||
+            item.word.collocations.length === 0 ||
+            item.word.collocations.some(
+              (c: any) =>
+                typeof c === "string" ||
+                !c.banglaMeaning ||
+                !c.exampleSentence
+            );
+
+          if (seedMatch && seedMatch.word.collocations && hasUnenrichedCollocations) {
+            hasUpgraded = true;
+            return {
+              ...item,
+              word: {
+                ...item.word,
+                collocations: seedMatch.word.collocations,
+              },
+            };
           }
+
+          if (hasUnenrichedCollocations && Array.isArray(item.word.collocations)) {
+            hasUpgraded = true;
+            const enriched = item.word.collocations.map((c: any) => {
+              const text = getCollocationText(c);
+              const bangla = getCollocationBangla(c, item.word);
+              const example = getCollocationExample(c, item.word);
+              return {
+                collocation: text,
+                banglaMeaning: bangla,
+                exampleSentence: example,
+              };
+            });
+            return {
+              ...item,
+              word: {
+                ...item.word,
+                collocations: enriched,
+              },
+            };
+          }
+
           return item;
         });
 
@@ -356,7 +452,18 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
     banglaMeaning: data.banglaMeaning || "",
     banglaPronunciation: data.banglaPronunciation || "",
     partOfSpeech: (data.partOfSpeech as PartOfSpeech) || "NOUN",
-    collocations: Array.isArray(data.collocations) ? data.collocations : [],
+    collocations: Array.isArray(data.collocations)
+      ? data.collocations.map((col: any) => {
+          const colText = getCollocationText(col);
+          const bangla = getCollocationBangla(col, data);
+          const example = getCollocationExample(col, data);
+          return {
+            collocation: colText,
+            banglaMeaning: bangla,
+            exampleSentence: example,
+          };
+        })
+      : [],
     exampleSentences: Array.isArray(data.exampleSentences) ? data.exampleSentences : [],
     wordFamily: Array.isArray(data.wordFamily) ? data.wordFamily : [],
     synonyms: Array.isArray(data.synonyms) ? data.synonyms : [],
@@ -535,6 +642,60 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
         { word: "hesitant", partOfSpeech: "ADJECTIVE" },
       ],
       ipa: "/ˈel.ə.kwənt/",
+      englishLevel: "B2",
+      cefrLevel: "B2",
+    },
+    soothe: {
+      meaning: "Gently calm a person or their feelings, or relieve pain, distress, or discomfort.",
+      banglaMeaning: "শান্ত করা, প্রশমিত করা বা ব্যথা-বেদনা উপশম করা",
+      banglaPronunciation: "সুদ",
+      partOfSpeech: "VERB",
+      collocations: [
+        {
+          collocation: "soothe a baby",
+          banglaMeaning: "শিশুকে শান্ত করা বা কান্না থামানো",
+          exampleSentence: "She sang a gentle lullaby to soothe a crying baby.",
+        },
+        {
+          collocation: "soothe feelings",
+          banglaMeaning: "মন বা অনুভূতি শান্ত করা / আশ্বস্ত করা",
+          exampleSentence: "A sincere apology helped soothe hurt feelings after the argument.",
+        },
+        {
+          collocation: "soothe the pain",
+          banglaMeaning: "ব্যথা উপশম করা বা কমানো",
+          exampleSentence: "Applying a cold compress will help soothe the pain quickly.",
+        },
+        {
+          collocation: "soothe the nerves",
+          banglaMeaning: "স্নায়ু বা মানসিক উদ্বেগ শান্ত করা",
+          exampleSentence: "Drinking chamomile tea can soothe frayed nerves after a stressful day.",
+        },
+        {
+          collocation: "soothe irritation",
+          banglaMeaning: "ত্বক বা কণ্ঠনালীর অস্বস্তি কমানো",
+          exampleSentence: "Aloe vera gel helps soothe skin irritation and sunburn.",
+        },
+      ],
+      exampleSentences: [
+        "The mother rocked the baby gently to soothe her to sleep.",
+        "A warm bath can help soothe tired muscles after strenuous exercise.",
+        "His reassuring words did much to soothe the anxious crowd.",
+      ],
+      wordFamily: [
+        { word: "soothing", partOfSpeech: "ADJECTIVE" },
+        { word: "soothingly", partOfSpeech: "ADVERB" },
+      ],
+      synonyms: [
+        { word: "calm", partOfSpeech: "VERB" },
+        { word: "comfort", partOfSpeech: "VERB" },
+        { word: "relieve", partOfSpeech: "VERB" },
+      ],
+      antonyms: [
+        { word: "irritate", partOfSpeech: "VERB" },
+        { word: "aggravate", partOfSpeech: "VERB" },
+      ],
+      ipa: "/suːð/",
       englishLevel: "B2",
       cefrLevel: "B2",
     },

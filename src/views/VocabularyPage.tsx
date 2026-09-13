@@ -1911,8 +1911,18 @@ export default function VocabularyPage() {
                         {activeFullscreenVocab.word.collocations.map((col, idx) => {
                           const colText = getCollocationText(col);
                           const meaning = getCollocationMeaning(col);
-                          const bangla = getCollocationBangla(col);
-                          const example = getCollocationExample(col);
+                          const rawBangla = getCollocationBangla(col, activeFullscreenVocab.word);
+                          const rawExample = getCollocationExample(col, activeFullscreenVocab.word);
+
+                          const bangla =
+                            rawBangla ||
+                            (activeFullscreenVocab.word.banglaMeaning
+                              ? `${activeFullscreenVocab.word.banglaMeaning.split(/[,/]/)[0].trim()} সম্পর্কিত ভাবার্থ`
+                              : `${colText}-এর বাংলা ভাবার্থ`);
+
+                          const example =
+                            rawExample ||
+                            `Using "${colText}" helps express ideas naturally in practical English.`;
 
                           return (
                             <div
