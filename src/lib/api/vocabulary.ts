@@ -830,6 +830,7 @@ export async function fetchMyVocabularies(
       if (Array.isArray(rawList) && rawList.length > 0) {
         const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
           ...item,
+          id: item.id || item._id,
           status: item.vocabularyStatus || item.status || "LEARNING",
           vocabularyStatus: item.vocabularyStatus || item.status || "LEARNING",
           isFavorite: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
@@ -1163,13 +1164,15 @@ export async function updateMyVocabulary(
 
 /**
  * Delete word from user vault
+ * Endpoint: DELETE /api/v1/my-vocabularies/:id/remove
  */
 export async function deleteMyVocabulary(id: string): Promise<boolean> {
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 
   try {
-    let res = await fetch(`${baseUrl}/my-vocabularies/${id}/delete`, {
+    // 1. Primary backend endpoint: DELETE /my-vocabularies/:id/remove
+    let res = await fetch(`${baseUrl}/my-vocabularies/${id}/remove`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -1177,7 +1180,8 @@ export async function deleteMyVocabulary(id: string): Promise<boolean> {
       },
     });
 
-    if (!res.ok) {
+    // 2. Fallback to direct DELETE /my-vocabularies/:id if /remove returned 404
+    if (!res.ok && res.status === 404) {
       res = await fetch(`${baseUrl}/my-vocabularies/${id}`, {
         method: "DELETE",
         headers: {
@@ -1187,19 +1191,15 @@ export async function deleteMyVocabulary(id: string): Promise<boolean> {
       });
     }
 
-    if (!res.ok) {
-      await fetch(`${baseUrl}/vocabularies/my/${id}`, {
-        method: "DELETE",
-        headers: {
-          Accept: "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+    if (!res.ok && res.status !== 404) {
+      const errData = await res.json().catch(() => null);
+      console.warn("Failed to remove vocabulary from vault:", errData?.message || res.statusText);
     }
-  } catch {
-    // Fallback to local
+  } catch (err) {
+    console.warn("Network error removing vocabulary from vault:", err);
   }
 
+  // Update local vault cache
   const vault = getLocalVault();
   const updated = vault.filter((item) => item.id !== id);
   saveLocalVault(updated);
