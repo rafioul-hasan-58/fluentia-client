@@ -18,6 +18,7 @@ export interface WordRelationItem {
 
 export interface CollocationItem {
   collocation: string;
+  meaning?: string;
   banglaMeaning?: string;
   exampleSentence?: string;
 }
@@ -153,6 +154,11 @@ export function getCollocationText(item: CollocationType | any): string {
   if (typeof item === "string") return item;
   if (typeof item === "object") return item.collocation || item.word || "";
   return String(item);
+}
+
+export function getCollocationMeaning(item: CollocationType | any): string {
+  if (!item || typeof item !== "object") return "";
+  return item.meaning || "";
 }
 
 export function getCollocationBangla(item: CollocationType | any): string {

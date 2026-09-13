@@ -25,7 +25,28 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       banglaMeaning: "সহনশীল, প্রতিকূলতা কাটিয়ে উঠতে সক্ষম বা স্থিতিস্থাপক",
       banglaPronunciation: "রেজিলিয়েন্ট",
       partOfSpeech: "ADJECTIVE",
-      collocations: ["resilient economy", "highly resilient", "remain resilient", "resilient nature"],
+      collocations: [
+        {
+          collocation: "resilient economy",
+          banglaMeaning: "সহনশীল অর্থনীতি",
+          exampleSentence: "The country built a resilient economy capable of withstanding global shocks.",
+        },
+        {
+          collocation: "highly resilient",
+          banglaMeaning: "অত্যন্ত সহনশীল",
+          exampleSentence: "Children are often highly resilient when facing change.",
+        },
+        {
+          collocation: "remain resilient",
+          banglaMeaning: "অবিচল বা দৃঢ় থাকা",
+          exampleSentence: "The medical team remained resilient during the crisis.",
+        },
+        {
+          collocation: "resilient nature",
+          banglaMeaning: "সহনশীল স্বভাব বা মানসিকতা",
+          exampleSentence: "Her resilient nature helped her overcome numerous challenges.",
+        },
+      ],
       exampleSentences: [
         "The local community showed a remarkably resilient spirit in rebuilding their town.",
         "Babies are often surprisingly resilient to temporary changes in routine.",
@@ -67,11 +88,31 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       banglaPronunciation: "সিগনিফিক্যান্ট",
       partOfSpeech: "ADJECTIVE",
       collocations: [
-        "significant increase",
-        "significant impact",
-        "significant difference",
-        "significant change",
-        "significant role",
+        {
+          collocation: "significant amount",
+          banglaMeaning: "উল্লেখযোগ্য পরিমাণ",
+          exampleSentence: "The project required a significant amount of time and resources.",
+        },
+        {
+          collocation: "significant increase",
+          banglaMeaning: "উল্লেখযোগ্য বৃদ্ধি",
+          exampleSentence: "There has been a significant increase in online learning worldwide.",
+        },
+        {
+          collocation: "significant impact",
+          banglaMeaning: "উল্লেখযোগ্য প্রভাব",
+          exampleSentence: "Technology has had a significant impact on modern education.",
+        },
+        {
+          collocation: "significant difference",
+          banglaMeaning: "উল্লেখযোগ্য পার্থক্য",
+          exampleSentence: "The study revealed a significant difference between the two test groups.",
+        },
+        {
+          collocation: "significant role",
+          banglaMeaning: "উল্লেখযোগ্য ভূমিকা",
+          exampleSentence: "Active vocabulary plays a significant role in fluent English communication.",
+        },
       ],
       exampleSentences: [
         "Technology has had a significant impact on education.",
@@ -115,7 +156,28 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       banglaMeaning: "বাস্তবধর্মী, বাস্তবসম্মত ও প্রয়োগবাদী",
       banglaPronunciation: "প্র্যাগম্যাটিক",
       partOfSpeech: "ADJECTIVE",
-      collocations: ["pragmatic approach", "pragmatic solution", "pragmatic view", "highly pragmatic"],
+      collocations: [
+        {
+          collocation: "pragmatic approach",
+          banglaMeaning: "বাস্তবধর্মী বা প্রয়োগবাদী দৃষ্টিভঙ্গি",
+          exampleSentence: "We need a pragmatic approach rather than endless philosophical debates.",
+        },
+        {
+          collocation: "pragmatic solution",
+          banglaMeaning: "বাস্তবসম্মত সমাধান",
+          exampleSentence: "The engineers devised a pragmatic solution to keep the project on track.",
+        },
+        {
+          collocation: "pragmatic view",
+          banglaMeaning: "বাস্তবমুখী মতামত",
+          exampleSentence: "She holds a pragmatic view on personal financial planning.",
+        },
+        {
+          collocation: "highly pragmatic",
+          banglaMeaning: "অত্যন্ত বাস্তববাদী",
+          exampleSentence: "His leadership style is highly pragmatic and result-oriented.",
+        },
+      ],
       exampleSentences: [
         "We need a pragmatic approach rather than endless philosophical debates.",
         "She made a pragmatic decision to postpone the trip until finances stabilized.",
@@ -156,7 +218,23 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       banglaMeaning: "ভাগ্যচক্রে অপ্রত্যাশিত সুখকর বা মূল্যবান আবিষ্কার",
       banglaPronunciation: "সেরেন্ডিপিটি",
       partOfSpeech: "NOUN",
-      collocations: ["pure serendipity", "stroke of serendipity", "moment of serendipity"],
+      collocations: [
+        {
+          collocation: "pure serendipity",
+          banglaMeaning: "সম্পূর্ণ আকস্মিক সৌভাগ্য",
+          exampleSentence: "Finding my future co-founder at the conference was pure serendipity.",
+        },
+        {
+          collocation: "stroke of serendipity",
+          banglaMeaning: "দৈব সৌভাগ্য বা অপ্রত্যাশিত প্রাপ্তি",
+          exampleSentence: "A stroke of serendipity led the researcher to discover the rare artifact.",
+        },
+        {
+          collocation: "moment of serendipity",
+          banglaMeaning: "অপ্রত্যাশিত আনন্দের মুহূর্ত",
+          exampleSentence: "Discovering this quiet library was a moment of serendipity.",
+        },
+      ],
       exampleSentences: [
         "Finding my current mentor at the tech conference was pure serendipity.",
         "Scientific breakthroughs often owe as much to serendipity as to methodical research.",
@@ -211,7 +289,41 @@ const getLocalVault = (): MyVocabularyItem[] => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        // Upgrade legacy cached items if they lack rich collocation details (e.g. for Significant)
+        let hasUpgraded = false;
+        const upgraded = parsed.map((item: MyVocabularyItem) => {
+          const seedMatch = SEED_VOCABULARY.find(
+            (s) => s.word?.word?.toLowerCase() === item.word?.word?.toLowerCase()
+          );
+          if (seedMatch) {
+            const hasLegacyCollocations =
+              !item.word.collocations ||
+              item.word.collocations.length === 0 ||
+              typeof item.word.collocations[0] === "string" ||
+              !item.word.collocations.some(
+                (c: any) =>
+                  typeof c === "object" &&
+                  (c.collocation === "significant amount" || c.banglaMeaning || c.exampleSentence)
+              );
+
+            if (hasLegacyCollocations && seedMatch.word.collocations) {
+              hasUpgraded = true;
+              return {
+                ...item,
+                word: {
+                  ...item.word,
+                  collocations: seedMatch.word.collocations,
+                },
+              };
+            }
+          }
+          return item;
+        });
+
+        if (hasUpgraded) {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(upgraded));
+        }
+        return upgraded;
       }
     }
   } catch (err) {
@@ -324,11 +436,31 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
       banglaPronunciation: "সিগনিফিক্যান্ট",
       partOfSpeech: "ADJECTIVE",
       collocations: [
-        "significant increase",
-        "significant impact",
-        "significant difference",
-        "significant change",
-        "significant role",
+        {
+          collocation: "significant amount",
+          banglaMeaning: "উল্লেখযোগ্য পরিমাণ",
+          exampleSentence: "The project required a significant amount of time and resources.",
+        },
+        {
+          collocation: "significant increase",
+          banglaMeaning: "উল্লেখযোগ্য বৃদ্ধি",
+          exampleSentence: "There has been a significant increase in online learning.",
+        },
+        {
+          collocation: "significant impact",
+          banglaMeaning: "উল্লেখযোগ্য প্রভাব",
+          exampleSentence: "Technology has had a significant impact on education.",
+        },
+        {
+          collocation: "significant difference",
+          banglaMeaning: "উল্লেখযোগ্য পার্থক্য",
+          exampleSentence: "The study revealed a significant difference between the two groups.",
+        },
+        {
+          collocation: "significant role",
+          banglaMeaning: "উল্লেখযোগ্য ভূমিকা",
+          exampleSentence: "Active vocabulary plays a significant role in fluent English.",
+        },
       ],
       exampleSentences: [
         "Technology has had a significant impact on education.",
