@@ -156,9 +156,25 @@ interface SidebarProps {
   setMobileOpen?: (open: boolean) => void;
 }
 
-export function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }: SidebarProps) {
+export function Sidebar({
+  mobileOpen: controlledMobileOpen,
+  setMobileOpen: setControlledMobileOpen,
+}: SidebarProps = {}) {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
+
+  const [internalMobileOpen, setInternalMobileOpen] = useState(false);
+  const isControlled = controlledMobileOpen !== undefined;
+  const mobileOpen = isControlled ? controlledMobileOpen : internalMobileOpen;
+  const setMobileOpen =
+    isControlled && setControlledMobileOpen
+      ? setControlledMobileOpen
+      : setInternalMobileOpen;
+
+  // Auto-close mobile drawer when route changes
+  React.useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({
     Vocabulary: true,
@@ -183,6 +199,59 @@ export function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }: Sideba
 
   return (
     <>
+      {/* Mobile Top App Bar / Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-[#070510]/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 z-30 flex items-center justify-between px-4 sm:px-6">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2.5 group"
+        >
+          <div className="relative w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-purple-500 p-0.5 shadow-xs group-hover:scale-105 transition-transform flex items-center justify-center">
+            <Image
+              src="/icon.png"
+              alt="Fluentia"
+              width={28}
+              height={28}
+              className="w-full h-full object-contain rounded-[10px]"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-brand text-base font-bold tracking-tight text-ink">
+              Fluentia
+            </span>
+            <span className="text-[9px] text-primary dark:text-purple-300 font-semibold font-brand -mt-1">
+              Learning Hub
+            </span>
+          </div>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          {((user?.streakDays !== undefined && user.streakDays > 0) ||
+            (user?.profile?.streakDays && user.profile.streakDays > 0)) && (
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 shadow-2xs">
+              🔥 {user.streakDays ?? user.profile?.streakDays}
+            </span>
+          )}
+
+          <ThemeToggle />
+
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="p-2 rounded-xl text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Open Navigation Menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
       {/* Mobile Backdrop */}
       {mobileOpen && (
         <div
@@ -193,7 +262,7 @@ export function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }: Sideba
 
       {/* Main Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-surface border-r border-slate-200 dark:border-white/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 max-w-[85vw] bg-white dark:bg-paper-card border-r border-slate-200 dark:border-white/10 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >

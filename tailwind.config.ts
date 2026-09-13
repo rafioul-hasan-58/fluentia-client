@@ -14,6 +14,8 @@ const config: Config = {
     extend: {
       colors: {
         paper: "var(--background)",
+        surface: "var(--surface)",
+        "surface-hover": "var(--surface-hover)",
         "paper-card": "var(--surface)",
         "paper-elevated": "var(--surface-hover)",
         border: "var(--border)",
