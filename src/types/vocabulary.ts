@@ -79,6 +79,7 @@ export interface VocabularyFilterOptions {
   sortBy?: "recent" | "alphabetical" | "mastery";
   favoritesOnly?: boolean;
   todayOnly?: boolean;
+  selectedDate?: string | null;
 }
 
 export interface GenerateVocabStoryDto {

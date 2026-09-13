@@ -20,7 +20,9 @@ import {
   updateMyVocabulary,
   deleteMyVocabulary,
   generateVocabStoryApi,
+  getDateWordCounts,
 } from "@/lib/api/vocabulary";
+import { VocabularyDatePicker } from "@/components/vocabulary/VocabularyDatePicker";
 import {
   Copy,
   Sparkles,
@@ -60,6 +62,7 @@ import {
   LayoutGrid,
   Table,
   Clock,
+  Calendar,
 } from "lucide-react";
 
 const POS_COLORS: Record<
@@ -156,6 +159,8 @@ export default function VocabularyPage() {
   const [selectedSort, setSelectedSort] = useState<"recent" | "alphabetical" | "mastery">("recent");
   const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false);
   const [todayOnly, setTodayOnly] = useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [allVaultWords, setAllVaultWords] = useState<MyVocabularyItem[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [playingWord, setPlayingWord] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState<boolean>(false);
@@ -265,7 +270,7 @@ export default function VocabularyPage() {
 
   useEffect(() => {
     loadVocabularies();
-  }, [searchQuery, selectedPos, selectedSort, favoritesOnly, todayOnly]);
+  }, [searchQuery, selectedPos, selectedSort, favoritesOnly, todayOnly, selectedDate]);
 
   // Handle Fullscreen Scroll Lock & Keyboard Navigation
   useEffect(() => {
@@ -311,14 +316,19 @@ export default function VocabularyPage() {
   const loadVocabularies = async () => {
     setIsLoading(true);
     try {
-      const items = await fetchMyVocabularies({
-        search: searchQuery,
-        partOfSpeech: selectedPos,
-        sortBy: selectedSort,
-        favoritesOnly,
-        todayOnly,
-      });
+      const [items, allItems] = await Promise.all([
+        fetchMyVocabularies({
+          search: searchQuery,
+          partOfSpeech: selectedPos,
+          sortBy: selectedSort,
+          favoritesOnly,
+          todayOnly,
+          selectedDate,
+        }),
+        fetchMyVocabularies({}),
+      ]);
       setVocabularies(items);
+      setAllVaultWords(allItems);
     } catch (err) {
       console.error("Failed to load vocabularies", err);
     } finally {
@@ -680,14 +690,21 @@ export default function VocabularyPage() {
     }
   };
 
-  // Metrics computation
+  // Map of YYYY-MM-DD -> word count for calendar indicators
+  const calendarWordCounts = useMemo(() => {
+    const list = allVaultWords.length > 0 ? allVaultWords : vocabularies;
+    return getDateWordCounts(list);
+  }, [allVaultWords, vocabularies]);
+
+  // Metrics computation (always reflective of total vault or active list)
   const stats = useMemo(() => {
-    const total = vocabularies.length;
-    const favorites = vocabularies.filter((v) => v.isFavorite || v.isFavourate).length;
+    const baseList = allVaultWords.length > 0 ? allVaultWords : vocabularies;
+    const total = baseList.length;
+    const favorites = baseList.filter((v) => v.isFavorite || v.isFavourate).length;
     const posCounts: Partial<Record<PartOfSpeech, number>> = {};
     let masteredCount = 0;
     const today = new Date();
-    const todayCount = vocabularies.filter((v) => {
+    const todayCount = baseList.filter((v) => {
       const d = v.createdAt || v.updatedAt;
       if (!d) return false;
       const date = new Date(d);
@@ -698,14 +715,14 @@ export default function VocabularyPage() {
       );
     }).length;
 
-    vocabularies.forEach((v) => {
+    baseList.forEach((v) => {
       const pos = v.word.partOfSpeech;
       posCounts[pos] = (posCounts[pos] || 0) + 1;
       if ((v.masteryLevel || 0) >= 4 || v.status === "MASTERED") masteredCount++;
     });
 
     return { total, favorites, todayCount, posCounts, masteredCount };
-  }, [vocabularies]);
+  }, [allVaultWords, vocabularies]);
 
   // Active fullscreen vocabulary object & index
   const activeFullscreenVocab = useMemo(() => {
@@ -785,7 +802,11 @@ export default function VocabularyPage() {
           </div>
 
           <div
-            onClick={() => setTodayOnly((prev) => !prev)}
+            onClick={() => {
+              const nextVal = !todayOnly;
+              setTodayOnly(nextVal);
+              if (nextVal) setSelectedDate(null);
+            }}
             className={`flex items-center gap-3 bg-white/70 dark:bg-white/5 rounded-2xl p-3.5 backdrop-blur-md border transition-all cursor-pointer ${
               todayOnly
                 ? "border-purple-500/50 dark:border-purple-500/60 bg-purple-500/15 dark:bg-purple-500/20 shadow-md ring-2 ring-purple-500/20"
@@ -846,7 +867,11 @@ export default function VocabularyPage() {
             </button>
 
             <button
-              onClick={() => setTodayOnly(!todayOnly)}
+              onClick={() => {
+                const nextVal = !todayOnly;
+                setTodayOnly(nextVal);
+                if (nextVal) setSelectedDate(null);
+              }}
               className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${
                 todayOnly
                   ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
@@ -871,6 +896,16 @@ export default function VocabularyPage() {
                 </span>
               )}
             </button>
+
+            {/* Calendar Date Filter Picker */}
+            <VocabularyDatePicker
+              selectedDate={selectedDate}
+              onSelectDate={(date) => {
+                setSelectedDate(date);
+                if (date) setTodayOnly(false);
+              }}
+              wordCounts={calendarWordCounts}
+            />
 
             <select
               value={selectedSort}
@@ -967,6 +1002,36 @@ export default function VocabularyPage() {
             );
           })}
         </div>
+
+        {/* Active Date Filter Notice Banner */}
+        {selectedDate && (
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-pink-500/10 border border-purple-500/30 text-xs sm:text-sm text-purple-700 dark:text-purple-300 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-purple-600 text-white shadow-sm">
+                <Calendar className="w-3.5 h-3.5" />
+              </div>
+              <span>
+                Filtering vocabulary saved on{" "}
+                <strong className="font-bold text-slate-900 dark:text-white">
+                  {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </strong>{" "}
+                ({vocabularies.length} {vocabularies.length === 1 ? "word" : "words"} found)
+              </span>
+            </div>
+            <button
+              onClick={() => setSelectedDate(null)}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white dark:bg-slate-800 text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 font-bold border border-rose-200/60 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer shadow-sm text-xs"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Clear Date Filter</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Story Selection Mode Banner */}
@@ -1030,25 +1095,34 @@ export default function VocabularyPage() {
               No Vocabulary Found
             </h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
-              {searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly
+              {selectedDate
+                ? `No vocabulary words found for ${new Date(
+                    selectedDate + "T00:00:00"
+                  ).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}. Try selecting another date with activity dots or reset filters.`
+                : searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly
                 ? "No words matched your current search or filter criteria. Try resetting filters."
                 : "You haven't added any words to your vault yet. Add a word to generate with AI!"}
             </p>
           </div>
           <button
             onClick={() => {
-              if (searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly) {
+              if (selectedDate || searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly) {
                 setSearchQuery("");
                 setSelectedPos("ALL");
                 setFavoritesOnly(false);
                 setTodayOnly(false);
+                setSelectedDate(null);
               } else {
                 setIsModalOpen(true);
               }
             }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md transition-colors cursor-pointer"
           >
-            {searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly ? (
+            {selectedDate || searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly ? (
               <>
                 <RefreshCw className="w-4 h-4" />
                 Reset Filters

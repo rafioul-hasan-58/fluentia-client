@@ -491,6 +491,10 @@ export async function fetchMyVocabularies(
       queryParams.append("partOfSpeech", options.partOfSpeech);
     }
 
+    if (options.selectedDate) {
+      queryParams.append("date", options.selectedDate);
+    }
+
     // Try /my-vocabularies first, then fallback to /vocabularies/my
     let res = await fetch(`${baseUrl}/my-vocabularies?${queryParams.toString()}`, {
       method: "GET",
@@ -530,6 +534,22 @@ export async function fetchMyVocabularies(
   return filterAndSortList(localItems, options);
 }
 
+export function getDateWordCounts(items: MyVocabularyItem[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  items.forEach((item) => {
+    const dateStr = item.createdAt || item.updatedAt;
+    if (!dateStr) return;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const key = `${y}-${m}-${day}`;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return counts;
+}
+
 function filterAndSortList(
   items: MyVocabularyItem[],
   options: VocabularyFilterOptions
@@ -560,6 +580,20 @@ function filterAndSortList(
 
   if (options.favoritesOnly) {
     filtered = filtered.filter((item) => item.isFavorite || item.isFavourate);
+  }
+
+  if (options.selectedDate) {
+    const targetDate = options.selectedDate;
+    filtered = filtered.filter((item) => {
+      const dateStr = item.createdAt || item.updatedAt;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return false;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}` === targetDate;
+    });
   }
 
   if (options.todayOnly) {
