@@ -1176,9 +1176,16 @@ export default function VocabStoryPage() {
                             }`}
                           >
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs truncate font-semibold capitalize">
-                                {item.word?.word}
-                              </p>
+                              <div className="flex items-center gap-1.5 truncate">
+                                <p className="text-xs truncate font-semibold capitalize">
+                                  {item.word?.word}
+                                </p>
+                                {item.word?.banglaPronunciation && (
+                                  <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium shrink-0">
+                                    /{item.word.banglaPronunciation}/
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-[10px] text-slate-400 truncate">
                                 {item.word?.banglaMeaning || item.word?.meaning}
                               </p>

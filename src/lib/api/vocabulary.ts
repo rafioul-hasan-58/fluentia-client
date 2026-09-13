@@ -23,6 +23,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       word: "Resilient",
       meaning: "Able to withstand or recover quickly from difficult conditions, adversity, or change.",
       banglaMeaning: "সহনশীল, প্রতিকূলতা কাটিয়ে উঠতে সক্ষম বা স্থিতিস্থাপক",
+      banglaPronunciation: "রেজিলিয়েন্ট",
       partOfSpeech: "ADJECTIVE",
       collocations: ["resilient economy", "highly resilient", "remain resilient", "resilient nature"],
       exampleSentences: [
@@ -63,6 +64,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       word: "Significant",
       meaning: "important or large enough to matter",
       banglaMeaning: "গুরুত্বপূর্ণ / উল্লেখযোগ্য",
+      banglaPronunciation: "সিগনিফিক্যান্ট",
       partOfSpeech: "ADJECTIVE",
       collocations: [
         "significant increase",
@@ -111,6 +113,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       word: "Pragmatic",
       meaning: "Dealing with things sensibly and realistically based on practical considerations.",
       banglaMeaning: "বাস্তবধর্মী, বাস্তবসম্মত ও প্রয়োগবাদী",
+      banglaPronunciation: "প্র্যাগম্যাটিক",
       partOfSpeech: "ADJECTIVE",
       collocations: ["pragmatic approach", "pragmatic solution", "pragmatic view", "highly pragmatic"],
       exampleSentences: [
@@ -151,6 +154,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       word: "Serendipity",
       meaning: "The occurrence and development of events by chance in a happy or beneficial way.",
       banglaMeaning: "ভাগ্যচক্রে অপ্রত্যাশিত সুখকর বা মূল্যবান আবিষ্কার",
+      banglaPronunciation: "সেরেন্ডিপিটি",
       partOfSpeech: "NOUN",
       collocations: ["pure serendipity", "stroke of serendipity", "moment of serendipity"],
       exampleSentences: [
@@ -238,6 +242,7 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
     word: data.word ? data.word.charAt(0).toUpperCase() + data.word.slice(1) : "",
     meaning: data.meaning || "",
     banglaMeaning: data.banglaMeaning || "",
+    banglaPronunciation: data.banglaPronunciation || "",
     partOfSpeech: (data.partOfSpeech as PartOfSpeech) || "NOUN",
     collocations: Array.isArray(data.collocations) ? data.collocations : [],
     exampleSentences: Array.isArray(data.exampleSentences) ? data.exampleSentences : [],
@@ -246,7 +251,7 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
     antonyms: Array.isArray(data.antonyms) ? data.antonyms : [],
     englishLevel: data.englishLevel || data.cefrLevel || "B2",
     cefrLevel: data.englishLevel || data.cefrLevel || "B2",
-    ipa: data.ipa || `/${(data.word || "").toLowerCase()}/`,
+    ipa: data.ipa || "",
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };
@@ -316,6 +321,7 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
     significant: {
       meaning: "important or large enough to matter",
       banglaMeaning: "গুরুত্বপূর্ণ / উল্লেখযোগ্য",
+      banglaPronunciation: "সিগনিফিক্যান্ট",
       partOfSpeech: "ADJECTIVE",
       collocations: [
         "significant increase",
@@ -349,6 +355,7 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
     meticulous: {
       meaning: "Showing great attention to detail; very careful and precise.",
       banglaMeaning: "খুঁতখুঁতে, অত্যন্ত সতর্ক ও পুঙ্খানুপুঙ্খ",
+      banglaPronunciation: "মেটিকিউলাস",
       partOfSpeech: "ADJECTIVE",
       collocations: ["meticulous attention", "meticulous research", "meticulous planning"],
       exampleSentences: [
@@ -375,6 +382,7 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
     eloquent: {
       meaning: "Fluent or persuasive in speaking or writing; clearly expressing feelings.",
       banglaMeaning: "বাকপটু, প্রাঞ্জল ও বাগ্মী",
+      banglaPronunciation: "এলোকোয়েন্ট",
       partOfSpeech: "ADJECTIVE",
       collocations: ["eloquent speech", "eloquent speaker", "eloquently expressed"],
       exampleSentences: [
@@ -407,6 +415,7 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
       word: clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase(),
       meaning: known.meaning || `Meaning of ${clean}`,
       banglaMeaning: known.banglaMeaning || `${clean}-এর বাংলা অর্থ`,
+      banglaPronunciation: known.banglaPronunciation || "",
       partOfSpeech: (known.partOfSpeech as PartOfSpeech) || "NOUN",
       collocations: known.collocations || [`key ${clean}`, `use ${clean}`],
       exampleSentences: known.exampleSentences || [`Understanding the word '${clean}' is essential for advanced communication.`],
@@ -452,6 +461,7 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
     word: capitalized,
     meaning: `The linguistic quality, action or property of ${clean}; expressing key communication in English.`,
     banglaMeaning: `${capitalized} সম্পর্কিত অর্থ ও ভাবার্থ`,
+    banglaPronunciation: "",
     partOfSpeech: pos,
     collocations: [
       `strong ${clean}`,
@@ -520,6 +530,10 @@ export async function fetchMyVocabularies(
       if (Array.isArray(rawList) && rawList.length > 0) {
         const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
           ...item,
+          status: item.vocabularyStatus || item.status || "LEARNING",
+          vocabularyStatus: item.vocabularyStatus || item.status || "LEARNING",
+          isFavorite: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
+          isFavourate: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
           word: normalizeVocabularyItem(item.word || item),
         }));
         saveLocalVault(formatted);
@@ -563,6 +577,8 @@ function filterAndSortList(
         item.word.word.toLowerCase().includes(q) ||
         item.word.meaning.toLowerCase().includes(q) ||
         item.word.banglaMeaning.toLowerCase().includes(q) ||
+        (item.word.banglaPronunciation &&
+          item.word.banglaPronunciation.toLowerCase().includes(q)) ||
         (Array.isArray(item.word.synonyms) &&
           item.word.synonyms.some((s: any) =>
             typeof s === "string"

@@ -21,6 +21,7 @@ export interface VocabularyItem {
   word: string;
   meaning: string;
   banglaMeaning: string;
+  banglaPronunciation?: string;
   partOfSpeech: PartOfSpeech;
   collocations: string[];
   exampleSentences: string[];
@@ -45,11 +46,27 @@ export interface MyVocabularyItem {
   mySentences: string[];
   notes?: string | null;
   status?: VocabularyStatus | string;
+  vocabularyStatus?: VocabularyStatus | string;
   isFavourate?: boolean;
   isFavorite?: boolean;
   masteryLevel?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PersonalVocabulariesResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    message?: string;
+    items: MyVocabularyItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  timestamp?: string;
 }
 
 export interface GenerateVocabularyDto {

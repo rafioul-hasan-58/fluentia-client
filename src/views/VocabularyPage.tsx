@@ -1256,7 +1256,7 @@ export default function VocabularyPage() {
                       </div>
                     </div>
 
-                    {/* Tags: Part of Speech & CEFR & Status */}
+                    {/* Tags: Part of Speech & CEFR & Status & Pronunciation */}
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span
                         className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${posConfig.bg} ${posConfig.text} ${posConfig.border}`}
@@ -1276,6 +1276,16 @@ export default function VocabularyPage() {
                         </span>
                       )}
 
+                      {item.word.banglaPronunciation && (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20"
+                          title="Bangla Pronunciation (উচ্চারণ)"
+                        >
+                          <span className="text-[10px] opacity-75">উচ্চারণ:</span>
+                          <span className="font-bold">{item.word.banglaPronunciation}</span>
+                        </span>
+                      )}
+
                       {item.word.ipa && (
                         <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 ml-auto">
                           {item.word.ipa}
@@ -1285,16 +1295,45 @@ export default function VocabularyPage() {
                   </div>
 
                   {/* Bangla Meaning Box */}
-                  <div className="p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-500/20 dark:border-emerald-500/30">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-50/80 to-teal-50/60 dark:from-emerald-950/40 dark:to-teal-950/20 border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-between gap-2">
                     <p className="text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-300 truncate">
                       {item.word.banglaMeaning}
                     </p>
+                    {item.word.banglaPronunciation && (
+                      <span className="hidden sm:inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-md border border-emerald-300/60 dark:border-emerald-700/60">
+                        <span className="text-[9px] opacity-70 font-normal">উচ্চারণ:</span>
+                        <span>{item.word.banglaPronunciation}</span>
+                      </span>
+                    )}
                   </div>
 
                   {/* English Definition (Clean 2-line clamped preview) */}
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
                     {item.word.meaning}
                   </p>
+
+                  {/* Collocations preview if present */}
+                  {item.word.collocations && item.word.collocations.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Phrases:
+                      </span>
+                      {item.word.collocations.slice(0, 2).map((col: string, cIdx: number) => (
+                        <span
+                          key={cIdx}
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/70 truncate max-w-[130px]"
+                          title={col}
+                        >
+                          {col}
+                        </span>
+                      ))}
+                      {item.word.collocations.length > 2 && (
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                          +{item.word.collocations.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Bottom Bar: Mastery Stars + Details (Full Screen) Button */}
@@ -1443,11 +1482,18 @@ export default function VocabularyPage() {
                         </div>
                       </td>
 
-                      {/* Bangla Meaning */}
+                      {/* Bangla Meaning & Pronunciation */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <span className="font-medium text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
-                          {item.word.banglaMeaning}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
+                            {item.word.banglaMeaning}
+                          </span>
+                          {item.word.banglaPronunciation && (
+                            <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                              উচ্চারণ: {item.word.banglaPronunciation}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Definition */}
@@ -1703,9 +1749,19 @@ export default function VocabularyPage() {
                     </div>
 
                     <div className="flex items-start justify-between gap-4">
-                      <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight capitalize">
-                        {activeFullscreenVocab.word.word}
-                      </h1>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight capitalize">
+                            {activeFullscreenVocab.word.word}
+                          </h1>
+                          {activeFullscreenVocab.word.banglaPronunciation && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-sm sm:text-base font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/70 shadow-xs">
+                              <span className="text-xs font-normal opacity-75">উচ্চারণ:</span>
+                              <span>{activeFullscreenVocab.word.banglaPronunciation}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
 
                       {/* Natural Pronounce Button */}
                       <button
@@ -1729,12 +1785,21 @@ export default function VocabularyPage() {
                     </div>
                   </div>
 
-                  {/* Bangla Meaning */}
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-1">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Bangla Meaning (বাংলা অর্থ)
-                    </span>
-                    <p className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                  {/* Bangla Meaning Card */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-teal-50/40 to-slate-50 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-slate-800/60 border border-emerald-200/70 dark:border-emerald-800/60 space-y-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Bangla Meaning (বাংলা অর্থ)
+                      </span>
+                      {activeFullscreenVocab.word.banglaPronunciation && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-emerald-100/80 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300/60 dark:border-emerald-700/60">
+                          <span className="text-[10px] opacity-75 font-normal">উচ্চারণ:</span>
+                          <span>{activeFullscreenVocab.word.banglaPronunciation}</span>
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 leading-snug">
                       {activeFullscreenVocab.word.banglaMeaning}
                     </p>
                   </div>
@@ -2160,7 +2225,7 @@ export default function VocabularyPage() {
                       Update &apos;{editingItem.word.word}&apos;
                     </h3>
                     <span
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${
                         POS_COLORS[editingItem.word.partOfSpeech]?.bg || "bg-indigo-500/10"
                       } ${
                         POS_COLORS[editingItem.word.partOfSpeech]?.text || "text-indigo-600 dark:text-indigo-400"
@@ -2170,6 +2235,11 @@ export default function VocabularyPage() {
                     >
                       {POS_COLORS[editingItem.word.partOfSpeech]?.label || editingItem.word.partOfSpeech}
                     </span>
+                    {editingItem.word.banglaPronunciation && (
+                      <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-800/60">
+                        উচ্চারণ: {editingItem.word.banglaPronunciation}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     {editingItem.word.banglaMeaning}
@@ -2408,10 +2478,17 @@ export default function VocabularyPage() {
             {/* Word Preview Card */}
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-3">
               <div>
-                <h4 className="text-base font-bold text-slate-900 dark:text-white capitalize">
-                  {itemToDelete.word.word}
-                </h4>
-                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white capitalize">
+                    {itemToDelete.word.word}
+                  </h4>
+                  {itemToDelete.word.banglaPronunciation && (
+                    <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200/60 dark:border-indigo-800/60">
+                      উচ্চারণ: {itemToDelete.word.banglaPronunciation}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium mt-0.5">
                   {itemToDelete.word.banglaMeaning}
                 </p>
               </div>
