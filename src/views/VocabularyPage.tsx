@@ -1303,16 +1303,6 @@ export default function VocabularyPage() {
                         </span>
                       )}
 
-                      {item.word.banglaPronunciation && (
-                        <span
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20"
-                          title="Bangla Pronunciation (উচ্চারণ)"
-                        >
-                          <span className="text-[10px] opacity-75">উচ্চারণ:</span>
-                          <span className="font-bold">{item.word.banglaPronunciation}</span>
-                        </span>
-                      )}
-
                       {item.word.ipa && (
                         <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 ml-auto">
                           {item.word.ipa}
@@ -1327,7 +1317,7 @@ export default function VocabularyPage() {
                       {item.word.banglaMeaning}
                     </p>
                     {item.word.banglaPronunciation && (
-                      <span className="hidden sm:inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-md border border-emerald-300/60 dark:border-emerald-700/60">
+                      <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-md border border-emerald-300/60 dark:border-emerald-700/60">
                         <span className="text-[9px] opacity-70 font-normal">উচ্চারণ:</span>
                         <span>{item.word.banglaPronunciation}</span>
                       </span>
@@ -1338,33 +1328,6 @@ export default function VocabularyPage() {
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
                     {item.word.meaning}
                   </p>
-
-                  {/* Collocations preview if present */}
-                  {item.word.collocations && item.word.collocations.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Phrases:
-                      </span>
-                      {item.word.collocations.slice(0, 2).map((col, cIdx: number) => {
-                        const colText = getCollocationText(col);
-                        const colBangla = getCollocationBangla(col);
-                        return (
-                          <span
-                            key={cIdx}
-                            className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/70 truncate max-w-[130px]"
-                            title={colBangla ? `${colText} — ${colBangla}` : colText}
-                          >
-                            {colText}
-                          </span>
-                        );
-                      })}
-                      {item.word.collocations.length > 2 && (
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                          +{item.word.collocations.length - 2}
-                        </span>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 {/* Card Bottom Bar: Mastery Stars + Details (Full Screen) Button */}
