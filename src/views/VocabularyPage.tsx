@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { ThemeToggle } from "@/components/shared";
+import { Button } from "@/components/ui/button";
 import {
   MyVocabularyItem,
   VocabularyItem,
@@ -191,6 +192,15 @@ export default function VocabularyPage() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [playingWord, setPlayingWord] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState<boolean>(false);
+
+  // Pagination State (Default 12 per screen, matching Question Bank style)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(12);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedPos, selectedSort, favoritesOnly, todayOnly, selectedDate]);
 
   // Fullscreen Single Vocab View State
   const [fullscreenVocabId, setFullscreenVocabId] = useState<string | null>(null);
@@ -762,6 +772,117 @@ export default function VocabularyPage() {
     return vocabularies.findIndex((v) => v.id === fullscreenVocabId);
   }, [fullscreenVocabId, vocabularies]);
 
+  // Pagination calculations (Default 12 per screen)
+  const totalCount = vocabularies.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  // Keep currentPage valid when totalCount or pageSize changes
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const startRecord = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endRecord = Math.min(currentPage * pageSize, totalCount);
+
+  // Slice vocabularies for current screen display
+  const paginatedVocabularies = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return vocabularies.slice(start, start + pageSize);
+  }, [vocabularies, currentPage, pageSize]);
+
+  // Helper Pagination for Vocabulary Vault (matching Question Bank in Admin Dashboard)
+  const renderPaginationControls = (isTopPosition: boolean) => {
+    if (totalCount === 0) return null;
+
+    return (
+      <div
+        className={`p-3.5 sm:p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn ${
+          isTopPosition ? "border-primary/30 dark:border-primary/30" : "mt-2"
+        }`}
+      >
+        <div className="flex items-center gap-2.5 text-xs text-ink-soft">
+          <span className="font-semibold text-ink">
+            Showing <strong className="text-primary dark:text-purple-300">{startRecord} - {endRecord}</strong> of {totalCount} Words
+          </span>
+          <span className="text-slate-300 dark:text-white/20">|</span>
+          <span>Page {currentPage} of {totalPages || 1}</span>
+        </div>
+
+        <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-end">
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-ink-soft text-[11px] font-semibold">Per page:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="h-8 px-2 rounded-lg bg-paper border border-slate-200 dark:border-white/10 text-xs font-semibold text-ink cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40"
+            >
+              {[12, 24, 36, 48].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage <= 1 || isLoading}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="h-8 px-2.5 text-xs font-semibold"
+            >
+              ‹ Prev
+            </Button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+              if (totalPages > 6 && p !== 1 && p !== totalPages && Math.abs(p - currentPage) > 1) {
+                if (p === 2 || p === totalPages - 1) {
+                  return (
+                    <span key={p} className="px-1 text-xs text-ink-soft">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              }
+
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setCurrentPage(p)}
+                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    currentPage === p
+                      ? "bg-primary text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink hover:bg-slate-200 dark:hover:bg-white/10"
+                  }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
+
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage >= totalPages || isLoading}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="h-8 px-2.5 text-xs font-semibold"
+            >
+              Next ›
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Header Banner & Action (Soft theme matching Dashboard) */}
@@ -1162,9 +1283,14 @@ export default function VocabularyPage() {
             )}
           </button>
         </div>
-      ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-          {vocabularies.map((item) => {
+      ) : (
+        <div className="space-y-4">
+          {/* TOP PAGINATION BAR */}
+          {renderPaginationControls(true)}
+
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+              {paginatedVocabularies.map((item) => {
             const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
             const isAudioPlaying = playingWord === item.word.word;
             const isFav = item.isFavorite || item.isFavourate;
@@ -1388,7 +1514,7 @@ export default function VocabularyPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 text-sm">
-                {vocabularies.map((item) => {
+                {paginatedVocabularies.map((item) => {
                   const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
                   const isAudioPlaying = playingWord === item.word.word;
                   const isFav = item.isFavorite || item.isFavourate;
@@ -1590,6 +1716,11 @@ export default function VocabularyPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+          {/* BOTTOM PAGINATION BAR */}
+          {renderPaginationControls(false)}
         </div>
       )}
 
