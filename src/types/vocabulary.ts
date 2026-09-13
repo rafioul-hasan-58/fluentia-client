@@ -106,6 +106,8 @@ export interface VocabularyFilterOptions {
   favoritesOnly?: boolean;
   todayOnly?: boolean;
   selectedDate?: string | null;
+  limit?: number;
+  page?: number;
 }
 
 export interface GenerateVocabStoryDto {

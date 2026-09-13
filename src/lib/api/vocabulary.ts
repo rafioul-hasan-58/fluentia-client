@@ -798,6 +798,13 @@ export async function fetchMyVocabularies(
       queryParams.append("date", options.selectedDate);
     }
 
+    // Default backend limit is 10 if omitted. Pass higher limit (or options.limit) so full list or requested limit is returned.
+    const fetchLimit = options.limit ?? 100;
+    queryParams.append("limit", String(fetchLimit));
+    if (options.page) {
+      queryParams.append("page", String(options.page));
+    }
+
     // Try /my-vocabularies first, then fallback to /vocabularies/my
     let res = await fetch(`${baseUrl}/my-vocabularies?${queryParams.toString()}`, {
       method: "GET",

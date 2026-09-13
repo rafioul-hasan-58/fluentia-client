@@ -361,8 +361,9 @@ export default function VocabularyPage() {
           favoritesOnly,
           todayOnly,
           selectedDate,
+          limit: 100,
         }),
-        fetchMyVocabularies({}),
+        fetchMyVocabularies({ limit: 100 }),
       ]);
       setVocabularies(items);
       setAllVaultWords(allItems);
@@ -1223,74 +1224,75 @@ export default function VocabularyPage() {
         </div>
       )}
 
-      {/* 3. Vocabulary Cards Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map((n) => (
-            <div
-              key={n}
-              className="h-64 rounded-3xl bg-slate-100 dark:bg-slate-800/50 animate-pulse border border-slate-200 dark:border-slate-800"
-            />
-          ))}
-        </div>
-      ) : vocabularies.length === 0 ? (
-        <div className="text-center py-16 px-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-            <BookOpen className="w-8 h-8" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
-              No Vocabulary Found
-            </h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
-              {selectedDate
-                ? `No vocabulary words found for ${new Date(
-                    selectedDate + "T00:00:00"
-                  ).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}. Try selecting another date with activity dots or reset filters.`
-                : searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly
-                ? "No words matched your current search or filter criteria. Try resetting filters."
-                : "You haven't added any words to your vault yet. Add a word to generate with AI!"}
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              if (selectedDate || searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly) {
-                setSearchQuery("");
-                setSelectedPos("ALL");
-                setFavoritesOnly(false);
-                setTodayOnly(false);
-                setSelectedDate(null);
-              } else {
-                setIsModalOpen(true);
-              }
-            }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md transition-colors cursor-pointer"
-          >
-            {selectedDate || searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly ? (
-              <>
-                <RefreshCw className="w-4 h-4" />
-                Reset Filters
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                Add Your First Word
-              </>
-            )}
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {/* TOP PAGINATION BAR */}
-          {renderPaginationControls(true)}
+      {/* 3. Vocabulary Cards Section */}
+      <div className="space-y-4">
+        {/* TOP PAGINATION BAR */}
+        {renderPaginationControls(true)}
 
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-              {paginatedVocabularies.map((item) => {
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((n) => (
+              <div
+                key={n}
+                className="h-64 rounded-3xl bg-slate-100 dark:bg-slate-800/50 animate-pulse border border-slate-200 dark:border-slate-800"
+              />
+            ))}
+          </div>
+        ) : vocabularies.length === 0 ? (
+          <div className="text-center py-16 px-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <BookOpen className="w-8 h-8" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                No Vocabulary Found
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
+                {selectedDate
+                  ? `No vocabulary words found for ${new Date(
+                      selectedDate + "T00:00:00"
+                    ).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}. Try selecting another date with activity dots or reset filters.`
+                  : searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly
+                  ? "No words matched your current search or filter criteria. Try resetting filters."
+                  : "You haven't added any words to your vault yet. Add a word to generate with AI!"}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (selectedDate || searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly) {
+                  setSearchQuery("");
+                  setSelectedPos("ALL");
+                  setFavoritesOnly(false);
+                  setTodayOnly(false);
+                  setSelectedDate(null);
+                } else {
+                  setIsModalOpen(true);
+                }
+              }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md transition-colors cursor-pointer"
+            >
+              {selectedDate || searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly ? (
+                <>
+                  <RefreshCw className="w-4 h-4" />
+                  Reset Filters
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Add Your First Word
+                </>
+              )}
+            </button>
+          </div>
+        ) : (
+          <>
+            {viewMode === "grid" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+                {paginatedVocabularies.map((item) => {
             const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
             const isAudioPlaying = playingWord === item.word.word;
             const isFav = item.isFavorite || item.isFavourate;
@@ -1719,10 +1721,11 @@ export default function VocabularyPage() {
         </div>
       )}
 
-          {/* BOTTOM PAGINATION BAR */}
-          {renderPaginationControls(false)}
-        </div>
-      )}
+      {/* BOTTOM PAGINATION BAR */}
+      {renderPaginationControls(false)}
+    </>
+  )}
+</div>
 
       {/* 4. Fullscreen Single Vocabulary Portal View (Natural, Clean, Theme-Aware & Scrollable) */}
       {isMounted &&
