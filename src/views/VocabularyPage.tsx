@@ -12,6 +12,9 @@ import {
   VocabularyFilterOptions,
   getWordRelationText,
   getWordRelationWord,
+  getCollocationText,
+  getCollocationBangla,
+  getCollocationExample,
 } from "@/types/vocabulary";
 import {
   fetchMyVocabularies,
@@ -1318,15 +1321,19 @@ export default function VocabularyPage() {
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                         Phrases:
                       </span>
-                      {item.word.collocations.slice(0, 2).map((col: string, cIdx: number) => (
-                        <span
-                          key={cIdx}
-                          className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/70 truncate max-w-[130px]"
-                          title={col}
-                        >
-                          {col}
-                        </span>
-                      ))}
+                      {item.word.collocations.slice(0, 2).map((col, cIdx: number) => {
+                        const colText = getCollocationText(col);
+                        const colBangla = getCollocationBangla(col);
+                        return (
+                          <span
+                            key={cIdx}
+                            className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/70 truncate max-w-[130px]"
+                            title={colBangla ? `${colText} — ${colBangla}` : colText}
+                          >
+                            {colText}
+                          </span>
+                        );
+                      })}
                       {item.word.collocations.length > 2 && (
                         <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                           +{item.word.collocations.length - 2}
@@ -1866,20 +1873,45 @@ export default function VocabularyPage() {
                 {/* Collocations */}
                 {activeFullscreenVocab.word.collocations &&
                   activeFullscreenVocab.word.collocations.length > 0 && (
-                    <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-indigo-500" />
-                        Collocations & Common Phrases
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {activeFullscreenVocab.word.collocations.map((col, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-200"
-                          >
-                            {col}
-                          </span>
-                        ))}
+                    <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-indigo-500" />
+                          Collocations & Common Phrases
+                        </h3>
+                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                          {activeFullscreenVocab.word.collocations.length} phrases
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {activeFullscreenVocab.word.collocations.map((col, idx) => {
+                          const colText = getCollocationText(col);
+                          const bangla = getCollocationBangla(col);
+                          const example = getCollocationExample(col);
+
+                          return (
+                            <div
+                              key={idx}
+                              className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/70 flex flex-col justify-between gap-2 hover:border-indigo-300 dark:hover:border-indigo-700/60 transition-colors"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
+                                  {colText}
+                                </span>
+                                {bangla && (
+                                  <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 shrink-0 text-right">
+                                    {bangla}
+                                  </span>
+                                )}
+                              </div>
+                              {example && (
+                                <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 italic bg-white/80 dark:bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800/80 leading-relaxed">
+                                  &ldquo;{example}&rdquo;
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

@@ -16,6 +16,14 @@ export interface WordRelationItem {
   partOfSpeech?: PartOfSpeech | string;
 }
 
+export interface CollocationItem {
+  collocation: string;
+  banglaMeaning?: string;
+  exampleSentence?: string;
+}
+
+export type CollocationType = CollocationItem | string;
+
 export interface VocabularyItem {
   id: string;
   word: string;
@@ -23,7 +31,7 @@ export interface VocabularyItem {
   banglaMeaning: string;
   banglaPronunciation?: string;
   partOfSpeech: PartOfSpeech;
-  collocations: string[];
+  collocations: (CollocationItem | string)[];
   exampleSentences: string[];
   wordFamily: (WordRelationItem | string)[] | any;
   synonyms: (WordRelationItem | string)[] | any;
@@ -138,6 +146,23 @@ export function getWordRelationWord(item: string | WordRelationItem | any): stri
   if (typeof item === "string") return item;
   if (typeof item === "object") return item.word || "";
   return String(item);
+}
+
+export function getCollocationText(item: CollocationType | any): string {
+  if (!item) return "";
+  if (typeof item === "string") return item;
+  if (typeof item === "object") return item.collocation || item.word || "";
+  return String(item);
+}
+
+export function getCollocationBangla(item: CollocationType | any): string {
+  if (!item || typeof item !== "object") return "";
+  return item.banglaMeaning || "";
+}
+
+export function getCollocationExample(item: CollocationType | any): string {
+  if (!item || typeof item !== "object") return "";
+  return item.exampleSentence || "";
 }
 
 export interface GetVocabStoriesQuery {
