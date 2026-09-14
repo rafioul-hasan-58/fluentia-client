@@ -781,6 +781,11 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
 /**
  * Fetch user's saved vocabularies with filtering & sorting
  */
+/**
+ * Fetch user's saved vocabularies with filtering & sorting
+ * Calls backend GET /api/v1/my-vocabularies/find-all:
+ * e.g. GET /api/v1/my-vocabularies/find-all?status=LEARNING&isFavourate=true&partOfSpeech=NOUN&englishLevel=B2&search=fluent&page=1&limit=10
+ */
 export async function fetchMyVocabularies(
   options: VocabularyFilterOptions = {}
 ): Promise<MyVocabularyItem[]> {
@@ -789,36 +794,69 @@ export async function fetchMyVocabularies(
 
   try {
     const queryParams = new URLSearchParams();
-    if (options.search) queryParams.append("search", options.search);
+
+    if (options.status && options.status !== "ALL") {
+      queryParams.append("status", options.status);
+    }
+
+    if (options.isFavourate !== undefined) {
+      queryParams.append("isFavourate", String(options.isFavourate));
+    } else if (options.favoritesOnly) {
+      queryParams.append("isFavourate", "true");
+    }
+
     if (options.partOfSpeech && options.partOfSpeech !== "ALL") {
       queryParams.append("partOfSpeech", options.partOfSpeech);
     }
+
+    if (options.englishLevel && options.englishLevel !== "ALL") {
+      queryParams.append("englishLevel", options.englishLevel);
+    }
+
+    if (options.search && options.search.trim()) {
+      queryParams.append("search", options.search.trim());
+    }
+
+    if (options.page) {
+      queryParams.append("page", String(options.page));
+    }
+
+    // Default backend limit is 10 if omitted. Pass requested limit or default to 100 for client views
+    const fetchLimit = options.limit ?? 100;
+    queryParams.append("limit", String(fetchLimit));
 
     if (options.selectedDate) {
       queryParams.append("date", options.selectedDate);
     }
 
-    // Default backend limit is 10 if omitted. Pass higher limit (or options.limit) so full list or requested limit is returned.
-    const fetchLimit = options.limit ?? 100;
-    queryParams.append("limit", String(fetchLimit));
-    if (options.page) {
-      queryParams.append("page", String(options.page));
-    }
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
 
-    // Try /my-vocabularies first, then fallback to /vocabularies/my
-    let res = await fetch(`${baseUrl}/my-vocabularies?${queryParams.toString()}`, {
+    // 1. Primary endpoint: GET /my-vocabularies/find-all
+    let res = await fetch(`${baseUrl}/my-vocabularies/find-all${queryString}`, {
       method: "GET",
       headers: {
-        Accept: "application/json",
+        Accept: "*/*",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
 
-    if (!res.ok) {
-      res = await fetch(`${baseUrl}/vocabularies/my?${queryParams.toString()}`, {
+    // 2. Fallback to /my-vocabularies if /find-all returned 404
+    if (!res.ok && res.status === 404) {
+      res = await fetch(`${baseUrl}/my-vocabularies${queryString}`, {
         method: "GET",
         headers: {
-          Accept: "application/json",
+          Accept: "*/*",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+    }
+
+    // 3. Fallback to /vocabularies/my if still 404
+    if (!res.ok && res.status === 404) {
+      res = await fetch(`${baseUrl}/vocabularies/my${queryString}`, {
+        method: "GET",
+        headers: {
+          Accept: "*/*",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
@@ -826,27 +864,157 @@ export async function fetchMyVocabularies(
 
     if (res.ok) {
       const data = await res.json();
-      const rawList = data.data?.items || data.data || [];
-      if (Array.isArray(rawList) && rawList.length > 0) {
-        const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
-          ...item,
-          id: item.id || item._id,
-          status: item.vocabularyStatus || item.status || "LEARNING",
-          vocabularyStatus: item.vocabularyStatus || item.status || "LEARNING",
-          isFavorite: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
-          isFavourate: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
-          word: normalizeVocabularyItem(item.word || item),
-        }));
+      const rawList = Array.isArray(data.data)
+        ? data.data
+        : Array.isArray(data.data?.items)
+        ? data.data.items
+        : Array.isArray(data)
+        ? data
+        : [];
+
+      const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
+        ...item,
+        id: item.id || item._id,
+        status: item.vocabularyStatus || item.status || "LEARNING",
+        vocabularyStatus: item.vocabularyStatus || item.status || "LEARNING",
+        isFavorite: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
+        isFavourate: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
+        word: normalizeVocabularyItem(item.word || item),
+      }));
+
+      // Cache to vault when fetching general list
+      if (
+        token &&
+        !options.search &&
+        !options.partOfSpeech &&
+        !options.status &&
+        !options.favoritesOnly &&
+        !options.isFavourate &&
+        !options.selectedDate
+      ) {
         saveLocalVault(formatted);
-        return filterAndSortList(formatted, options);
       }
+
+      // Attach meta to array if returned by server
+      if (data.meta) {
+        (formatted as any).meta = data.meta;
+      }
+
+      return filterAndSortList(formatted, options);
     }
   } catch (err) {
-    // Graceful fallback to local vault
+    // Network offline or error: graceful fallback to local vault
+    console.warn("fetchMyVocabularies API request failed, fallback to local vault:", err);
   }
 
   const localItems = getLocalVault();
   return filterAndSortList(localItems, options);
+}
+
+/**
+ * Fetch user's saved vocabularies with pagination metadata
+ */
+export async function fetchMyVocabulariesWithMeta(
+  options: VocabularyFilterOptions = {}
+): Promise<{ items: MyVocabularyItem[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
+
+  try {
+    const queryParams = new URLSearchParams();
+
+    if (options.status && options.status !== "ALL") {
+      queryParams.append("status", options.status);
+    }
+
+    if (options.isFavourate !== undefined) {
+      queryParams.append("isFavourate", String(options.isFavourate));
+    } else if (options.favoritesOnly) {
+      queryParams.append("isFavourate", "true");
+    }
+
+    if (options.partOfSpeech && options.partOfSpeech !== "ALL") {
+      queryParams.append("partOfSpeech", options.partOfSpeech);
+    }
+
+    if (options.englishLevel && options.englishLevel !== "ALL") {
+      queryParams.append("englishLevel", options.englishLevel);
+    }
+
+    if (options.search && options.search.trim()) {
+      queryParams.append("search", options.search.trim());
+    }
+
+    if (options.page) {
+      queryParams.append("page", String(options.page));
+    }
+
+    const fetchLimit = options.limit ?? 10;
+    queryParams.append("limit", String(fetchLimit));
+
+    if (options.selectedDate) {
+      queryParams.append("date", options.selectedDate);
+    }
+
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+    let res = await fetch(`${baseUrl}/my-vocabularies/find-all${queryString}`, {
+      method: "GET",
+      headers: {
+        Accept: "*/*",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!res.ok && res.status === 404) {
+      res = await fetch(`${baseUrl}/my-vocabularies${queryString}`, {
+        method: "GET",
+        headers: {
+          Accept: "*/*",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+    }
+
+    if (res.ok) {
+      const data = await res.json();
+      const rawList = Array.isArray(data.data)
+        ? data.data
+        : Array.isArray(data.data?.items)
+        ? data.data.items
+        : Array.isArray(data)
+        ? data
+        : [];
+
+      const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
+        ...item,
+        id: item.id || item._id,
+        status: item.vocabularyStatus || item.status || "LEARNING",
+        vocabularyStatus: item.vocabularyStatus || item.status || "LEARNING",
+        isFavorite: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
+        isFavourate: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
+        word: normalizeVocabularyItem(item.word || item),
+      }));
+
+      return {
+        items: filterAndSortList(formatted, options),
+        meta: data.meta,
+      };
+    }
+  } catch (err) {
+    console.warn("fetchMyVocabulariesWithMeta error:", err);
+  }
+
+  const localItems = filterAndSortList(getLocalVault(), options);
+  return {
+    items: localItems,
+    meta: {
+      page: options.page || 1,
+      limit: options.limit || 10,
+      total: localItems.length,
+      totalPages: Math.max(1, Math.ceil(localItems.length / (options.limit || 10))),
+    },
+  };
 }
 
 export function getDateWordCounts(items: MyVocabularyItem[]): Record<string, number> {
@@ -895,8 +1063,26 @@ function filterAndSortList(
     );
   }
 
-  if (options.favoritesOnly) {
+  if (options.status && options.status !== "ALL") {
+    filtered = filtered.filter(
+      (item) => (item.vocabularyStatus || item.status) === options.status
+    );
+  }
+
+  if (options.englishLevel && options.englishLevel !== "ALL") {
+    filtered = filtered.filter(
+      (item) =>
+        (item.word.englishLevel &&
+          item.word.englishLevel.toUpperCase() === options.englishLevel?.toUpperCase()) ||
+        (item.word.cefrLevel &&
+          item.word.cefrLevel.toUpperCase() === options.englishLevel?.toUpperCase())
+    );
+  }
+
+  if (options.favoritesOnly || options.isFavourate === true) {
     filtered = filtered.filter((item) => item.isFavorite || item.isFavourate);
+  } else if (options.isFavourate === false) {
+    filtered = filtered.filter((item) => !item.isFavorite && !item.isFavourate);
   }
 
   if (options.selectedDate) {

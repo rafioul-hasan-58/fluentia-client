@@ -185,6 +185,8 @@ export default function VocabularyPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+  const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
   const [selectedSort, setSelectedSort] = useState<"recent" | "alphabetical" | "mastery">("recent");
   const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false);
   const [todayOnly, setTodayOnly] = useState<boolean>(false);
@@ -201,7 +203,16 @@ export default function VocabularyPage() {
   // Reset to page 1 whenever filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedPos, selectedSort, favoritesOnly, todayOnly, selectedDate]);
+  }, [
+    searchQuery,
+    selectedPos,
+    selectedStatus,
+    selectedLevel,
+    selectedSort,
+    favoritesOnly,
+    todayOnly,
+    selectedDate,
+  ]);
 
   // Fullscreen Single Vocab View State
   const [fullscreenVocabId, setFullscreenVocabId] = useState<string | null>(null);
@@ -308,7 +319,16 @@ export default function VocabularyPage() {
 
   useEffect(() => {
     loadVocabularies();
-  }, [searchQuery, selectedPos, selectedSort, favoritesOnly, todayOnly, selectedDate]);
+  }, [
+    searchQuery,
+    selectedPos,
+    selectedStatus,
+    selectedLevel,
+    selectedSort,
+    favoritesOnly,
+    todayOnly,
+    selectedDate,
+  ]);
 
   // Handle Fullscreen Scroll Lock & Keyboard Navigation
   useEffect(() => {
@@ -358,6 +378,8 @@ export default function VocabularyPage() {
         fetchMyVocabularies({
           search: searchQuery,
           partOfSpeech: selectedPos,
+          status: selectedStatus !== "ALL" ? (selectedStatus as any) : undefined,
+          englishLevel: selectedLevel !== "ALL" ? selectedLevel : undefined,
           sortBy: selectedSort,
           favoritesOnly,
           todayOnly,
@@ -1067,6 +1089,31 @@ export default function VocabularyPage() {
               <option value="mastery">Mastery Level</option>
             </select>
 
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="LEARNING">Learning</option>
+              <option value="LEARNED">Learned</option>
+              <option value="MASTERED">Mastered</option>
+            </select>
+
+            <select
+              value={selectedLevel}
+              onChange={(e) => setSelectedLevel(e.target.value)}
+              className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+            >
+              <option value="ALL">All Levels</option>
+              <option value="A1">A1 Level</option>
+              <option value="A2">A2 Level</option>
+              <option value="B1">B1 Level</option>
+              <option value="B2">B2 Level</option>
+              <option value="C1">C1 Level</option>
+              <option value="C2">C2 Level</option>
+            </select>
+
             <button
               onClick={() => {
                 setIsStorySelectMode(!isStorySelectMode);
@@ -1257,16 +1304,31 @@ export default function VocabularyPage() {
                       day: "numeric",
                       year: "numeric",
                     })}. Try selecting another date with activity dots or reset filters.`
-                  : searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly
+                  : searchQuery ||
+                    selectedPos !== "ALL" ||
+                    selectedStatus !== "ALL" ||
+                    selectedLevel !== "ALL" ||
+                    favoritesOnly ||
+                    todayOnly
                   ? "No words matched your current search or filter criteria. Try resetting filters."
                   : "You haven't added any words to your vault yet. Add a word to generate with AI!"}
               </p>
             </div>
             <button
               onClick={() => {
-                if (selectedDate || searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly) {
+                if (
+                  selectedDate ||
+                  searchQuery ||
+                  selectedPos !== "ALL" ||
+                  selectedStatus !== "ALL" ||
+                  selectedLevel !== "ALL" ||
+                  favoritesOnly ||
+                  todayOnly
+                ) {
                   setSearchQuery("");
                   setSelectedPos("ALL");
+                  setSelectedStatus("ALL");
+                  setSelectedLevel("ALL");
                   setFavoritesOnly(false);
                   setTodayOnly(false);
                   setSelectedDate(null);
@@ -1276,7 +1338,13 @@ export default function VocabularyPage() {
               }}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md transition-colors cursor-pointer"
             >
-              {selectedDate || searchQuery || selectedPos !== "ALL" || favoritesOnly || todayOnly ? (
+              {selectedDate ||
+              searchQuery ||
+              selectedPos !== "ALL" ||
+              selectedStatus !== "ALL" ||
+              selectedLevel !== "ALL" ||
+              favoritesOnly ||
+              todayOnly ? (
                 <>
                   <RefreshCw className="w-4 h-4" />
                   Reset Filters

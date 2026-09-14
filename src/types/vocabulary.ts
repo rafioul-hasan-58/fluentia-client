@@ -63,17 +63,25 @@ export interface MyVocabularyItem {
   updatedAt: string;
 }
 
+export interface PersonalVocabulariesMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface PersonalVocabulariesResponse {
   success: boolean;
   statusCode: number;
   message: string;
-  data: {
+  meta?: PersonalVocabulariesMeta;
+  data: MyVocabularyItem[] | {
     message?: string;
-    items: MyVocabularyItem[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
+    items?: MyVocabularyItem[];
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
   };
   timestamp?: string;
 }
@@ -102,6 +110,9 @@ export interface GenerateVocabularyResponse {
 export interface VocabularyFilterOptions {
   search?: string;
   partOfSpeech?: PartOfSpeech | "ALL";
+  status?: VocabularyStatus | "ALL" | string;
+  isFavourate?: boolean;
+  englishLevel?: string;
   sortBy?: "recent" | "alphabetical" | "mastery";
   favoritesOnly?: boolean;
   todayOnly?: boolean;
