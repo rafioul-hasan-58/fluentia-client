@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/shared";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar } from "@/components/ui/avatar";
@@ -160,8 +160,14 @@ export function Sidebar({
   mobileOpen: controlledMobileOpen,
   setMobileOpen: setControlledMobileOpen,
 }: SidebarProps = {}) {
+  const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   const [internalMobileOpen, setInternalMobileOpen] = useState(false);
   const isControlled = controlledMobileOpen !== undefined;
@@ -539,7 +545,7 @@ export function Sidebar({
               <div className="flex items-center justify-between gap-2 px-1">
                 <button
                   type="button"
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 py-1 px-2 rounded-lg text-left flex items-center gap-1.5 transition-colors"
                 >
                   <span>🚪</span>
