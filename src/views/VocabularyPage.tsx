@@ -13,6 +13,7 @@ import {
   VocabularyFilterOptions,
   getWordRelationText,
   getWordRelationWord,
+  getWordRelationPartOfSpeech,
   getCollocationText,
   getCollocationMeaning,
   getCollocationBangla,
@@ -1637,7 +1638,7 @@ export default function VocabularyPage() {
                                 key={idx}
                                 className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/70"
                               >
-                                {getWordRelationWord(syn)}
+                                {getWordRelationText(syn)}
                               </span>
                             ))
                           ) : (
@@ -2118,7 +2119,7 @@ export default function VocabularyPage() {
                             key={idx}
                             className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80"
                           >
-                            {getWordRelationWord(syn)}
+                            {getWordRelationText(syn)}
                           </span>
                         ))
                       ) : (
@@ -2140,7 +2141,7 @@ export default function VocabularyPage() {
                             key={idx}
                             className="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80"
                           >
-                            {getWordRelationWord(ant)}
+                            {getWordRelationText(ant)}
                           </span>
                         ))
                       ) : (

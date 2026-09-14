@@ -132,23 +132,49 @@ export interface VocabStoryItem {
   updatedAt: string;
 }
 
-export function getWordRelationText(item: string | WordRelationItem | any): string {
+export function getWordRelationPartOfSpeech(item: string | WordRelationItem | any): string {
   if (!item) return "";
-  if (typeof item === "string") return item;
   if (typeof item === "object") {
-    if (item.partOfSpeech) {
-      return `${item.word} (${item.partOfSpeech.toLowerCase()})`;
-    }
-    return item.word || "";
+    const rawPos =
+      item.partOfSpeech ||
+      item.pos ||
+      item.part_of_speech ||
+      item.type ||
+      item.posTag ||
+      "";
+    return typeof rawPos === "string" ? rawPos.trim() : "";
   }
-  return String(item);
+  if (typeof item === "string") {
+    const match = item.match(/\(([^)]+)\)$/);
+    if (match) return match[1].trim();
+  }
+  return "";
 }
 
 export function getWordRelationWord(item: string | WordRelationItem | any): string {
   if (!item) return "";
-  if (typeof item === "string") return item;
-  if (typeof item === "object") return item.word || "";
+  if (typeof item === "string") {
+    return item.replace(/\s*\([^)]*\)$/, "").trim();
+  }
+  if (typeof item === "object") return item.word || item.text || item.title || "";
   return String(item);
+}
+
+export function getWordRelationText(item: string | WordRelationItem | any): string {
+  if (!item) return "";
+  if (typeof item === "string") {
+    const match = item.match(/^(.*?)\s*\(([^)]+)\)$/);
+    if (match) {
+      return `${match[1].trim()} (${match[2].trim().toLowerCase()})`;
+    }
+    return item.trim();
+  }
+  const word = getWordRelationWord(item);
+  const pos = getWordRelationPartOfSpeech(item);
+  if (pos) {
+    return `${word} (${pos.toLowerCase()})`;
+  }
+  return word;
 }
 
 export function getCollocationText(item: CollocationType | any): string {
