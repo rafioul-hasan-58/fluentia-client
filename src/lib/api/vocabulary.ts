@@ -1342,3 +1342,34 @@ export async function deleteVocabStoryApi(id: string): Promise<boolean> {
 
   return true;
 }
+
+/**
+ * Update Vocabulary Story Title
+ * Endpoint: PATCH /api/v1/vocab-stories/:id
+ */
+export async function updateVocabStoryTitleApi(
+  id: string,
+  title: string
+): Promise<VocabStoryItem> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
+
+  const res = await fetch(`${baseUrl}/vocab-stories/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ title }),
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => null);
+    throw new Error(errData?.message || "Failed to update vocabulary story title");
+  }
+
+  const json = await res.json();
+  return json.data || json;
+}
+
