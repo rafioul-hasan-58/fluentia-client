@@ -472,7 +472,7 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
       ? data.wordFamily.map((wf: any) => {
           const word = getWordRelationWord(wf);
           const partOfSpeech = getWordRelationPartOfSpeech(wf);
-          const banglaMeaning = getWordRelationBangla(wf, data);
+          const banglaMeaning = getWordRelationBangla(wf);
           return {
             word,
             partOfSpeech: partOfSpeech || "BASE",

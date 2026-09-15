@@ -70,7 +70,6 @@ import {
   Table,
   Clock,
   Calendar,
-  Languages,
   ExternalLink,
 } from "lucide-react";
 
@@ -219,7 +218,6 @@ export default function VocabularyPage() {
 
   // Fullscreen Single Vocab View State
   const [fullscreenVocabId, setFullscreenVocabId] = useState<string | null>(null);
-  const [wfTranslations, setWfTranslations] = useState<Record<string, string>>({});
 
   // Modal State (Single Word Focused)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -799,35 +797,6 @@ export default function VocabularyPage() {
     if (!fullscreenVocabId) return -1;
     return vocabularies.findIndex((v) => v.id === fullscreenVocabId);
   }, [fullscreenVocabId, vocabularies]);
-
-  // Dynamically resolve Google Translator Bangla meanings for word family items if missing
-  useEffect(() => {
-    const family = activeFullscreenVocab?.word?.wordFamily;
-    if (!family || !Array.isArray(family) || family.length === 0) return;
-
-    family.forEach(async (wf: any) => {
-      const word = getWordRelationWord(wf).trim().toLowerCase();
-      const existing = getWordRelationBangla(wf, activeFullscreenVocab.word);
-      if (word && !existing && !wfTranslations[word]) {
-        try {
-          const res = await fetch(
-            `/api/v1/translate?text=${encodeURIComponent(word)}&from=en&to=bn`
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && data.banglaMeaning) {
-              setWfTranslations((prev) => ({
-                ...prev,
-                [word]: data.banglaMeaning,
-              }));
-            }
-          }
-        } catch {
-          // Silently fall back
-        }
-      }
-    });
-  }, [activeFullscreenVocab]);
 
   // Pagination calculations (Default 12 per screen)
   const totalCount = vocabularies.length;
@@ -2053,19 +2022,12 @@ export default function VocabularyPage() {
                             <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
                             Word Family (শব্দ পরিবার)
                           </span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                            <Languages className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                            <span>Google Translator বাংলা অর্থ</span>
-                          </span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {activeFullscreenVocab.word.wordFamily.map((wf: any, idx: number) => {
                             const wfWord = getWordRelationWord(wf);
                             const wfPos = getWordRelationPartOfSpeech(wf);
-                            const wfBangla =
-                              (typeof wf === "object" && wf?.banglaMeaning) ||
-                              wfTranslations[wfWord.toLowerCase()] ||
-                              getWordRelationBangla(wf, activeFullscreenVocab.word);
+                            const wfBangla = getWordRelationBangla(wf);
 
                             return (
                               <div
@@ -2091,14 +2053,10 @@ export default function VocabularyPage() {
                                       </span>
                                     )}
                                   </div>
-                                  {wfBangla ? (
+                                  {wfBangla && (
                                     <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 truncate flex items-center gap-1">
                                       <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-normal">বাংলা:</span>
                                       <span className="font-bangla">{wfBangla}</span>
-                                    </p>
-                                  ) : (
-                                    <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
-                                      অর্থ লোড হচ্ছে...
                                     </p>
                                   )}
                                 </div>
