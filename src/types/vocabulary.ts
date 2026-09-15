@@ -14,6 +14,7 @@ export type PartOfSpeech =
 export interface WordRelationItem {
   word: string;
   partOfSpeech?: PartOfSpeech | string;
+  banglaMeaning?: string;
 }
 
 export interface CollocationItem {
@@ -186,6 +187,334 @@ export function getWordRelationText(item: string | WordRelationItem | any): stri
     return `${word} (${pos.toLowerCase()})`;
   }
   return word;
+}
+
+export const KNOWN_WORD_FAMILY_BANGLA_MAP: Record<string, string> = {
+  // Soothe
+  soothe: "শান্ত করা",
+  soother: "শান্তিকারক",
+  soothing: "শান্তিদায়ক",
+  soothingly: "শান্তিদায়কভাবে",
+
+  // Resilient
+  resilient: "সহনশীল",
+  resilience: "স্থিতিস্থাপকতা বা সহনশীলতা",
+  resiliently: "সহনশীলভাবে",
+
+  // Significant
+  significant: "গুরুত্বপূর্ণ",
+  significance: "তাৎপর্য বা গুরুত্ব",
+  significantly: "উল্লেখযোগ্যভাবে",
+
+  // Pragmatic
+  pragmatic: "বাস্তবধর্মী",
+  pragmatism: "বাস্তববাদ বা প্রয়োগবাদ",
+  pragmatically: "বাস্তবধর্মীভাবে",
+
+  // Serendipity
+  serendipity: "দৈব সৌভাগ্য",
+  serendipitous: "অপ্রত্যাশিত সৌভাগ্যপূর্ণ",
+  serendipitously: "দৈবক্রমে বা অপ্রত্যাশিতভাবে",
+
+  // Meticulous
+  meticulous: "অতি সতর্ক বা নিখুঁত",
+  meticulousness: "নিখুঁত সতর্কতা",
+  meticulously: "খুঁটিয়ে বা নিখুঁতভাবে",
+
+  // Articulate
+  articulate: "স্পষ্টভাষী",
+  articulation: "স্পষ্ট প্রকাশ",
+  articulately: "স্পষ্টভাবে",
+
+  // Innovate
+  innovate: "উদ্ভাবন করা",
+  innovation: "উদ্ভাবন",
+  innovative: "উদ্ভাবনী",
+  innovatively: "উদ্ভাবনী উপায়ে",
+  innovator: "উদ্ভাবক",
+
+  // Adapt
+  adapt: "খাপ খাইয়ে নেওয়া",
+  adaptation: "অভিযোজন",
+  adaptable: "অভিযোজনক্ষম",
+  adaptability: "অভিযোজনযোগ্যতা",
+
+  // Persevere
+  persevere: "অধ্যবসায়ী হওয়া",
+  perseverance: "অধ্যবসায়",
+  perseverant: "অধ্যবসায়ী",
+
+  // Comprehend
+  comprehend: "উপলব্ধি করা",
+  comprehension: "বোধগম্যতা",
+  comprehensive: "সুদূরপ্রসারী বা সামগ্রিক",
+  comprehensively: "বিস্তারিতভাবে",
+
+  // Lucid
+  lucid: "স্পষ্ট বা বোধগম্য",
+  lucidity: "স্বচ্ছতা",
+  lucidly: "স্পষ্টভাবে",
+
+  // Ambiguous
+  ambiguous: "দ্ব্যর্থবোধক বা অস্পষ্ট",
+  ambiguity: "অস্পষ্টতা",
+  ambiguously: "অস্পষ্টভাবে",
+
+  // Eloquent
+  eloquent: "বাকপটু",
+  eloquence: "বাকপটুতা",
+  eloquently: "সাবলীলভাবে",
+
+  // Tenacious
+  tenacious: "দৃঢ়প্রতিজ্ঞ",
+  tenacity: "দৃঢ়তা",
+  tenaciously: "দৃঢ়ভাবে",
+
+  // Ephemeral
+  ephemeral: "ক্ষণস্থায়ী",
+  ephemerality: "ক্ষণস্থায়িত্ব",
+
+  // Ubiquitous
+  ubiquitous: "সর্বব্যাপী",
+  ubiquity: "সর্বব্যাপিতা",
+
+  // Coherent
+  coherent: "সুসংগত",
+  coherence: "সুসংগতি",
+  coherently: "সুসংগতভাবে",
+
+  // Diligent
+  diligent: "পরিশ্রমী",
+  diligence: "একাগ্রতা",
+  diligently: "নিষ্ঠার সাথে",
+
+  // Empathy
+  empathy: "সহানুভূতি",
+  empathize: "সহানুভূতি প্রকাশ করা",
+  empathetic: "সহানুভূতিশীল",
+  empathetically: "সহানুভূতি সহকারে",
+
+  // Collaborate
+  collaborate: "সহযোগিতা করা",
+  collaboration: "সহযোগিতা",
+  collaborative: "সহযোগিতামূলক",
+  collaboratively: "যৌথভাবে",
+
+  // Analyze
+  analyze: "বিশ্লেষণ করা",
+  analysis: "বিশ্লেষণ",
+  analytical: "বিশ্লেষণাত্মক",
+  analytically: "বিশ্লেষণমূলকভাবে",
+  analyst: "বিশ্লেষক",
+
+  // Synthesize
+  synthesize: "সমন্বয় করা",
+  synthesis: "সংশ্লেষণ বা সমন্বয়",
+  synthetic: "সমন্বিত বা কৃত্রিম",
+
+  // Facilitate
+  facilitate: "সহজতর করা",
+  facilitation: "সুবিধাকরণ",
+  facilitator: "সহায়ক",
+
+  // Mitigate
+  mitigate: "লাঘব করা বা হ্রাস করা",
+  mitigation: "প্রশমন বা উপশম",
+  mitigating: "প্রশমনকারী",
+
+  // Advocate
+  advocate: "সমর্থন করা",
+  advocacy: "সমর্থন বা প্রচারণা",
+
+  // Benevolent
+  benevolent: "দয়ালু বা পরোপকারী",
+  benevolence: "মহানুভবতা",
+  benevolently: "মহানুভবতার সাথে",
+
+  // Candid
+  candid: "অকপট বা স্পষ্টভাষী",
+  candor: "অকপটতা",
+  candidly: "খোলাখুলিভাবে",
+
+  // Fortitude
+  fortitude: "দৃঢ় মনোবল",
+  fortitudinous: "দৃঢ়চেতা",
+
+  // Inevitable
+  inevitable: "অনিবার্য",
+  inevitability: "অনিবার্যতা",
+  inevitably: "অনিবার্যভাবে",
+
+  // Prolific
+  prolific: "প্রচুর উৎপাদনশীল",
+  prolifically: "প্রচুর পরিমাণে",
+
+  // Resolute
+  resolute: "সংকল্পবদ্ধ",
+  resolution: "সংকল্প",
+  resolutely: "দৃঢ়সংকল্পে",
+
+  // Vulnerable
+  vulnerable: "অরক্ষিত বা দুর্বল",
+  vulnerability: "দুর্বলতা",
+
+  // Versatile
+  versatile: "বহুমুখী",
+  versatility: "বহুমুখী প্রতিভা",
+
+  // Astute
+  astute: "বিচক্ষণ",
+  astuteness: "বিচক্ষণতা",
+  astutely: "বিচক্ষণতার সাথে",
+
+  // Pensive
+  pensive: "চিন্তাশীল",
+  pensively: "গভীর চিন্তায়",
+
+  // Gregarious
+  gregarious: "মিশুক বা সামাজিক",
+  gregariousness: "সামাজিকতা",
+
+  // Cynical
+  cynical: "নৈরাশ্যবাদী",
+  cynicism: "নৈরাশ্যবাদ",
+
+  // Conscientious
+  conscientious: "কর্তব্যনিষ্ঠ",
+  conscientiousness: "কর্তব্যনিষ্ঠা",
+  conscientiously: "নিষ্ঠার সাথে",
+
+  // Disdain
+  disdain: "অবজ্ঞা",
+  disdainful: "অবজ্ঞাপূর্ণ",
+  disdainfully: "অবজ্ঞার সাথে",
+
+  // Frugal
+  frugal: "মিতব্যয়ী",
+  frugality: "মিতব্যয়িতা",
+  frugally: "হিসাবিভাবে",
+
+  // Impetuous
+  impetuous: "হঠকারী",
+  impetuosity: "হঠকারিতা",
+  impetuously: "হঠকারিতার সাথে",
+
+  // Jubilant
+  jubilant: "উল্লসিত",
+  jubilation: "উল্লাস",
+  jubilantly: "উল্লসিতভাবে",
+
+  // Lethargic
+  lethargic: "নিস্তেজ বা অলস",
+  lethargy: "আলস্য বা অবসাদ",
+  lethargically: "নিস্তেজভাবে",
+
+  // Mundane
+  mundane: "সাধারণ বা একঘেয়ে",
+  mundaneness: "একঘেয়েমি",
+  mundanely: "সাধারণভাবে",
+
+  // Nostalgia
+  nostalgia: "স্মৃতিকাতরতা",
+  nostalgic: "স্মৃতিকাতর",
+  nostalgically: "স্মৃতিকাতর হয়ে",
+
+  // Oblivious
+  oblivious: "উদাসীন বা অসচেতন",
+  oblivion: "বিস্মৃতি",
+  obliviously: "অসচেতনভাবে",
+
+  // Plausible
+  plausible: "বিশ্বাসযোগ্য",
+  plausibility: "বিশ্বাসযোগ্যতা",
+  plausibly: "বিশ্বাসযোগ্যভাবে",
+
+  // Quaint
+  quaint: "বিচিত্র বা প্রাচীন",
+  quaintness: "আকর্ষণীয় বিচিত্রতা",
+  quaintly: "বিচিত্রভাবে",
+
+  // Rancor
+  rancor: "শত্রুতা বা তিক্ততা",
+  rancorous: "তিক্ততাপূর্ণ",
+
+  // Scrutinize
+  scrutinize: "পুঙ্খানুপুঙ্খ পরীক্ষা করা",
+  scrutiny: "পুঙ্খানুপুঙ্খ পরীক্ষা",
+
+  // Trepidation
+  trepidation: "উদ্বেগ বা ভয়",
+  trepidatious: "শঙ্কিত",
+
+  // Unprecedented
+  unprecedented: "অভূতপূর্ব",
+  unprecedentedly: "অভূতপূর্বভাবে",
+
+  // Venerate
+  venerate: "শ্রদ্ধা করা",
+  veneration: "গভীর শ্রদ্ধা",
+  venerable: "শ্রদ্ধেয়",
+
+  // Wary
+  wary: "সতর্ক",
+  wariness: "সতর্কতা",
+  warily: "সতর্কতার সাথে",
+
+  // Zeal
+  zeal: "উদ্যম বা প্রবল আগ্রহ",
+  zealous: "উৎসাহী",
+  zealously: "উৎসাহভরে",
+  zealot: "কট্টর সমর্থক",
+};
+
+export function getWordRelationBangla(
+  item: string | WordRelationItem | any,
+  parentWord?: VocabularyItem | any
+): string {
+  if (!item) return "";
+
+  // 1. Check direct bangla meaning on object (from API / DB / AI)
+  if (typeof item === "object") {
+    const direct =
+      item.banglaMeaning ||
+      item.bangla ||
+      item.meaningBangla ||
+      item.bengali ||
+      item.bengaliMeaning ||
+      item.meaning_bn ||
+      item.bangla_meaning;
+    if (direct && typeof direct === "string" && direct.trim()) {
+      return direct.trim();
+    }
+  }
+
+  // 2. Extract word and check known dictionary
+  const rawWord = getWordRelationWord(item).trim();
+  const lower = rawWord.toLowerCase();
+  if (lower && KNOWN_WORD_FAMILY_BANGLA_MAP[lower]) {
+    return KNOWN_WORD_FAMILY_BANGLA_MAP[lower];
+  }
+
+  // 3. Fallback from parent word if available
+  if (parentWord && parentWord.banglaMeaning) {
+    const core = parentWord.banglaMeaning.split(/[,/]/)[0].trim();
+    const pos = (getWordRelationPartOfSpeech(item) || "").toUpperCase();
+    if (pos === "ADVERB") {
+      return `${core}ভাবে`;
+    }
+    if (pos === "NOUN") {
+      return `${core} বা সমার্থক রূপ`;
+    }
+    if (pos === "ADJECTIVE") {
+      return `${core}মূলক`;
+    }
+    if (pos === "VERB") {
+      return `${core} করা`;
+    }
+    return core;
+  }
+
+  return "";
 }
 
 export function getCollocationText(item: CollocationType | any): string {

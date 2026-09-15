@@ -14,6 +14,7 @@ import {
   getWordRelationText,
   getWordRelationWord,
   getWordRelationPartOfSpeech,
+  getWordRelationBangla,
   getCollocationText,
   getCollocationMeaning,
   getCollocationBangla,
@@ -69,6 +70,8 @@ import {
   Table,
   Clock,
   Calendar,
+  Languages,
+  ExternalLink,
 } from "lucide-react";
 
 const POS_COLORS: Record<
@@ -216,6 +219,7 @@ export default function VocabularyPage() {
 
   // Fullscreen Single Vocab View State
   const [fullscreenVocabId, setFullscreenVocabId] = useState<string | null>(null);
+  const [wfTranslations, setWfTranslations] = useState<Record<string, string>>({});
 
   // Modal State (Single Word Focused)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -795,6 +799,35 @@ export default function VocabularyPage() {
     if (!fullscreenVocabId) return -1;
     return vocabularies.findIndex((v) => v.id === fullscreenVocabId);
   }, [fullscreenVocabId, vocabularies]);
+
+  // Dynamically resolve Google Translator Bangla meanings for word family items if missing
+  useEffect(() => {
+    const family = activeFullscreenVocab?.word?.wordFamily;
+    if (!family || !Array.isArray(family) || family.length === 0) return;
+
+    family.forEach(async (wf: any) => {
+      const word = getWordRelationWord(wf).trim().toLowerCase();
+      const existing = getWordRelationBangla(wf, activeFullscreenVocab.word);
+      if (word && !existing && !wfTranslations[word]) {
+        try {
+          const res = await fetch(
+            `/api/v1/translate?text=${encodeURIComponent(word)}&from=en&to=bn`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.banglaMeaning) {
+              setWfTranslations((prev) => ({
+                ...prev,
+                [word]: data.banglaMeaning,
+              }));
+            }
+          }
+        } catch {
+          // Silently fall back
+        }
+      }
+    });
+  }, [activeFullscreenVocab]);
 
   // Pagination calculations (Default 12 per screen)
   const totalCount = vocabularies.length;
@@ -2014,20 +2047,87 @@ export default function VocabularyPage() {
                   {/* Word Family */}
                   {activeFullscreenVocab.word.wordFamily &&
                     activeFullscreenVocab.word.wordFamily.length > 0 && (
-                      <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
-                          Word Family
-                        </span>
-                        <div className="flex flex-wrap gap-1.5">
-                          {activeFullscreenVocab.word.wordFamily.map((wf: any, idx: number) => (
-                            <span
-                              key={idx}
-                              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80"
-                            >
-                              {getWordRelationText(wf)}
-                            </span>
-                          ))}
+                      <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
+                            Word Family (শব্দ পরিবার)
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                            <Languages className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                            <span>Google Translator বাংলা অর্থ</span>
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {activeFullscreenVocab.word.wordFamily.map((wf: any, idx: number) => {
+                            const wfWord = getWordRelationWord(wf);
+                            const wfPos = getWordRelationPartOfSpeech(wf);
+                            const wfBangla =
+                              (typeof wf === "object" && wf?.banglaMeaning) ||
+                              wfTranslations[wfWord.toLowerCase()] ||
+                              getWordRelationBangla(wf, activeFullscreenVocab.word);
+
+                            return (
+                              <div
+                                key={idx}
+                                className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:bg-white dark:hover:bg-slate-800 transition-all flex items-center justify-between gap-2.5 group shadow-2xs"
+                              >
+                                <div className="min-w-0 flex-1 space-y-0.5">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white capitalize">
+                                      {wfWord}
+                                    </span>
+                                    {wfPos && (
+                                      <span
+                                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
+                                          POS_COLORS[wfPos.toUpperCase() as PartOfSpeech]?.bg || "bg-indigo-500/10"
+                                        } ${
+                                          POS_COLORS[wfPos.toUpperCase() as PartOfSpeech]?.text || "text-indigo-600 dark:text-indigo-400"
+                                        } ${
+                                          POS_COLORS[wfPos.toUpperCase() as PartOfSpeech]?.border || "border-indigo-500/20"
+                                        }`}
+                                      >
+                                        {POS_COLORS[wfPos.toUpperCase() as PartOfSpeech]?.label || wfPos.toLowerCase()}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {wfBangla ? (
+                                    <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 truncate flex items-center gap-1">
+                                      <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-normal">বাংলা:</span>
+                                      <span className="font-bangla">{wfBangla}</span>
+                                    </p>
+                                  ) : (
+                                    <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+                                      অর্থ লোড হচ্ছে...
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => playPronunciation(wfWord)}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
+                                    title={`Pronounce "${wfWord}"`}
+                                    aria-label={`Pronounce ${wfWord}`}
+                                  >
+                                    <Volume2 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <a
+                                    href={`https://translate.google.com/?sl=en&tl=bn&text=${encodeURIComponent(
+                                      wfWord
+                                    )}&op=translate`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                                    title={`Google Translator-এ '${wfWord}' দেখুন`}
+                                    aria-label={`Google Translator for ${wfWord}`}
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                  </a>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

@@ -10,6 +10,9 @@ import {
   getCollocationText,
   getCollocationBangla,
   getCollocationExample,
+  getWordRelationWord,
+  getWordRelationPartOfSpeech,
+  getWordRelationBangla,
 } from "@/types/vocabulary";
 import { getApiBaseUrl } from "./config";
 
@@ -55,8 +58,8 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
         "Babies are often surprisingly resilient to temporary changes in routine.",
       ],
       wordFamily: [
-        { word: "resilience", partOfSpeech: "NOUN" },
-        { word: "resiliently", partOfSpeech: "ADVERB" },
+        { word: "resilience", partOfSpeech: "NOUN", banglaMeaning: "স্থিতিস্থাপকতা বা সহনশীলতা" },
+        { word: "resiliently", partOfSpeech: "ADVERB", banglaMeaning: "সহনশীলভাবে" },
       ],
       synonyms: [
         { word: "tenacious", partOfSpeech: "ADJECTIVE" },
@@ -123,8 +126,8 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
         "The study revealed a significant difference between the two groups.",
       ],
       wordFamily: [
-        { word: "significance", partOfSpeech: "NOUN" },
-        { word: "significantly", partOfSpeech: "ADVERB" },
+        { word: "significance", partOfSpeech: "NOUN", banglaMeaning: "তাৎপর্য বা গুরুত্ব" },
+        { word: "significantly", partOfSpeech: "ADVERB", banglaMeaning: "উল্লেখযোগ্যভাবে" },
       ],
       synonyms: [
         { word: "important", partOfSpeech: "ADJECTIVE" },
@@ -186,8 +189,8 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
         "She made a pragmatic decision to postpone the trip until finances stabilized.",
       ],
       wordFamily: [
-        { word: "pragmatism", partOfSpeech: "NOUN" },
-        { word: "pragmatically", partOfSpeech: "ADVERB" },
+        { word: "pragmatism", partOfSpeech: "NOUN", banglaMeaning: "বাস্তববাদ বা প্রয়োগবাদ" },
+        { word: "pragmatically", partOfSpeech: "ADVERB", banglaMeaning: "বাস্তবধর্মীভাবে" },
       ],
       synonyms: [
         { word: "practical", partOfSpeech: "ADJECTIVE" },
@@ -243,8 +246,8 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
         "Scientific breakthroughs often owe as much to serendipity as to methodical research.",
       ],
       wordFamily: [
-        { word: "serendipitous", partOfSpeech: "ADJECTIVE" },
-        { word: "serendipitously", partOfSpeech: "ADVERB" },
+        { word: "serendipitous", partOfSpeech: "ADJECTIVE", banglaMeaning: "অপ্রত্যাশিত সৌভাগ্যপূর্ণ" },
+        { word: "serendipitously", partOfSpeech: "ADVERB", banglaMeaning: "দৈবক্রমে বা অপ্রত্যাশিতভাবে" },
       ],
       synonyms: [
         { word: "fluke", partOfSpeech: "NOUN" },
@@ -311,8 +314,8 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
         "His reassuring words did much to soothe the anxious crowd.",
       ],
       wordFamily: [
-        { word: "soothing", partOfSpeech: "ADJECTIVE" },
-        { word: "soothingly", partOfSpeech: "ADVERB" },
+        { word: "soothing", partOfSpeech: "ADJECTIVE", banglaMeaning: "শান্তিদায়ক" },
+        { word: "soothingly", partOfSpeech: "ADVERB", banglaMeaning: "শান্তিদায়কভাবে" },
       ],
       synonyms: [
         { word: "calm", partOfSpeech: "VERB" },
@@ -465,7 +468,18 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
         })
       : [],
     exampleSentences: Array.isArray(data.exampleSentences) ? data.exampleSentences : [],
-    wordFamily: Array.isArray(data.wordFamily) ? data.wordFamily : [],
+    wordFamily: Array.isArray(data.wordFamily)
+      ? data.wordFamily.map((wf: any) => {
+          const word = getWordRelationWord(wf);
+          const partOfSpeech = getWordRelationPartOfSpeech(wf);
+          const banglaMeaning = getWordRelationBangla(wf, data);
+          return {
+            word,
+            partOfSpeech: partOfSpeech || "BASE",
+            banglaMeaning,
+          };
+        })
+      : [],
     synonyms: Array.isArray(data.synonyms) ? data.synonyms : [],
     antonyms: Array.isArray(data.antonyms) ? data.antonyms : [],
     englishLevel: data.englishLevel || data.cefrLevel || "B2",
