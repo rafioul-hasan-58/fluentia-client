@@ -2020,7 +2020,7 @@ export default function VocabularyPage() {
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                             <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
-                            Word Family (শব্দ পরিবার)
+                            Word Family
                           </span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
