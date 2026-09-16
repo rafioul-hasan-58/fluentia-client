@@ -4,15 +4,8 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   Flame,
-  CheckCircle2,
-  Calendar,
-  Trophy,
-  Zap,
-  Sparkles,
   Shield,
   Info,
-  Clock,
-  ChevronRight,
   X,
 } from "lucide-react";
 
@@ -35,42 +28,18 @@ export function StreakWidget({
   className = "",
   onOpenModal,
 }: StreakWidgetProps) {
-  const { user, recordStreak } = useAuth();
-  const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [celebrationMsg, setCelebrationMsg] = useState<string | null>(null);
+  const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
 
   const streakDays = Number(user?.streakDays ?? user?.profile?.streakDays ?? 0);
   const longestStreak = Number(user?.longestStreak ?? user?.profile?.longestStreak ?? streakDays);
   const lastActiveDate = user?.lastActiveDate ?? user?.profile?.lastActiveDate;
 
-  // Determine if already checked in today
+  // Determine if active today
   const todayStr = new Date().toISOString().slice(0, 10);
   const isCheckedInToday = Boolean(
     streakDays > 0 || (lastActiveDate && lastActiveDate.startsWith(todayStr))
   );
-
-  const handleCheckIn = async (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    if (isCheckingIn || isCheckedInToday) return;
-
-    setIsCheckingIn(true);
-    try {
-      const res = await recordStreak();
-      if (res.success) {
-        setCelebrationMsg(
-          res.message || `🔥 Day ${res.streakDays || streakDays + 1} Streak Logged!`
-        );
-        setShowCelebration(true);
-        setTimeout(() => setShowCelebration(false), 5000);
-      }
-    } catch (err) {
-      console.warn("Streak check-in error:", err);
-    } finally {
-      setIsCheckingIn(false);
-    }
-  };
 
   // Find next milestone
   const nextMilestone =
@@ -193,30 +162,13 @@ export function StreakWidget({
             </div>
             <p className="text-xs text-ink-soft">
               {isCheckedInToday
-                ? "You've checked in today! Keep learning to retain your streak tomorrow."
-                : "Practice for at least 5 minutes or click below to secure today's streak."}
+                ? "You've practiced today! Keep learning to retain your streak tomorrow."
+                : "Practice daily to build and protect your fluency streak."}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          {!isCheckedInToday ? (
-            <button
-              type="button"
-              onClick={handleCheckIn}
-              disabled={isCheckingIn}
-              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold shadow-md shadow-amber-500/25 transition-all hover:scale-102 active:scale-98 disabled:opacity-50"
-            >
-              <Flame className="w-3.5 h-3.5 fill-white" />
-              <span>{isCheckingIn ? "Checking In..." : "Check In Now"}</span>
-            </button>
-          ) : (
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Checked in today</span>
-            </div>
-          )}
-
           <button
             type="button"
             onClick={() => setModalOpen(true)}
@@ -320,43 +272,6 @@ export function StreakWidget({
             />
           </div>
         </div>
-
-        {/* Action Button */}
-        <div className="pt-1 relative z-10">
-          {isCheckedInToday ? (
-            <div className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Today's Streak Secured!</span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleCheckIn}
-              disabled={isCheckingIn}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white text-xs font-bold shadow-md shadow-orange-500/25 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-60"
-            >
-              <Flame className="w-4 h-4 fill-white" />
-              <span>{isCheckingIn ? "Recording Check-in..." : "Claim Today's Streak"}</span>
-            </button>
-          )}
-        </div>
-
-        {/* Celebration Toast Notice */}
-        {showCelebration && celebrationMsg && (
-          <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-purple-500/20 border border-amber-500/40 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-center justify-between animate-fadeIn">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-              <span>{celebrationMsg}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowCelebration(false)}
-              className="text-ink-soft hover:text-ink text-xs p-1"
-            >
-              ✕
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Detailed Streak Information Modal */}
@@ -415,10 +330,10 @@ export function StreakWidget({
                   Today's Status
                 </span>
                 <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1 pt-1">
-                  {isCheckedInToday ? "✅ Secured" : "⏳ Pending"}
+                  {isCheckedInToday ? "✅ Active" : "⏳ Pending"}
                 </p>
                 <span className="text-[10px] text-ink-soft">
-                  {isCheckedInToday ? "All set for today" : "Check in to preserve"}
+                  {isCheckedInToday ? "Practiced today" : "Complete a lesson to build"}
                 </span>
               </div>
             </div>
@@ -474,7 +389,7 @@ export function StreakWidget({
                 <span>How Fluentia Streaks Work</span>
               </div>
               <p>
-                Your streak increments by completing lessons, assessments, or manually checking in every calendar day based on your timezone. Practicing every day solidifies neuro-linguistic memory and elevates your CEFR fluency.
+                Your streak increments automatically by completing lessons, practice, and assessments every calendar day based on your timezone. Practicing every day solidifies neuro-linguistic memory and elevates your CEFR fluency.
               </p>
             </div>
 
@@ -487,16 +402,6 @@ export function StreakWidget({
               >
                 Close
               </button>
-              {!isCheckedInToday && (
-                <button
-                  type="button"
-                  onClick={handleCheckIn}
-                  disabled={isCheckingIn}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold transition-all shadow-md shadow-amber-500/25"
-                >
-                  {isCheckingIn ? "Checking In..." : "Check In Today"}
-                </button>
-              )}
             </div>
           </div>
         </div>
