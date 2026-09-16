@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { ThemeToggle } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
   MyVocabularyItem,
-  VocabularyItem,
   PartOfSpeech,
   VocabularyStatus,
-  VocabularyFilterOptions,
   getWordRelationText,
   getWordRelationWord,
   getWordRelationPartOfSpeech,
@@ -24,39 +22,29 @@ import {
   fetchMyVocabularies,
   getDateWordCounts,
   addSingleVocabulary,
-  addVocabularyWithAi,
   updateMyVocabulary,
   deleteMyVocabulary,
   generateVocabStoryApi,
 } from "@/features/vocabulary/api";
 import {
-  Copy,
   Sparkles,
   Plus,
   Search,
   Volume2,
-  VolumeX,
-  Bookmark,
-  BookmarkCheck,
   Star,
   Trash2,
   Edit3,
   Check,
   X,
-  ChevronDown,
-  ChevronUp,
   ChevronLeft,
   ChevronRight,
   BookOpen,
   Layers,
-  Zap,
   Filter,
   RefreshCw,
-  Share2,
   Lightbulb,
   CheckCircle2,
   AlertCircle,
-  HelpCircle,
   ArrowRight,
   TrendingUp,
   Maximize2,
