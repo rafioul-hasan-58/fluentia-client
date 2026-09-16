@@ -32,14 +32,14 @@ import {
   VocabStoryItem,
   MyVocabularyItem,
   KeywordExplanationItem,
-} from "@/types/vocabulary";
+} from "@/features/vocabulary/types/vocabulary";
 import {
   fetchVocabStoriesApi,
   deleteVocabStoryApi,
   updateVocabStoryTitleApi,
   generateVocabStoryApi,
   fetchMyVocabularies,
-} from "@/lib/api/vocabulary";
+} from "@/features/vocabulary/api";
 
 // Helper to underline target vocabulary keywords within story text (pure underline, no background color)
 function renderHighlightedStory(text: string, keywords: string[]) {
@@ -391,7 +391,7 @@ export default function VocabStoryPage() {
               <Sparkles className="w-4 h-4 text-amber-200" />
               <span>Create Story</span>
             </button>
-          </div>  
+          </div>
         </div>
 
         {/* Quick Stats Strip */}
@@ -813,31 +813,28 @@ export default function VocabStoryPage() {
                 <div className="inline-flex p-1.5 rounded-2xl bg-slate-200/80 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800">
                   <button
                     onClick={() => setViewTab("bangla")}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                      viewTab === "bangla"
-                        ? "bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-300 shadow-sm"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${viewTab === "bangla"
+                      ? "bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-300 shadow-sm"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      }`}
                   >
                     <span>🇧🇩 Bangla-English Mixed</span>
                   </button>
                   <button
                     onClick={() => setViewTab("english")}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                      viewTab === "english"
-                        ? "bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 shadow-sm"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${viewTab === "english"
+                      ? "bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 shadow-sm"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      }`}
                   >
                     <span>🇬🇧 Full English Narrative</span>
                   </button>
                   <button
                     onClick={() => setViewTab("split")}
-                    className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                      viewTab === "split"
-                        ? "bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-sm"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                    }`}
+                    className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${viewTab === "split"
+                      ? "bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 shadow-sm"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      }`}
                   >
                     <Columns className="w-3.5 h-3.5" />
                     <span>Side-by-Side View</span>
@@ -1315,11 +1312,10 @@ export default function VocabStoryPage() {
                             key={wordId}
                             type="button"
                             onClick={() => handleToggleWord(wordId)}
-                            className={`p-2.5 rounded-xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer ${
-                              isSelected
-                                ? "bg-amber-500/15 border-amber-500 text-amber-900 dark:text-amber-200 font-bold shadow-2xs"
-                                : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300"
-                            }`}
+                            className={`p-2.5 rounded-xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer ${isSelected
+                              ? "bg-amber-500/15 border-amber-500 text-amber-900 dark:text-amber-200 font-bold shadow-2xs"
+                              : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300"
+                              }`}
                           >
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 truncate">
@@ -1337,11 +1333,10 @@ export default function VocabStoryPage() {
                               </p>
                             </div>
                             <div
-                              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                                isSelected
-                                  ? "border-amber-500 bg-amber-500 text-white"
-                                  : "border-slate-300 dark:border-slate-700"
-                              }`}
+                              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected
+                                ? "border-amber-500 bg-amber-500 text-white"
+                                : "border-slate-300 dark:border-slate-700"
+                                }`}
                             >
                               {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                             </div>
@@ -1388,11 +1383,10 @@ export default function VocabStoryPage() {
                     type="button"
                     onClick={handleExecuteGenerate}
                     disabled={selectedWordIds.length < 5 || isGenerating}
-                    className={`px-6 py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
-                      selectedWordIds.length >= 5 && !isGenerating
-                        ? "bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:scale-105 shadow-md shadow-orange-500/30 cursor-pointer"
-                        : "bg-slate-300 dark:bg-slate-800 text-slate-500 dark:text-slate-600 cursor-not-allowed"
-                    }`}
+                    className={`px-6 py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${selectedWordIds.length >= 5 && !isGenerating
+                      ? "bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:scale-105 shadow-md shadow-orange-500/30 cursor-pointer"
+                      : "bg-slate-300 dark:bg-slate-800 text-slate-500 dark:text-slate-600 cursor-not-allowed"
+                      }`}
                   >
                     {isGenerating ? (
                       <>
