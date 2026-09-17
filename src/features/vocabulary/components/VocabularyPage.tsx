@@ -986,16 +986,122 @@ export default function VocabularyPage() {
 
       {/* 2. Search, Filter & Controls */}
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Search Bar */}
-          <div className="relative flex-1">
+        {/* Line 1: Favorites, Quick Filters, Dropdowns & Actions (Left-aligned) */}
+        <div className="flex flex-wrap items-center gap-3 justify-start">
+          <button
+            onClick={() => setFavoritesOnly(!favoritesOnly)}
+            className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${favoritesOnly
+              ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm"
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
+              }`}
+          >
+            <Star
+              className={`w-4 h-4 ${favoritesOnly ? "fill-amber-400 text-amber-400" : "text-slate-400"
+                }`}
+            />
+            <span>Favorites</span>
+          </button>
+
+          <button
+            onClick={() => {
+              const nextVal = !todayOnly;
+              setTodayOnly(nextVal);
+              if (nextVal) setSelectedDate(null);
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${todayOnly
+              ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
+              }`}
+          >
+            <Clock
+              className={`w-4 h-4 ${todayOnly ? "text-indigo-500" : "text-slate-400"
+                }`}
+            />
+            <span>Today&apos;s Words</span>
+            {stats.todayCount > 0 && (
+              <span
+                className={`ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold ${todayOnly
+                  ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}
+              >
+                {stats.todayCount}
+              </span>
+            )}
+          </button>
+
+          {/* Calendar Date Filter Picker */}
+          <VocabularyDatePicker
+            selectedDate={selectedDate}
+            onSelectDate={(date: any) => {
+              setSelectedDate(date);
+              if (date) setTodayOnly(false);
+            }}
+            wordCounts={calendarWordCounts}
+          />
+
+          <select
+            value={selectedSort}
+            onChange={(e) => setSelectedSort(e.target.value as any)}
+            className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          >
+            <option value="recent">Recently Added</option>
+            <option value="alphabetical">Alphabetical (A - Z)</option>
+            <option value="mastery">Mastery Level</option>
+          </select>
+
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="LEARNING">Learning</option>
+            <option value="LEARNED">Learned</option>
+            <option value="MASTERED">Mastered</option>
+          </select>
+
+          <select
+            value={selectedLevel}
+            onChange={(e) => setSelectedLevel(e.target.value)}
+            className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          >
+            <option value="ALL">All Levels</option>
+            <option value="A1">A1 Level</option>
+            <option value="A2">A2 Level</option>
+            <option value="B1">B1 Level</option>
+            <option value="B2">B2 Level</option>
+            <option value="C1">C1 Level</option>
+            <option value="C2">C2 Level</option>
+          </select>
+
+          <button
+            onClick={() => {
+              setIsStorySelectMode(!isStorySelectMode);
+              if (isStorySelectMode) setSelectedStoryItems([]);
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${isStorySelectMode
+              ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-500 shadow-md shadow-orange-500/20"
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400"
+              }`}
+            title="Toggle Story Selection Mode"
+          >
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>{isStorySelectMode ? `Story Mode (${selectedStoryItems.length})` : "Create Story"}</span>
+          </button>
+        </div>
+
+        {/* Line 2: Search Bar, Refresh & View Mode Switch (Left-aligned) */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 justify-start">
+          {/* Search Bar - Expanded & Prominent */}
+          <div className="relative w-full sm:max-w-xl md:max-w-2xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search words, English definitions, Bengali meanings, or synonyms..."
-              className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all text-sm"
+              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all text-sm"
             />
             {searchQuery && (
               <button
@@ -1007,110 +1113,8 @@ export default function VocabularyPage() {
             )}
           </div>
 
-          {/* Sort & Quick Filter Toggles */}
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setFavoritesOnly(!favoritesOnly)}
-              className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${favoritesOnly
-                ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm"
-                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
-                }`}
-            >
-              <Star
-                className={`w-4 h-4 ${favoritesOnly ? "fill-amber-400 text-amber-400" : "text-slate-400"
-                  }`}
-              />
-              <span>Favorites</span>
-            </button>
-
-            <button
-              onClick={() => {
-                const nextVal = !todayOnly;
-                setTodayOnly(nextVal);
-                if (nextVal) setSelectedDate(null);
-              }}
-              className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${todayOnly
-                ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
-                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
-                }`}
-            >
-              <Clock
-                className={`w-4 h-4 ${todayOnly ? "text-indigo-500" : "text-slate-400"
-                  }`}
-              />
-              <span>Today&apos;s Words</span>
-              {stats.todayCount > 0 && (
-                <span
-                  className={`ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold ${todayOnly
-                    ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                    }`}
-                >
-                  {stats.todayCount}
-                </span>
-              )}
-            </button>
-
-            {/* Calendar Date Filter Picker */}
-            <VocabularyDatePicker
-              selectedDate={selectedDate}
-              onSelectDate={(date: any) => {
-                setSelectedDate(date);
-                if (date) setTodayOnly(false);
-              }}
-              wordCounts={calendarWordCounts}
-            />
-
-            <select
-              value={selectedSort}
-              onChange={(e) => setSelectedSort(e.target.value as any)}
-              className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
-            >
-              <option value="recent">Recently Added</option>
-              <option value="alphabetical">Alphabetical (A - Z)</option>
-              <option value="mastery">Mastery Level</option>
-            </select>
-
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="LEARNING">Learning</option>
-              <option value="LEARNED">Learned</option>
-              <option value="MASTERED">Mastered</option>
-            </select>
-
-            <select
-              value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
-              className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
-            >
-              <option value="ALL">All Levels</option>
-              <option value="A1">A1 Level</option>
-              <option value="A2">A2 Level</option>
-              <option value="B1">B1 Level</option>
-              <option value="B2">B2 Level</option>
-              <option value="C1">C1 Level</option>
-              <option value="C2">C2 Level</option>
-            </select>
-
-            <button
-              onClick={() => {
-                setIsStorySelectMode(!isStorySelectMode);
-                if (isStorySelectMode) setSelectedStoryItems([]);
-              }}
-              className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${isStorySelectMode
-                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-500 shadow-md shadow-orange-500/20"
-                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400"
-                }`}
-              title="Toggle Story Selection Mode"
-            >
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>{isStorySelectMode ? `Story Mode (${selectedStoryItems.length})` : "Create Story"}</span>
-            </button>
-
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Refresh Button */}
             <button
               onClick={loadVocabularies}
               title="Refresh vocabulary"
@@ -1145,8 +1149,8 @@ export default function VocabularyPage() {
           </div>
         </div>
 
-        {/* Part of Speech Pill Carousel */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {/* Line 3: Part of Speech Pill Carousel (Left-aligned) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none justify-start">
           <button
             onClick={() => setSelectedPos("ALL")}
             className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${selectedPos === "ALL"
