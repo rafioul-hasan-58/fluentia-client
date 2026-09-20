@@ -28,7 +28,6 @@ import {
   Layers,
   MessageSquare,
   FileText,
-  Save,
   GraduationCap,
   ExternalLink,
   Lightbulb,
@@ -86,7 +85,7 @@ export default function VocabularyFullscreenModal({
           <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col overflow-hidden animate-in fade-in duration-200">
             {/* Top Bar */}
             <div className="shrink-0 w-full px-5 sm:px-8 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 z-30">
-              {/* Left: Exit Fullscreen & Counter */}
+              {/* inset-inline-start: Exit Fullscreen & Counter */}
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setFullscreenVocabId(null)}
@@ -96,7 +95,7 @@ export default function VocabularyFullscreenModal({
                   <span>Exit</span>
                 </button>
 
-                <div className="flex items-center gap-2 text-xs">
+                <div className=" hidden lg:flex items-center gap-2 text-xs ">
                   <span className="font-semibold text-slate-600 dark:text-slate-400">
                     Word {activeFullscreenIndex + 1} of {vocabularies.length}
                   </span>
@@ -128,7 +127,7 @@ export default function VocabularyFullscreenModal({
                 </button>
               </div>
 
-              {/* Right: Status Switcher, Theme Toggle, Favorite & Close */}
+              {/* inset-inline-end: Status Switcher, Theme Toggle, Favorite & Close */}
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* Status Switcher */}
                 <div className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -196,7 +195,7 @@ export default function VocabularyFullscreenModal({
               {/* Left Column (Hero Card, Audio, Meaning, Word Family, Mastery) */}
               <div className="lg:col-span-5 lg:min-h-0 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 space-y-5 pb-4 lg:pb-8">
                 <div className="p-6 sm:p-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-                  {/* Top: Word, Level, POS, Audio Button */}
+                  {/* inset-block-start: Word, Level, POS, Audio Button */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
