@@ -264,12 +264,6 @@ export default function VocabularyFullscreenModal({
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         Bangla Meaning (বাংলা অর্থ)
                       </span>
-                      {activeFullscreenVocab.word.banglaPronunciation && (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-emerald-100/80 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300/60 dark:border-emerald-700/60">
-                          <span className="text-[10px] opacity-75 font-normal">উচ্চারণ:</span>
-                          <span>{activeFullscreenVocab.word.banglaPronunciation}</span>
-                        </span>
-                      )}
                     </div>
                     <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 leading-snug">
                       {activeFullscreenVocab.word.banglaMeaning}
