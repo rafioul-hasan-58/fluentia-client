@@ -27,11 +27,9 @@ export interface CollocationItem {
 export type CollocationType = CollocationItem | string;
 
 export interface VerbForms {
-  v1: string; // Base / Present Form (e.g., soothe, go)
-  v2: string; // Past Simple Form (e.g., soothed, went)
-  v3: string; // Past Participle Form (e.g., soothed, gone)
-  vIng?: string; // Present Participle / Continuous (e.g., soothing, going)
-  v3s?: string; // 3rd Person Singular (e.g., soothes, goes)
+  v1: string; // Base / Present Form (e.g., fly, soothe, go)
+  v2: string; // Past Simple Form (e.g., flew, soothed, went)
+  v3: string; // Past Participle Form (e.g., flown, soothed, gone)
 }
 
 export interface VocabularyItem {
@@ -432,11 +430,11 @@ export interface VocabStoryListResponse {
 
 export const COMMON_IRREGULAR_VERBS: Record<
   string,
-  { v2: string; v3: string; vIng?: string; v3s?: string }
+  { v2: string; v3: string }
 > = {
   arise: { v2: "arose", v3: "arisen" },
   awake: { v2: "awoke", v3: "awoken" },
-  be: { v2: "was/were", v3: "been", vIng: "being", v3s: "is" },
+  be: { v2: "was/were", v3: "been" },
   bear: { v2: "bore", v3: "born/borne" },
   beat: { v2: "beat", v3: "beaten" },
   become: { v2: "became", v3: "become" },
@@ -465,7 +463,7 @@ export const COMMON_IRREGULAR_VERBS: Record<
   cut: { v2: "cut", v3: "cut" },
   deal: { v2: "dealt", v3: "dealt" },
   dig: { v2: "dug", v3: "dug" },
-  do: { v2: "did", v3: "done", v3s: "does" },
+  do: { v2: "did", v3: "done" },
   draw: { v2: "drew", v3: "drawn" },
   dream: { v2: "dreamed/dreamt", v3: "dreamed/dreamt" },
   drink: { v2: "drank", v3: "drunk" },
@@ -484,10 +482,10 @@ export const COMMON_IRREGULAR_VERBS: Record<
   freeze: { v2: "froze", v3: "frozen" },
   get: { v2: "got", v3: "got/gotten" },
   give: { v2: "gave", v3: "given" },
-  go: { v2: "went", v3: "gone", v3s: "goes" },
+  go: { v2: "went", v3: "gone" },
   grow: { v2: "grew", v3: "grown" },
   hang: { v2: "hung", v3: "hung" },
-  have: { v2: "had", v3: "had", vIng: "having", v3s: "has" },
+  have: { v2: "had", v3: "had" },
   hear: { v2: "heard", v3: "heard" },
   hide: { v2: "hid", v3: "hidden" },
   hit: { v2: "hit", v3: "hit" },
@@ -502,7 +500,7 @@ export const COMMON_IRREGULAR_VERBS: Record<
   leave: { v2: "left", v3: "left" },
   lend: { v2: "lent", v3: "lent" },
   let: { v2: "let", v3: "let" },
-  lie: { v2: "lay", v3: "lain", vIng: "lying" },
+  lie: { v2: "lay", v3: "lain" },
   light: { v2: "lit", v3: "lit" },
   lose: { v2: "lost", v3: "lost" },
   make: { v2: "made", v3: "made" },
@@ -519,7 +517,7 @@ export const COMMON_IRREGULAR_VERBS: Record<
   ring: { v2: "rang", v3: "rung" },
   rise: { v2: "rose", v3: "risen" },
   run: { v2: "ran", v3: "run" },
-  say: { v2: "said", v3: "said", v3s: "says" },
+  say: { v2: "said", v3: "said" },
   see: { v2: "saw", v3: "seen" },
   seek: { v2: "sought", v3: "sought" },
   sell: { v2: "sold", v3: "sold" },
@@ -567,8 +565,8 @@ export const COMMON_IRREGULAR_VERBS: Record<
 };
 
 /**
- * Resolves verb forms (V1, V2, V3, V-ing, 3rd Person Singular) for a vocabulary item.
- * Supports explicit backend verbForms, dictionary lookup for irregular verbs,
+ * Resolves verb forms (V1, V2, V3) for a vocabulary item.
+ * Supports explicit backend verbForms { v1, v2, v3 }, dictionary lookup for irregular verbs,
  * and morphological conjugation for regular verbs.
  */
 export function getVerbForms(
@@ -584,8 +582,6 @@ export function getVerbForms(
       v1: explicit.v1 || explicit.base || explicit.present || item?.word || fallbackBaseWord || "",
       v2: explicit.v2 || explicit.past || "",
       v3: explicit.v3 || explicit.pastParticiple || explicit.participle || "",
-      vIng: explicit.vIng || explicit.presentParticiple || explicit.ing || "",
-      v3s: explicit.v3s || explicit.thirdPerson || explicit.s || "",
     };
   }
 
@@ -613,8 +609,6 @@ export function getVerbForms(
       v1: rawWord,
       v2: ir.v2,
       v3: ir.v3,
-      vIng: ir.vIng || computeVIng(base),
-      v3s: ir.v3s || computeV3s(base),
     };
   }
 
@@ -654,31 +648,6 @@ export function getVerbForms(
     v1: rawWord,
     v2,
     v3,
-    vIng: computeVIng(base),
-    v3s: computeV3s(base),
   };
-}
-
-function computeVIng(base: string): string {
-  if (base === "be") return "being";
-  if (base.endsWith("ie")) return `${base.slice(0, -2)}ying`;
-  if (base.endsWith("ee")) return `${base}ing`;
-  if (base.endsWith("e") && base.length > 2) return `${base.slice(0, -1)}ing`;
-  if (
-    /^[bcdfghjklmnpqrstvwxyz]*[aeiou][bcdfghjklmnpqrstvz]$/i.test(base) &&
-    !/[wxy]$/i.test(base) &&
-    base.length >= 3 &&
-    base.length <= 6
-  ) {
-    return `${base}${base.slice(-1)}ing`;
-  }
-  return `${base}ing`;
-}
-
-function computeV3s(base: string): string {
-  if (base === "have") return "has";
-  if (/(s|sh|ch|x|z|o)$/i.test(base)) return `${base}es`;
-  if (/[^aeiou]y$/i.test(base)) return `${base.slice(0, -1)}ies`;
-  return `${base}s`;
 }
 

@@ -269,8 +269,6 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
         v1: "soothe",
         v2: "soothed",
         v3: "soothed",
-        vIng: "soothing",
-        v3s: "soothes",
       },
       collocations: [
         {

@@ -2025,26 +2025,6 @@ export default function VocabularyPage() {
                         banglaLabel: "পুরাঘটিত রূপ",
                         value: verbForms.v3,
                       },
-                      ...(verbForms.vIng
-                        ? [
-                            {
-                              code: "V-ing",
-                              label: "Present Participle",
-                              banglaLabel: "চলমান রূপ",
-                              value: verbForms.vIng,
-                            },
-                          ]
-                        : []),
-                      ...(verbForms.v3s
-                        ? [
-                            {
-                              code: "V-s/es",
-                              label: "3rd Person Singular",
-                              banglaLabel: "একবচন বর্তমান",
-                              value: verbForms.v3s,
-                            },
-                          ]
-                        : []),
                     ];
 
                     return (
@@ -2059,7 +2039,7 @@ export default function VocabularyPage() {
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                           {formsList.map((form) => (
                             <div
                               key={form.code}

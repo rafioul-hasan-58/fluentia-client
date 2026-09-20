@@ -237,8 +237,6 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
         v1: "soothe",
         v2: "soothed",
         v3: "soothed",
-        vIng: "soothing",
-        v3s: "soothes",
       },
       collocations: [
         {
