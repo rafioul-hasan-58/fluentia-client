@@ -678,10 +678,6 @@ export default function VocabularyPage() {
         todayOnly={todayOnly}
         setTodayOnly={setTodayOnly}
         setSelectedDate={setSelectedDate}
-        isStorySelectMode={isStorySelectMode}
-        setIsStorySelectMode={setIsStorySelectMode}
-        selectedStoryItems={selectedStoryItems}
-        setSelectedStoryItems={setSelectedStoryItems}
         setIsModalOpen={setIsModalOpen}
       />
 
@@ -942,7 +938,6 @@ export default function VocabularyPage() {
       <StoryContextModal
         isStorySelectMode={isStorySelectMode}
         selectedStoryItems={selectedStoryItems}
-        setSelectedStoryItems={setSelectedStoryItems}
         isStoryContextModalOpen={isStoryContextModalOpen}
         setIsStoryContextModalOpen={setIsStoryContextModalOpen}
         storyContext={storyContext}

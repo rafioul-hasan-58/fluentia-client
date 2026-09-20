@@ -1,22 +1,16 @@
 import React from "react";
 import { BookOpen, Clock, Plus, Sparkles, Star, TrendingUp } from "lucide-react";
-import { PartOfSpeech } from "@/types";
 
 interface VocabularyHeaderProps {
   stats: {
     total: number;
     favorites: number;
     todayCount: number;
-    posCounts?: Partial<Record<PartOfSpeech, number>>;
     masteredCount: number;
   };
   todayOnly: boolean;
   setTodayOnly: (val: boolean | ((prev: boolean) => boolean)) => void;
   setSelectedDate: (date: string | null) => void;
-  isStorySelectMode: boolean;
-  setIsStorySelectMode: (mode: boolean | ((prev: boolean) => boolean)) => void;
-  selectedStoryItems: any[];
-  setSelectedStoryItems: (items: any[]) => void;
   setIsModalOpen: (open: boolean) => void;
 }
 
@@ -25,10 +19,6 @@ const VocabularyHeader = ({
   todayOnly,
   setTodayOnly,
   setSelectedDate,
-  isStorySelectMode,
-  setIsStorySelectMode,
-  selectedStoryItems,
-  setSelectedStoryItems,
   setIsModalOpen,
 }: VocabularyHeaderProps) => {
   return (

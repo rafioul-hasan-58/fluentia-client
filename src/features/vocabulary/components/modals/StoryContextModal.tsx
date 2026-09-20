@@ -5,7 +5,6 @@ import { Sparkles, ArrowRight, X, AlertCircle, RefreshCw } from "lucide-react";
 export interface StoryContextModalProps {
   isStorySelectMode: boolean;
   selectedStoryItems: MyVocabularyItem[];
-  setSelectedStoryItems: React.Dispatch<React.SetStateAction<MyVocabularyItem[]>>;
   isStoryContextModalOpen: boolean;
   setIsStoryContextModalOpen: (open: boolean) => void;
   storyContext: string;
@@ -20,7 +19,6 @@ export interface StoryContextModalProps {
 export default function StoryContextModal({
   isStorySelectMode,
   selectedStoryItems,
-  setSelectedStoryItems,
   isStoryContextModalOpen,
   setIsStoryContextModalOpen,
   storyContext,
