@@ -84,7 +84,7 @@ export default function VocabularyFullscreenModal({
   return createPortal(
           <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col overflow-hidden animate-in fade-in duration-200">
             {/* Top Bar */}
-            <div className="shrink-0 w-full px-5 sm:px-8 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 z-30">
+            <div className="shrink-0 w-full px-3 sm:px-8 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 sm:gap-4 z-30">
               {/* inset-inline-start: Exit Fullscreen & Counter */}
               <div className="flex items-center gap-3">
                 <button
@@ -103,26 +103,27 @@ export default function VocabularyFullscreenModal({
               </div>
 
               {/* Center: Carousel Navigation */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5">
                 <button
                   onClick={() => navigateFullscreen(-1)}
                   title="Previous Word (← Arrow key)"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                  className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Prev</span>
+                  <span className="hidden sm:inline ml-1">Prev</span>
                 </button>
 
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-2 font-mono">
-                  {activeFullscreenIndex + 1} / {vocabularies.length}
+                {/* Counter: 1/82 */}
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 px-1.5 sm:px-2 font-mono select-none whitespace-nowrap">
+                  {activeFullscreenIndex + 1}/{vocabularies.length}
                 </span>
 
                 <button
                   onClick={() => navigateFullscreen(1)}
                   title="Next Word (→ Arrow key)"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                  className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
                 >
-                  <span className="hidden sm:inline">Next</span>
+                  <span className="hidden sm:inline mr-1">Next</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -156,7 +157,7 @@ export default function VocabularyFullscreenModal({
                 </button>
 
                 {/* Theme Toggle */}
-                <ThemeToggle />
+                {/* < ThemeToggle /> */}
 
                 {/* Favorite Toggle */}
                 <button
