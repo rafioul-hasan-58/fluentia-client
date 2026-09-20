@@ -2,6 +2,7 @@ import {
   getCollocationBangla,
   getCollocationExample,
   getCollocationText,
+  getVerbForms,
   MyVocabularyItem,
 } from "../types/vocabulary";
 
@@ -264,6 +265,13 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
       banglaMeaning: "শান্ত করা, প্রশমিত করা বা ব্যথা-বেদনা উপশম করা",
       banglaPronunciation: "সুদ",
       partOfSpeech: "VERB",
+      verbForms: {
+        v1: "soothe",
+        v2: "soothed",
+        v3: "soothed",
+        vIng: "soothing",
+        v3s: "soothes",
+      },
       collocations: [
         {
           collocation: "soothe a baby",
@@ -393,6 +401,21 @@ export const getLocalVault = (): MyVocabularyItem[] => {
               word: {
                 ...item.word,
                 collocations: enriched,
+              },
+            };
+          }
+
+          // Ensure verbs always have verbForms
+          if (
+            (item.word.partOfSpeech === "VERB" || (seedMatch && seedMatch.word.partOfSpeech === "VERB")) &&
+            !item.word.verbForms
+          ) {
+            hasUpgraded = true;
+            return {
+              ...item,
+              word: {
+                ...item.word,
+                verbForms: seedMatch?.word.verbForms || getVerbForms(item.word) || undefined,
               },
             };
           }

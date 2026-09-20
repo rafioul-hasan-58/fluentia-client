@@ -26,6 +26,14 @@ export interface CollocationItem {
 
 export type CollocationType = CollocationItem | string;
 
+export interface VerbForms {
+  v1: string; // Base / Present Form (e.g., soothe, go)
+  v2: string; // Past Simple Form (e.g., soothed, went)
+  v3: string; // Past Participle Form (e.g., soothed, gone)
+  vIng?: string; // Present Participle / Continuous (e.g., soothing, going)
+  v3s?: string; // 3rd Person Singular (e.g., soothes, goes)
+}
+
 export interface VocabularyItem {
   id: string;
   word: string;
@@ -33,6 +41,7 @@ export interface VocabularyItem {
   banglaMeaning: string;
   banglaPronunciation?: string;
   partOfSpeech: PartOfSpeech;
+  verbForms?: VerbForms;
   collocations: (CollocationItem | string)[];
   exampleSentences: string[];
   wordFamily: (WordRelationItem | string)[] | any;
@@ -420,3 +429,256 @@ export interface VocabStoryListResponse {
   limit: number;
   totalPages: number;
 }
+
+export const COMMON_IRREGULAR_VERBS: Record<
+  string,
+  { v2: string; v3: string; vIng?: string; v3s?: string }
+> = {
+  arise: { v2: "arose", v3: "arisen" },
+  awake: { v2: "awoke", v3: "awoken" },
+  be: { v2: "was/were", v3: "been", vIng: "being", v3s: "is" },
+  bear: { v2: "bore", v3: "born/borne" },
+  beat: { v2: "beat", v3: "beaten" },
+  become: { v2: "became", v3: "become" },
+  begin: { v2: "began", v3: "begun" },
+  bend: { v2: "bent", v3: "bent" },
+  bet: { v2: "bet", v3: "bet" },
+  bind: { v2: "bound", v3: "bound" },
+  bite: { v2: "bit", v3: "bitten" },
+  bleed: { v2: "bled", v3: "bled" },
+  blow: { v2: "blew", v3: "blown" },
+  break: { v2: "broke", v3: "broken" },
+  breed: { v2: "bred", v3: "bred" },
+  bring: { v2: "brought", v3: "brought" },
+  broadcast: { v2: "broadcast", v3: "broadcast" },
+  build: { v2: "built", v3: "built" },
+  burn: { v2: "burned/burnt", v3: "burned/burnt" },
+  burst: { v2: "burst", v3: "burst" },
+  buy: { v2: "bought", v3: "bought" },
+  cast: { v2: "cast", v3: "cast" },
+  catch: { v2: "caught", v3: "caught" },
+  choose: { v2: "chose", v3: "chosen" },
+  cling: { v2: "clung", v3: "clung" },
+  come: { v2: "came", v3: "come" },
+  cost: { v2: "cost", v3: "cost" },
+  creep: { v2: "crept", v3: "crept" },
+  cut: { v2: "cut", v3: "cut" },
+  deal: { v2: "dealt", v3: "dealt" },
+  dig: { v2: "dug", v3: "dug" },
+  do: { v2: "did", v3: "done", v3s: "does" },
+  draw: { v2: "drew", v3: "drawn" },
+  dream: { v2: "dreamed/dreamt", v3: "dreamed/dreamt" },
+  drink: { v2: "drank", v3: "drunk" },
+  drive: { v2: "drove", v3: "driven" },
+  eat: { v2: "ate", v3: "eaten" },
+  fall: { v2: "fell", v3: "fallen" },
+  feed: { v2: "fed", v3: "fed" },
+  feel: { v2: "felt", v3: "felt" },
+  fight: { v2: "fought", v3: "fought" },
+  find: { v2: "found", v3: "found" },
+  flee: { v2: "fled", v3: "fled" },
+  fly: { v2: "flew", v3: "flown" },
+  forbid: { v2: "forbade", v3: "forbidden" },
+  forget: { v2: "forgot", v3: "forgotten" },
+  forgive: { v2: "forgave", v3: "forgiven" },
+  freeze: { v2: "froze", v3: "frozen" },
+  get: { v2: "got", v3: "got/gotten" },
+  give: { v2: "gave", v3: "given" },
+  go: { v2: "went", v3: "gone", v3s: "goes" },
+  grow: { v2: "grew", v3: "grown" },
+  hang: { v2: "hung", v3: "hung" },
+  have: { v2: "had", v3: "had", vIng: "having", v3s: "has" },
+  hear: { v2: "heard", v3: "heard" },
+  hide: { v2: "hid", v3: "hidden" },
+  hit: { v2: "hit", v3: "hit" },
+  hold: { v2: "held", v3: "held" },
+  hurt: { v2: "hurt", v3: "hurt" },
+  keep: { v2: "kept", v3: "kept" },
+  kneel: { v2: "knelt", v3: "knelt" },
+  know: { v2: "knew", v3: "known" },
+  lay: { v2: "laid", v3: "laid" },
+  lead: { v2: "led", v3: "led" },
+  learn: { v2: "learned/learnt", v3: "learned/learnt" },
+  leave: { v2: "left", v3: "left" },
+  lend: { v2: "lent", v3: "lent" },
+  let: { v2: "let", v3: "let" },
+  lie: { v2: "lay", v3: "lain", vIng: "lying" },
+  light: { v2: "lit", v3: "lit" },
+  lose: { v2: "lost", v3: "lost" },
+  make: { v2: "made", v3: "made" },
+  mean: { v2: "meant", v3: "meant" },
+  meet: { v2: "met", v3: "met" },
+  mistake: { v2: "mistook", v3: "mistaken" },
+  overcome: { v2: "overcame", v3: "overcome" },
+  pay: { v2: "paid", v3: "paid" },
+  prove: { v2: "proved", v3: "proven/proved" },
+  put: { v2: "put", v3: "put" },
+  quit: { v2: "quit", v3: "quit" },
+  read: { v2: "read", v3: "read" },
+  ride: { v2: "rode", v3: "ridden" },
+  ring: { v2: "rang", v3: "rung" },
+  rise: { v2: "rose", v3: "risen" },
+  run: { v2: "ran", v3: "run" },
+  say: { v2: "said", v3: "said", v3s: "says" },
+  see: { v2: "saw", v3: "seen" },
+  seek: { v2: "sought", v3: "sought" },
+  sell: { v2: "sold", v3: "sold" },
+  send: { v2: "sent", v3: "sent" },
+  set: { v2: "set", v3: "set" },
+  sew: { v2: "sewed", v3: "sewn/sewed" },
+  shake: { v2: "shook", v3: "shaken" },
+  shine: { v2: "shone", v3: "shone" },
+  shoot: { v2: "shot", v3: "shot" },
+  show: { v2: "showed", v3: "shown/showed" },
+  shrink: { v2: "shrank", v3: "shrunk" },
+  shut: { v2: "shut", v3: "shut" },
+  sing: { v2: "sang", v3: "sung" },
+  sink: { v2: "sank", v3: "sunk" },
+  sit: { v2: "sat", v3: "sat" },
+  sleep: { v2: "slept", v3: "slept" },
+  slide: { v2: "slid", v3: "slid" },
+  speak: { v2: "spoke", v3: "spoken" },
+  spend: { v2: "spent", v3: "spent" },
+  spill: { v2: "spilled/spilt", v3: "spilled/spilt" },
+  split: { v2: "split", v3: "split" },
+  spread: { v2: "spread", v3: "spread" },
+  spring: { v2: "sprang", v3: "sprung" },
+  stand: { v2: "stood", v3: "stood" },
+  steal: { v2: "stole", v3: "stolen" },
+  stick: { v2: "stuck", v3: "stuck" },
+  strike: { v2: "struck", v3: "struck" },
+  swear: { v2: "swore", v3: "sworn" },
+  sweep: { v2: "swept", v3: "swept" },
+  swim: { v2: "swam", v3: "swum" },
+  swing: { v2: "swung", v3: "swung" },
+  take: { v2: "took", v3: "taken" },
+  teach: { v2: "taught", v3: "taught" },
+  tear: { v2: "tore", v3: "torn" },
+  tell: { v2: "told", v3: "told" },
+  think: { v2: "thought", v3: "thought" },
+  throw: { v2: "threw", v3: "thrown" },
+  understand: { v2: "understood", v3: "understood" },
+  upset: { v2: "upset", v3: "upset" },
+  wake: { v2: "woke", v3: "woken" },
+  wear: { v2: "wore", v3: "worn" },
+  win: { v2: "won", v3: "won" },
+  withdraw: { v2: "withdrew", v3: "withdrawn" },
+  write: { v2: "wrote", v3: "written" },
+};
+
+/**
+ * Resolves verb forms (V1, V2, V3, V-ing, 3rd Person Singular) for a vocabulary item.
+ * Supports explicit backend verbForms, dictionary lookup for irregular verbs,
+ * and morphological conjugation for regular verbs.
+ */
+export function getVerbForms(
+  item: VocabularyItem | any,
+  fallbackBaseWord?: string
+): VerbForms | null {
+  if (!item && !fallbackBaseWord) return null;
+
+  // 1. Direct verbForms object if already populated
+  const explicit = item?.verbForms || item?.forms;
+  if (explicit && (explicit.v1 || explicit.v2 || explicit.v3)) {
+    return {
+      v1: explicit.v1 || explicit.base || explicit.present || item?.word || fallbackBaseWord || "",
+      v2: explicit.v2 || explicit.past || "",
+      v3: explicit.v3 || explicit.pastParticiple || explicit.participle || "",
+      vIng: explicit.vIng || explicit.presentParticiple || explicit.ing || "",
+      v3s: explicit.v3s || explicit.thirdPerson || explicit.s || "",
+    };
+  }
+
+  // 2. Validate part of speech is VERB (or explicitly requested)
+  const pos = String(item?.partOfSpeech || "").toUpperCase();
+  const isVerb =
+    pos === "VERB" ||
+    (item?.wordFamily &&
+      Array.isArray(item.wordFamily) &&
+      item.wordFamily.some((wf: any) => getWordRelationPartOfSpeech(wf).toUpperCase() === "VERB"));
+
+  if (!isVerb && pos && pos !== "ALL") {
+    return null;
+  }
+
+  // 3. Extract clean base word
+  const rawWord = String(item?.word || fallbackBaseWord || "").trim();
+  if (!rawWord) return null;
+  const base = rawWord.toLowerCase();
+
+  // 4. Irregular verbs lookup
+  if (COMMON_IRREGULAR_VERBS[base]) {
+    const ir = COMMON_IRREGULAR_VERBS[base];
+    return {
+      v1: rawWord,
+      v2: ir.v2,
+      v3: ir.v3,
+      vIng: ir.vIng || computeVIng(base),
+      v3s: ir.v3s || computeV3s(base),
+    };
+  }
+
+  // 5. Regular verbs morphological conjugation
+  let v2: string;
+  let v3: string;
+
+  // Ends in 'e' -> + 'd' (e.g. soothe -> soothed, love -> loved)
+  if (base.endsWith("e")) {
+    v2 = `${base}d`;
+    v3 = `${base}d`;
+  }
+  // Ends in consonant + 'y' -> -y + 'ied' (e.g. study -> studied, cry -> cried)
+  else if (/[^aeiou]y$/i.test(base)) {
+    const stem = base.slice(0, -1);
+    v2 = `${stem}ied`;
+    v3 = `${stem}ied`;
+  }
+  // CVC doubling check (e.g. stop -> stopped, plan -> planned, grab -> grabbed, drop -> dropped)
+  else if (
+    /^[bcdfghjklmnpqrstvwxyz]*[aeiou][bcdfghjklmnpqrstvz]$/i.test(base) &&
+    !/[wxy]$/i.test(base) &&
+    base.length >= 3 &&
+    base.length <= 6
+  ) {
+    const lastChar = base.slice(-1);
+    v2 = `${base}${lastChar}ed`;
+    v3 = `${base}${lastChar}ed`;
+  }
+  // Standard regular suffix + 'ed'
+  else {
+    v2 = `${base}ed`;
+    v3 = `${base}ed`;
+  }
+
+  return {
+    v1: rawWord,
+    v2,
+    v3,
+    vIng: computeVIng(base),
+    v3s: computeV3s(base),
+  };
+}
+
+function computeVIng(base: string): string {
+  if (base === "be") return "being";
+  if (base.endsWith("ie")) return `${base.slice(0, -2)}ying`;
+  if (base.endsWith("ee")) return `${base}ing`;
+  if (base.endsWith("e") && base.length > 2) return `${base.slice(0, -1)}ing`;
+  if (
+    /^[bcdfghjklmnpqrstvwxyz]*[aeiou][bcdfghjklmnpqrstvz]$/i.test(base) &&
+    !/[wxy]$/i.test(base) &&
+    base.length >= 3 &&
+    base.length <= 6
+  ) {
+    return `${base}${base.slice(-1)}ing`;
+  }
+  return `${base}ing`;
+}
+
+function computeV3s(base: string): string {
+  if (base === "have") return "has";
+  if (/(s|sh|ch|x|z|o)$/i.test(base)) return `${base}es`;
+  if (/[^aeiou]y$/i.test(base)) return `${base.slice(0, -1)}ies`;
+  return `${base}s`;
+}
+

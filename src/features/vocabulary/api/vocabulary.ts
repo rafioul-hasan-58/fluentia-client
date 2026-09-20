@@ -4,6 +4,8 @@ import {
   PartOfSpeech,
   GenerateVocabularyResponse,
   VocabularyFilterOptions,
+  VerbForms,
+  getVerbForms,
   getCollocationText,
   getCollocationBangla,
   getCollocationExample,
@@ -18,13 +20,17 @@ import { getAuthToken, getLocalVault, saveLocalVault } from "./utilFn";
 
 //  Normalizes backend response data structure to ensure safe rendering
 export function normalizeVocabularyItem(data: any): VocabularyItem {
+  const partOfSpeech = (data.partOfSpeech as PartOfSpeech) || "NOUN";
+  const verbForms = getVerbForms(data);
+
   return {
     id: data.id || `word-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     word: data.word ? data.word.charAt(0).toUpperCase() + data.word.slice(1) : "",
     meaning: data.meaning || "",
     banglaMeaning: data.banglaMeaning || "",
     banglaPronunciation: data.banglaPronunciation || "",
-    partOfSpeech: (data.partOfSpeech as PartOfSpeech) || "NOUN",
+    partOfSpeech,
+    verbForms: verbForms || undefined,
     collocations: Array.isArray(data.collocations)
       ? data.collocations.map((col: any) => {
         const colText = getCollocationText(col);
@@ -227,6 +233,13 @@ function inferWordLinguisticProfile(word: string): VocabularyItem {
       banglaMeaning: "শান্ত করা, প্রশমিত করা বা ব্যথা-বেদনা উপশম করা",
       banglaPronunciation: "সুদ",
       partOfSpeech: "VERB",
+      verbForms: {
+        v1: "soothe",
+        v2: "soothed",
+        v3: "soothed",
+        vIng: "soothing",
+        v3s: "soothes",
+      },
       collocations: [
         {
           collocation: "soothe a baby",

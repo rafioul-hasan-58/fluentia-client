@@ -9,6 +9,8 @@ import {
   MyVocabularyItem,
   PartOfSpeech,
   VocabularyStatus,
+  VerbForms,
+  getVerbForms,
   getWordRelationText,
   getWordRelationWord,
   getWordRelationPartOfSpeech,
@@ -1501,6 +1503,30 @@ export default function VocabularyPage() {
                         <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
                           {item.word.meaning}
                         </p>
+
+                        {/* Verb Forms Preview (if VERB) */}
+                        {item.word.partOfSpeech === "VERB" && (() => {
+                          const vf = item.word.verbForms || getVerbForms(item.word);
+                          if (!vf) return null;
+                          return (
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 bg-emerald-50/50 dark:bg-emerald-950/20 px-2.5 py-1 rounded-lg border border-emerald-200/50 dark:border-emerald-800/40 overflow-x-auto scrollbar-none">
+                              <span className="font-bold text-emerald-700 dark:text-emerald-400 text-[10px] uppercase shrink-0">
+                                Forms:
+                              </span>
+                              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V1 (Base)">
+                                {vf.v1}
+                              </span>
+                              <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
+                              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V2 (Past Simple)">
+                                {vf.v2}
+                              </span>
+                              <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
+                              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V3 (Past Participle)">
+                                {vf.v3}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Card Bottom Bar: Mastery Stars + Details (Full Screen) Button */}
@@ -1972,6 +1998,105 @@ export default function VocabularyPage() {
                       {activeFullscreenVocab.word.meaning}
                     </p>
                   </div>
+
+                  {/* Verb Forms (V1, V2, V3) - Shown for VERBs */}
+                  {(() => {
+                    const verbForms =
+                      activeFullscreenVocab.word.verbForms ||
+                      getVerbForms(activeFullscreenVocab.word);
+                    if (!verbForms) return null;
+
+                    const formsList = [
+                      {
+                        code: "V1",
+                        label: "Base / Present",
+                        banglaLabel: "মূল রূপ",
+                        value: verbForms.v1,
+                      },
+                      {
+                        code: "V2",
+                        label: "Past Simple",
+                        banglaLabel: "অতীত রূপ",
+                        value: verbForms.v2,
+                      },
+                      {
+                        code: "V3",
+                        label: "Past Participle",
+                        banglaLabel: "পুরাঘটিত রূপ",
+                        value: verbForms.v3,
+                      },
+                      ...(verbForms.vIng
+                        ? [
+                            {
+                              code: "V-ing",
+                              label: "Present Participle",
+                              banglaLabel: "চলমান রূপ",
+                              value: verbForms.vIng,
+                            },
+                          ]
+                        : []),
+                      ...(verbForms.v3s
+                        ? [
+                            {
+                              code: "V-s/es",
+                              label: "3rd Person Singular",
+                              banglaLabel: "একবচন বর্তমান",
+                              value: verbForms.v3s,
+                            },
+                          ]
+                        : []),
+                    ];
+
+                    return (
+                      <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                            Verb Forms (ক্রিয়াপদের রূপ: V1, V2, V3)
+                          </span>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
+                            Conjugation
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {formsList.map((form) => (
+                            <div
+                              key={form.code}
+                              className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 hover:border-emerald-400 dark:hover:border-emerald-500/50 hover:bg-white dark:hover:bg-slate-800 transition-all flex flex-col justify-between gap-1.5 group shadow-2xs"
+                            >
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60">
+                                  {form.code}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => playPronunciation(form.value)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                                  title={`Pronounce "${form.value}"`}
+                                  aria-label={`Pronounce ${form.value}`}
+                                >
+                                  <Volume2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+
+                              <div>
+                                <p className="text-sm font-bold text-slate-900 dark:text-white capitalize tracking-tight">
+                                  {form.value}
+                                </p>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">
+                                  {form.label}
+                                </span>
+                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium font-bangla block">
+                                  {form.banglaLabel}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Word Family */}
                   {activeFullscreenVocab.word.wordFamily &&
