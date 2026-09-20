@@ -58,9 +58,11 @@ import {
   Clock,
   ExternalLink,
 } from "lucide-react";
-import { VocabularyDatePicker } from "@/features/vocabulary/components/VocabularyDatePicker";
 import { ALL_POS_OPTIONS, highlightPhrase, POS_COLORS } from "../constants/vocabularyConstants";
+import VocabularyHeader from "./VocabularyHeader";
 import VocabularyFilterBar from "./VocabularyFilterBar";
+import VocabularyStoryBanner from "./VocabularyStoryBanner";
+import VocabularyPagination from "./VocabularyPagination";
 
 
 
@@ -700,185 +702,22 @@ export default function VocabularyPage() {
     return vocabularies.slice(start, start + pageSize);
   }, [vocabularies, currentPage, pageSize]);
 
-  // Helper Pagination for Vocabulary Vault (matching Question Bank in Admin Dashboard)
-  const renderPaginationControls = (isTopPosition: boolean) => {
-    if (totalCount === 0) return null;
-
-    return (
-      <div
-        className={`p-3.5 sm:p-4 rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn ${isTopPosition ? "border-primary/30 dark:border-primary/30" : "mt-2"
-          }`}
-      >
-        <div className="flex items-center gap-2.5 text-xs text-ink-soft">
-          <span className="font-semibold text-ink">
-            Showing <strong className="text-primary dark:text-purple-300">{startRecord} - {endRecord}</strong> of {totalCount} Words
-          </span>
-          <span className="text-slate-300 dark:text-white/20">|</span>
-          <span>Page {currentPage} of {totalPages || 1}</span>
-        </div>
-
-        <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-end">
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-ink-soft text-[11px] font-semibold">Per page:</span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="h-8 px-2 rounded-lg bg-paper border border-slate-200 dark:border-white/10 text-xs font-semibold text-ink cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40"
-            >
-              {[12, 24, 36, 48].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage <= 1 || isLoading}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="h-8 px-2.5 text-xs font-semibold"
-            >
-              ‹ Prev
-            </Button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-              if (totalPages > 6 && p !== 1 && p !== totalPages && Math.abs(p - currentPage) > 1) {
-                if (p === 2 || p === totalPages - 1) {
-                  return (
-                    <span key={p} className="px-1 text-xs text-ink-soft">
-                      ...
-                    </span>
-                  );
-                }
-                return null;
-              }
-
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setCurrentPage(p)}
-                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${currentPage === p
-                    ? "bg-primary text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-white/5 text-ink-soft hover:text-ink hover:bg-slate-200 dark:hover:bg-white/10"
-                    }`}
-                >
-                  {p}
-                </button>
-              );
-            })}
-
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage >= totalPages || isLoading}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="h-8 px-2.5 text-xs font-semibold"
-            >
-              Next ›
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-8 pb-16">
-      {/* 1. Header Banner & Action (Soft theme matching Dashboard) */}
-      <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-purple-600/15 via-primary/10 to-fuchsia-600/15 dark:from-[#0F0C20] dark:via-[#181236] dark:to-[#0F0C20] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-2xl relative overflow-hidden text-ink">
-        <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-primary/10 dark:bg-primary/20 rounded-full blur-3xl -z-0" />
-        <div className="absolute bottom-0 left-1/3 -mb-12 w-80 h-80 bg-purple-500/10 dark:bg-purple-500/20 rounded-full blur-3xl -z-0 pointer-events-none" />
+      {/* 1. Header Banner & Action */}
+      <VocabularyHeader
+        stats={stats}
+        todayOnly={todayOnly}
+        setTodayOnly={setTodayOnly}
+        setSelectedDate={setSelectedDate}
+        isStorySelectMode={isStorySelectMode}
+        setIsStorySelectMode={setIsStorySelectMode}
+        selectedStoryItems={selectedStoryItems}
+        setSelectedStoryItems={setSelectedStoryItems}
+        setIsModalOpen={setIsModalOpen}
+      />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 dark:bg-purple-500/20 border border-primary/20 dark:border-purple-500/30 text-primary dark:text-purple-300 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-pulse" />
-              <span>AI-Powered Lexicon Vault</span>
-            </div>
-            <h1 className="font-brand text-2xl sm:text-3xl lg:text-4xl font-bold text-ink tracking-tight">
-              Vocabulary Vault 📚
-            </h1>
-            <p className="text-xs sm:text-sm lg:text-base text-ink-soft leading-relaxed">
-              Expand your active vocabulary with instant AI linguistic insights, Bengali definitions,
-              collocations, synonyms, CEFR levels, and personal sentence building.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40 dark:shadow-[0_0_20px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-95 text-center cursor-pointer"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>Add Vocabulary</span>
-              <Sparkles className="w-4 h-4 text-amber-300 animate-spin-slow" />
-            </button>
-          </div>
-        </div>
-
-        {/* Quick Stats Strip */}
-        <div className="mt-8 pt-6 border-t border-slate-200/80 dark:border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="flex items-center gap-3 bg-white/70 dark:bg-white/5 rounded-2xl p-3.5 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary dark:text-purple-300 flex items-center justify-center border border-primary/20">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-ink-soft font-medium">Total Words</p>
-              <p className="text-xl font-bold text-ink">{stats.total}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 bg-white/70 dark:bg-white/5 rounded-2xl p-3.5 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
-              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-            </div>
-            <div>
-              <p className="text-xs text-ink-soft font-medium">Favorites</p>
-              <p className="text-xl font-bold text-ink">{stats.favorites}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 bg-white/70 dark:bg-white/5 rounded-2xl p-3.5 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-ink-soft font-medium">Mastered (4★+)</p>
-              <p className="text-xl font-bold text-ink">{stats.masteredCount}</p>
-            </div>
-          </div>
-
-          <div
-            onClick={() => {
-              const nextVal = !todayOnly;
-              setTodayOnly(nextVal);
-              if (nextVal) setSelectedDate(null);
-            }}
-            className={`flex items-center gap-3 bg-white/70 dark:bg-white/5 rounded-2xl p-3.5 backdrop-blur-md border transition-all cursor-pointer ${todayOnly
-              ? "border-purple-500/50 dark:border-purple-500/60 bg-purple-500/15 dark:bg-purple-500/20 shadow-md ring-2 ring-purple-500/20"
-              : "border-slate-200/80 dark:border-white/10 shadow-sm hover:border-purple-500/30"
-              }`}
-            title="Click to filter Today's Words"
-          >
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-300 flex items-center justify-center border border-purple-500/20">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-ink-soft font-medium">Today&apos;s Vocab</p>
-              <p className="text-xl font-bold text-ink">{stats.todayCount}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-            {/* 2. Search, Filter & Controls */}
+      {/* 2. Search, Filter & Controls */}
       <VocabularyFilterBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -910,50 +749,28 @@ export default function VocabularyPage() {
       />
 
       {/* Story Selection Mode Banner */}
-      {isStorySelectMode && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border-2 border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in duration-200 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-md">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base flex items-center gap-2">
-                <span>AI Story Selection Mode</span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-extrabold">
-                  {selectedStoryItems.length} selected
-                </span>
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                Click the square radio button on the top-left of any card to choose words (5–10 recommended). Then click &quot;Create Story&quot; at the bottom right.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {selectedStoryItems.length > 0 && (
-              <button
-                onClick={() => setSelectedStoryItems([])}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition cursor-pointer"
-              >
-                Clear
-              </button>
-            )}
-            <button
-              onClick={() => {
-                setIsStorySelectMode(false);
-                setSelectedStoryItems([]);
-              }}
-              className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-            >
-              Exit Story Mode
-            </button>
-          </div>
-        </div>
-      )}
+      <VocabularyStoryBanner
+        isStorySelectMode={isStorySelectMode}
+        selectedStoryItems={selectedStoryItems}
+        setIsStorySelectMode={setIsStorySelectMode}
+        setSelectedStoryItems={setSelectedStoryItems}
+      />
 
       {/* 3. Vocabulary Cards Section */}
       <div className="space-y-4">
         {/* TOP PAGINATION BAR */}
-        {renderPaginationControls(true)}
+        <VocabularyPagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          startRecord={startRecord}
+          endRecord={endRecord}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          isLoading={isLoading}
+          isTopPosition={true}
+        />
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1036,287 +853,63 @@ export default function VocabularyPage() {
             </button>
           </div>
         ) : (
-  <>
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-              {paginatedVocabularies.map((item) => {
-                const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
-                const isAudioPlaying = playingWord === item.word.word;
-                const isFav = item.isFavorite || item.isFavourate;
-                const displayLevel = item.word.englishLevel || item.word.cefrLevel;
-                const isSelectedForStory = selectedStoryItems.some((s) => s.id === item.id);
-                return (
-                  <div
-                    key={item.id}
-                    onClick={isStorySelectMode ? () => handleToggleStoryWord(item) : undefined}
-                    className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border transition-all duration-300 overflow-hidden hover:-translate-y-0.5 ${isStorySelectMode && isSelectedForStory
-                      ? "ring-2 ring-amber-500 border-amber-500 shadow-md shadow-amber-500/20 bg-amber-500/[0.03]"
-                      : "border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40"
-                      } ${isStorySelectMode ? "cursor-pointer" : ""}`}
-                  >
-                    {/* Top Accent Strip by Part of Speech */}
+          <>
+            {viewMode === "grid" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+                {paginatedVocabularies.map((item) => {
+                  const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
+                  const isAudioPlaying = playingWord === item.word.word;
+                  const isFav = item.isFavorite || item.isFavourate;
+                  const displayLevel = item.word.englishLevel || item.word.cefrLevel;
+                  const isSelectedForStory = selectedStoryItems.some((s) => s.id === item.id);
+                  return (
                     <div
-                      className={`h-1 w-full bg-gradient-to-r ${item.word.partOfSpeech === "NOUN"
-                        ? "from-blue-500 to-indigo-500"
-                        : item.word.partOfSpeech === "VERB"
-                          ? "from-emerald-500 to-teal-500"
-                          : item.word.partOfSpeech === "ADJECTIVE"
-                            ? "from-purple-500 to-pink-500"
-                            : item.word.partOfSpeech === "ADVERB"
-                              ? "from-amber-500 to-orange-500"
-                              : "from-indigo-500 to-purple-500"
-                        }`}
-                    />
+                      key={item.id}
+                      onClick={isStorySelectMode ? () => handleToggleStoryWord(item) : undefined}
+                      className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border transition-all duration-300 overflow-hidden hover:-translate-y-0.5 ${isStorySelectMode && isSelectedForStory
+                        ? "ring-2 ring-amber-500 border-amber-500 shadow-md shadow-amber-500/20 bg-amber-500/[0.03]"
+                        : "border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40"
+                        } ${isStorySelectMode ? "cursor-pointer" : ""}`}
+                    >
+                      {/* Top Accent Strip by Part of Speech */}
+                      <div
+                        className={`h-1 w-full bg-gradient-to-r ${item.word.partOfSpeech === "NOUN"
+                          ? "from-blue-500 to-indigo-500"
+                          : item.word.partOfSpeech === "VERB"
+                            ? "from-emerald-500 to-teal-500"
+                            : item.word.partOfSpeech === "ADJECTIVE"
+                              ? "from-purple-500 to-pink-500"
+                              : item.word.partOfSpeech === "ADVERB"
+                                ? "from-amber-500 to-orange-500"
+                                : "from-indigo-500 to-purple-500"
+                          }`}
+                      />
 
-                    {/* Main Card Content */}
-                    <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
-                      {/* Top: Word, Pronounce & Quick Action Icons */}
-                      <div className="space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          {/* Word Title & Audio */}
-                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                            {/* Square Radio Button in Top Left */}
-                            {isStorySelectMode && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleStoryWord(item);
-                                }}
-                                className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all cursor-pointer shrink-0 ${isSelectedForStory
-                                  ? "bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-500/30 scale-105"
-                                  : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:border-amber-400"
-                                  }`}
-                                title={isSelectedForStory ? "Deselect word" : "Select word for story"}
-                              >
-                                {isSelectedForStory && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                              </button>
-                            )}
+                      {/* Main Card Content */}
+                      <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
+                        {/* Top: Word, Pronounce & Quick Action Icons */}
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            {/* Word Title & Audio */}
+                            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                              {/* Square Radio Button in Top Left */}
+                              {isStorySelectMode && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleStoryWord(item);
+                                  }}
+                                  className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all cursor-pointer shrink-0 ${isSelectedForStory
+                                    ? "bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-500/30 scale-105"
+                                    : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:border-amber-400"
+                                    }`}
+                                  title={isSelectedForStory ? "Deselect word" : "Select word for story"}
+                                >
+                                  {isSelectedForStory && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                </button>
+                              )}
 
-                            <button
-                              onClick={(e) => {
-                                if (isStorySelectMode) {
-                                  e.stopPropagation();
-                                  handleToggleStoryWord(item);
-                                } else {
-                                  setFullscreenVocabId(item.id);
-                                }
-                              }}
-                              className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left cursor-pointer capitalize truncate"
-                              title={`View ${item.word.word} full details`}
-                            >
-                              {item.word.word}
-                            </button>
-
-                            <button
-                              onClick={() => playPronunciation(item.word.word)}
-                              title="Listen pronunciation"
-                              className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 border ${isAudioPlaying
-                                ? "bg-indigo-600 text-white border-indigo-600 scale-105 shadow-sm shadow-indigo-500/40"
-                                : "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-800/80"
-                                }`}
-                            >
-                              <Volume2 className={`w-3 h-3 ${isAudioPlaying ? "animate-pulse" : ""}`} />
-                            </button>
-                          </div>
-
-                          {/* Action Icons: Edit / Favorite / Delete */}
-                          <div className="flex items-center gap-0.5 shrink-0">
-                            <button
-                              onClick={() => handleOpenEditModal(item)}
-                              title="Update vocabulary"
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                            </button>
-
-                            <button
-                              onClick={() => handleToggleFavorite(item)}
-                              title={isFav ? "Remove from favorites" : "Add to favorites"}
-                              className={`p-1.5 rounded-lg transition-colors cursor-pointer border ${isFav
-                                ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
-                                : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800"
-                                }`}
-                            >
-                              <Star
-                                className={`w-3.5 h-3.5 ${isFav ? "fill-amber-400 text-amber-400" : ""}`}
-                              />
-                            </button>
-
-                            <button
-                              onClick={() => setItemToDelete(item)}
-                              title="Delete word"
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Tags: Part of Speech & CEFR & Status & Pronunciation */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${posConfig.bg} ${posConfig.text} ${posConfig.border}`}
-                          >
-                            {posConfig.label}
-                          </span>
-
-                          {displayLevel && (
-                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                              {displayLevel}
-                            </span>
-                          )}
-
-                          {item.status && item.status !== "LEARNING" && (
-                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
-                              {item.status}
-                            </span>
-                          )}
-
-                          {item.word.ipa && (
-                            <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 ml-auto">
-                              {item.word.ipa}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Bangla Meaning Box */}
-                      <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-50/80 to-teal-50/60 dark:from-emerald-950/40 dark:to-teal-950/20 border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-between gap-2">
-                        <p className="text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-300 truncate">
-                          {item.word.banglaMeaning}
-                        </p>
-                        {item.word.banglaPronunciation && (
-                          <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-md border border-emerald-300/60 dark:border-emerald-700/60">
-                            <span className="text-[9px] opacity-70 font-normal">উচ্চারণ:</span>
-                            <span>{item.word.banglaPronunciation}</span>
-                          </span>
-                        )}
-                      </div>
-
-                      {/* English Definition (Clean 2-line clamped preview) */}
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
-                        {item.word.meaning}
-                      </p>
-
-                      {/* Verb Forms Preview (if VERB) */}
-                      {item.word.partOfSpeech === "VERB" && (() => {
-                        const vf = item.word.verbForms || getVerbForms(item.word);
-                        if (!vf) return null;
-                        return (
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 bg-emerald-50/50 dark:bg-emerald-950/20 px-2.5 py-1 rounded-lg border border-emerald-200/50 dark:border-emerald-800/40 overflow-x-auto scrollbar-none">
-                            <span className="font-bold text-emerald-700 dark:text-emerald-400 text-[10px] uppercase shrink-0">
-                              Forms:
-                            </span>
-                            <span className="font-semibold text-slate-900 dark:text-slate-200" title="V1 (Base)">
-                              {vf.v1}
-                            </span>
-                            <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
-                            <span className="font-semibold text-slate-900 dark:text-slate-200" title="V2 (Past Simple)">
-                              {vf.v2}
-                            </span>
-                            <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
-                            <span className="font-semibold text-slate-900 dark:text-slate-200" title="V3 (Past Participle)">
-                              {vf.v3}
-                            </span>
-                          </div>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Card Bottom Bar: Mastery Stars + Details (Full Screen) Button */}
-                    <div className="px-4 py-2.5 bg-slate-50/90 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                      {/* Mastery Rating */}
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            onClick={() => handleSetMastery(item, star)}
-                            title={`Set mastery to ${star} stars`}
-                            className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
-                          >
-                            <Star
-                              className={`w-3.5 h-3.5 ${star <= (item.masteryLevel || 1)
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-slate-300 dark:text-slate-600"
-                                }`}
-                            />
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Details -> Full Screen Button */}
-                      <button
-                        onClick={() => setFullscreenVocabId(item.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200/80 dark:border-indigo-800/80 transition-all hover:scale-[1.02] cursor-pointer"
-                        title="View full screen details"
-                      >
-                        <Maximize2 className="w-3 h-3" />
-                        <span>Details</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            /* Table View Mode (Clean, Compact & Fit) */
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      {isStorySelectMode && (
-                        <th className="py-3 px-3 w-10 text-center">
-                          <span className="sr-only">Select</span>
-                        </th>
-                      )}
-                      <th className="py-3 px-4 sm:px-6">Word</th>
-                      <th className="py-3 px-3">Type & Level</th>
-                      <th className="py-3 px-4">Bangla Meaning</th>
-                      <th className="py-3 px-4 hidden md:table-cell">Definition</th>
-                      <th className="py-3 px-3 hidden lg:table-cell">Key Synonyms</th>
-                      <th className="py-3 px-3 hidden sm:table-cell">Mastery</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 text-sm">
-                    {paginatedVocabularies.map((item) => {
-                      const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
-                      const isAudioPlaying = playingWord === item.word.word;
-                      const isFav = item.isFavorite || item.isFavourate;
-                      const displayLevel = item.word.englishLevel || item.word.cefrLevel;
-                      const isSelectedForStory = selectedStoryItems.some((s) => s.id === item.id);
-
-                      return (
-                        <tr
-                          key={item.id}
-                          onClick={isStorySelectMode ? () => handleToggleStoryWord(item) : undefined}
-                          className={`group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors ${isStorySelectMode && isSelectedForStory
-                            ? "bg-amber-50/40 dark:bg-amber-500/10"
-                            : ""
-                            } ${isStorySelectMode ? "cursor-pointer" : ""}`}
-                        >
-                          {isStorySelectMode && (
-                            <td className="py-3 px-3 text-center">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleStoryWord(item);
-                                }}
-                                className={`w-5 h-5 rounded-md border-2 inline-flex items-center justify-center transition-all cursor-pointer ${isSelectedForStory
-                                  ? "bg-amber-500 border-amber-500 text-white shadow-2xs"
-                                  : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:border-amber-400"
-                                  }`}
-                              >
-                                {isSelectedForStory && <Check className="w-3 h-3 stroke-[3]" />}
-                              </button>
-                            </td>
-                          )}
-                          {/* Word & Pronunciation */}
-                          <td className="py-3 px-4 sm:px-6 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
                               <button
                                 onClick={(e) => {
                                   if (isStorySelectMode) {
@@ -1326,141 +919,45 @@ export default function VocabularyPage() {
                                     setFullscreenVocabId(item.id);
                                   }
                                 }}
-                                className="font-bold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer capitalize text-sm"
+                                className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left cursor-pointer capitalize truncate"
+                                title={`View ${item.word.word} full details`}
                               >
                                 {item.word.word}
                               </button>
+
                               <button
                                 onClick={() => playPronunciation(item.word.word)}
                                 title="Listen pronunciation"
-                                className={`p-1 rounded-lg transition-colors cursor-pointer ${isAudioPlaying
-                                  ? "bg-indigo-600 text-white"
-                                  : "text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 border ${isAudioPlaying
+                                  ? "bg-indigo-600 text-white border-indigo-600 scale-105 shadow-sm shadow-indigo-500/40"
+                                  : "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-800/80"
                                   }`}
                               >
-                                <Volume2
-                                  className={`w-3.5 h-3.5 ${isAudioPlaying ? "animate-pulse" : ""}`}
-                                />
+                                <Volume2 className={`w-3 h-3 ${isAudioPlaying ? "animate-pulse" : ""}`} />
                               </button>
-                              {item.word.ipa && (
-                                <span className="hidden xl:inline text-xs font-mono text-slate-400 dark:text-slate-500">
-                                  {item.word.ipa}
-                                </span>
-                              )}
                             </div>
-                          </td>
 
-                          {/* Type & Level */}
-                          <td className="py-3 px-3 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5">
-                              <span
-                                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${posConfig.bg} ${posConfig.text} ${posConfig.border}`}
+                            {/* Action Icons: Edit / Favorite / Delete */}
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              <button
+                                onClick={() => handleOpenEditModal(item)}
+                                title="Update vocabulary"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                               >
-                                {posConfig.label}
-                              </span>
-                              {displayLevel && (
-                                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
-                                  {displayLevel}
-                                </span>
-                              )}
-                            </div>
-                          </td>
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
 
-                          {/* Bangla Meaning & Pronunciation */}
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
-                                {item.word.banglaMeaning}
-                              </span>
-                              {item.word.banglaPronunciation && (
-                                <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
-                                  উচ্চারণ: {item.word.banglaPronunciation}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* Definition */}
-                          <td className="py-3 px-4 hidden md:table-cell max-w-xs">
-                            <p
-                              className="truncate text-xs text-slate-600 dark:text-slate-300"
-                              title={item.word.meaning}
-                            >
-                              {item.word.meaning}
-                            </p>
-                          </td>
-
-                          {/* Key Synonyms */}
-                          <td className="py-3 px-3 hidden lg:table-cell">
-                            <div className="flex items-center gap-1 flex-wrap">
-                              {item.word.synonyms && item.word.synonyms.length > 0 ? (
-                                item.word.synonyms.slice(0, 2).map((syn: any, idx: number) => (
-                                  <span
-                                    key={idx}
-                                    className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/70"
-                                  >
-                                    {getWordRelationText(syn)}
-                                  </span>
-                                ))
-                              ) : (
-                                <span className="text-xs text-slate-400">—</span>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* Mastery */}
-                          <td className="py-3 px-3 hidden sm:table-cell whitespace-nowrap">
-                            <div className="flex items-center gap-0.5">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <button
-                                  key={star}
-                                  onClick={() => handleSetMastery(item, star)}
-                                  title={`Set mastery to ${star} stars`}
-                                  className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
-                                >
-                                  <Star
-                                    className={`w-3.5 h-3.5 ${star <= (item.masteryLevel || 1)
-                                      ? "fill-amber-400 text-amber-400"
-                                      : "text-slate-200 dark:text-slate-700"
-                                      }`}
-                                  />
-                                </button>
-                              ))}
-                            </div>
-                          </td>
-
-                          {/* Actions */}
-                          <td className="py-3 px-4 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={() => handleToggleFavorite(item)}
                                 title={isFav ? "Remove from favorites" : "Add to favorites"}
-                                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isFav
-                                  ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
-                                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                className={`p-1.5 rounded-lg transition-colors cursor-pointer border ${isFav
+                                  ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800"
                                   }`}
                               >
                                 <Star
                                   className={`w-3.5 h-3.5 ${isFav ? "fill-amber-400 text-amber-400" : ""}`}
                                 />
-                              </button>
-
-                              <button
-                                onClick={() => handleOpenEditModal(item)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
-                                title="Update vocabulary"
-                              >
-                                <Edit3 className="w-3 h-3" />
-                                <span className="hidden xl:inline">Update</span>
-                              </button>
-
-                              <button
-                                onClick={() => setFullscreenVocabId(item.id)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 transition-colors cursor-pointer"
-                                title="Open full details"
-                              >
-                                <Maximize2 className="w-3 h-3" />
-                                <span className="hidden xl:inline">Details</span>
                               </button>
 
                               <button
@@ -1471,21 +968,352 @@ export default function VocabularyPage() {
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                          </div>
 
-          {/* BOTTOM PAGINATION BAR */}
-          {renderPaginationControls(false)}
-        </>
+                          {/* Tags: Part of Speech & CEFR & Status & Pronunciation */}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${posConfig.bg} ${posConfig.text} ${posConfig.border}`}
+                            >
+                              {posConfig.label}
+                            </span>
+
+                            {displayLevel && (
+                              <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                {displayLevel}
+                              </span>
+                            )}
+
+                            {item.status && item.status !== "LEARNING" && (
+                              <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                                {item.status}
+                              </span>
+                            )}
+
+                            {item.word.ipa && (
+                              <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 ml-auto">
+                                {item.word.ipa}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Bangla Meaning Box */}
+                        <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-50/80 to-teal-50/60 dark:from-emerald-950/40 dark:to-teal-950/20 border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-between gap-2">
+                          <p className="text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-300 truncate">
+                            {item.word.banglaMeaning}
+                          </p>
+                          {item.word.banglaPronunciation && (
+                            <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-md border border-emerald-300/60 dark:border-emerald-700/60">
+                              <span className="text-[9px] opacity-70 font-normal">উচ্চারণ:</span>
+                              <span>{item.word.banglaPronunciation}</span>
+                            </span>
+                          )}
+                        </div>
+
+                        {/* English Definition (Clean 2-line clamped preview) */}
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
+                          {item.word.meaning}
+                        </p>
+
+                        {/* Verb Forms Preview (if VERB) */}
+                        {item.word.partOfSpeech === "VERB" && (() => {
+                          const vf = item.word.verbForms || getVerbForms(item.word);
+                          if (!vf) return null;
+                          return (
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 bg-emerald-50/50 dark:bg-emerald-950/20 px-2.5 py-1 rounded-lg border border-emerald-200/50 dark:border-emerald-800/40 overflow-x-auto scrollbar-none">
+                              <span className="font-bold text-emerald-700 dark:text-emerald-400 text-[10px] uppercase shrink-0">
+                                Forms:
+                              </span>
+                              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V1 (Base)">
+                                {vf.v1}
+                              </span>
+                              <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
+                              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V2 (Past Simple)">
+                                {vf.v2}
+                              </span>
+                              <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
+                              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V3 (Past Participle)">
+                                {vf.v3}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Card Bottom Bar: Mastery Stars + Details (Full Screen) Button */}
+                      <div className="px-4 py-2.5 bg-slate-50/90 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                        {/* Mastery Rating */}
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => handleSetMastery(item, star)}
+                              title={`Set mastery to ${star} stars`}
+                              className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
+                            >
+                              <Star
+                                className={`w-3.5 h-3.5 ${star <= (item.masteryLevel || 1)
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "text-slate-300 dark:text-slate-600"
+                                  }`}
+                              />
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Details -> Full Screen Button */}
+                        <button
+                          onClick={() => setFullscreenVocabId(item.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200/80 dark:border-indigo-800/80 transition-all hover:scale-[1.02] cursor-pointer"
+                          title="View full screen details"
+                        >
+                          <Maximize2 className="w-3 h-3" />
+                          <span>Details</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              /* Table View Mode (Clean, Compact & Fit) */
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        {isStorySelectMode && (
+                          <th className="py-3 px-3 w-10 text-center">
+                            <span className="sr-only">Select</span>
+                          </th>
+                        )}
+                        <th className="py-3 px-4 sm:px-6">Word</th>
+                        <th className="py-3 px-3">Type & Level</th>
+                        <th className="py-3 px-4">Bangla Meaning</th>
+                        <th className="py-3 px-4 hidden md:table-cell">Definition</th>
+                        <th className="py-3 px-3 hidden lg:table-cell">Key Synonyms</th>
+                        <th className="py-3 px-3 hidden sm:table-cell">Mastery</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 text-sm">
+                      {paginatedVocabularies.map((item) => {
+                        const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
+                        const isAudioPlaying = playingWord === item.word.word;
+                        const isFav = item.isFavorite || item.isFavourate;
+                        const displayLevel = item.word.englishLevel || item.word.cefrLevel;
+                        const isSelectedForStory = selectedStoryItems.some((s) => s.id === item.id);
+
+                        return (
+                          <tr
+                            key={item.id}
+                            onClick={isStorySelectMode ? () => handleToggleStoryWord(item) : undefined}
+                            className={`group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors ${isStorySelectMode && isSelectedForStory
+                              ? "bg-amber-50/40 dark:bg-amber-500/10"
+                              : ""
+                              } ${isStorySelectMode ? "cursor-pointer" : ""}`}
+                          >
+                            {isStorySelectMode && (
+                              <td className="py-3 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleStoryWord(item);
+                                  }}
+                                  className={`w-5 h-5 rounded-md border-2 inline-flex items-center justify-center transition-all cursor-pointer ${isSelectedForStory
+                                    ? "bg-amber-500 border-amber-500 text-white shadow-2xs"
+                                    : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:border-amber-400"
+                                    }`}
+                                >
+                                  {isSelectedForStory && <Check className="w-3 h-3 stroke-[3]" />}
+                                </button>
+                              </td>
+                            )}
+                            {/* Word & Pronunciation */}
+                            <td className="py-3 px-4 sm:px-6 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    if (isStorySelectMode) {
+                                      e.stopPropagation();
+                                      handleToggleStoryWord(item);
+                                    } else {
+                                      setFullscreenVocabId(item.id);
+                                    }
+                                  }}
+                                  className="font-bold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer capitalize text-sm"
+                                >
+                                  {item.word.word}
+                                </button>
+                                <button
+                                  onClick={() => playPronunciation(item.word.word)}
+                                  title="Listen pronunciation"
+                                  className={`p-1 rounded-lg transition-colors cursor-pointer ${isAudioPlaying
+                                    ? "bg-indigo-600 text-white"
+                                    : "text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    }`}
+                                >
+                                  <Volume2
+                                    className={`w-3.5 h-3.5 ${isAudioPlaying ? "animate-pulse" : ""}`}
+                                  />
+                                </button>
+                                {item.word.ipa && (
+                                  <span className="hidden xl:inline text-xs font-mono text-slate-400 dark:text-slate-500">
+                                    {item.word.ipa}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Type & Level */}
+                            <td className="py-3 px-3 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <span
+                                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${posConfig.bg} ${posConfig.text} ${posConfig.border}`}
+                                >
+                                  {posConfig.label}
+                                </span>
+                                {displayLevel && (
+                                  <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                                    {displayLevel}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Bangla Meaning & Pronunciation */}
+                            <td className="py-3 px-4 whitespace-nowrap">
+                              <div className="flex flex-col">
+                                <span className="font-medium text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
+                                  {item.word.banglaMeaning}
+                                </span>
+                                {item.word.banglaPronunciation && (
+                                  <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                                    উচ্চারণ: {item.word.banglaPronunciation}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Definition */}
+                            <td className="py-3 px-4 hidden md:table-cell max-w-xs">
+                              <p
+                                className="truncate text-xs text-slate-600 dark:text-slate-300"
+                                title={item.word.meaning}
+                              >
+                                {item.word.meaning}
+                              </p>
+                            </td>
+
+                            {/* Key Synonyms */}
+                            <td className="py-3 px-3 hidden lg:table-cell">
+                              <div className="flex items-center gap-1 flex-wrap">
+                                {item.word.synonyms && item.word.synonyms.length > 0 ? (
+                                  item.word.synonyms.slice(0, 2).map((syn: any, idx: number) => (
+                                    <span
+                                      key={idx}
+                                      className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/70"
+                                    >
+                                      {getWordRelationText(syn)}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-xs text-slate-400">—</span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Mastery */}
+                            <td className="py-3 px-3 hidden sm:table-cell whitespace-nowrap">
+                              <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                    key={star}
+                                    onClick={() => handleSetMastery(item, star)}
+                                    title={`Set mastery to ${star} stars`}
+                                    className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
+                                  >
+                                    <Star
+                                      className={`w-3.5 h-3.5 ${star <= (item.masteryLevel || 1)
+                                        ? "fill-amber-400 text-amber-400"
+                                        : "text-slate-200 dark:text-slate-700"
+                                        }`}
+                                    />
+                                  </button>
+                                ))}
+                              </div>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="py-3 px-4 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => handleToggleFavorite(item)}
+                                  title={isFav ? "Remove from favorites" : "Add to favorites"}
+                                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isFav
+                                    ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
+                                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    }`}
+                                >
+                                  <Star
+                                    className={`w-3.5 h-3.5 ${isFav ? "fill-amber-400 text-amber-400" : ""}`}
+                                  />
+                                </button>
+
+                                <button
+                                  onClick={() => handleOpenEditModal(item)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                                  title="Update vocabulary"
+                                >
+                                  <Edit3 className="w-3 h-3" />
+                                  <span className="hidden xl:inline">Update</span>
+                                </button>
+
+                                <button
+                                  onClick={() => setFullscreenVocabId(item.id)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 transition-colors cursor-pointer"
+                                  title="Open full details"
+                                >
+                                  <Maximize2 className="w-3 h-3" />
+                                  <span className="hidden xl:inline">Details</span>
+                                </button>
+
+                                <button
+                                  onClick={() => setItemToDelete(item)}
+                                  title="Delete word"
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* BOTTOM PAGINATION BAR */}
+            <VocabularyPagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              startRecord={startRecord}
+              endRecord={endRecord}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              isLoading={isLoading}
+              isTopPosition={false}
+            />
+          </>
         )
-}
+        }
       </div >
 
       {/* 4. Fullscreen Single Vocabulary Portal View (Natural, Clean, Theme-Aware & Scrollable) */}
