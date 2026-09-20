@@ -66,6 +66,10 @@ import VocabularyPagination from "./VocabularyPagination";
 import VocabularyCard from "./VocabularyCard";
 import VocabularyTableView from "./VocabularyTableView";
 import VocabularyFullscreenModal from "./modals/VocabularyFullscreenModal";
+import AddVocabularyModal from "./modals/AddVocabularyModal";
+import EditVocabularyModal from "./modals/EditVocabularyModal";
+import DeleteVocabularyModal from "./modals/DeleteVocabularyModal";
+import StoryContextModal from "./modals/StoryContextModal";
 
 
 
@@ -932,633 +936,63 @@ export default function VocabularyPage() {
         savingNoteId={savingNoteId}
       />
 
-      {/* 5. Add Vocabulary Modal (Single Word Focused) */}
-      {
-        isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-              {/* Modal Header */}
-              <div className="p-6 bg-gradient-to-r from-purple-600/10 via-primary/10 to-fuchsia-600/10 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/30">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                      Add Vocabulary with AI
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Generate definitions, Bengali meanings, collocations & examples
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => !isGenerating && setIsModalOpen(false)}
-                  disabled={isGenerating}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Body Form */}
-              <form onSubmit={handleExecuteAddSingleWord} className="p-6 space-y-5">
-                {/* Single Word Input */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                    <span>Vocabulary Word</span>
-                    <span className="text-[11px] font-normal text-slate-400">e.g. significant</span>
-                  </label>
-
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={inputWordText}
-                      onChange={(e) => setInputWordText(e.target.value)}
-                      disabled={isGenerating}
-                      autoFocus
-                      placeholder="Enter an English word (e.g. significant)..."
-                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-base font-medium shadow-inner"
-                    />
-                    {inputWordText && !isGenerating && (
-                      <button
-                        type="button"
-                        onClick={() => setInputWordText("")}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Optional Notes */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                    Optional Study Note / Context
-                  </label>
-                  <input
-                    type="text"
-                    value={userNote}
-                    onChange={(e) => setUserNote(e.target.value)}
-                    disabled={isGenerating}
-                    placeholder="e.g. Academic writing / IELTS Task 2 / Oxford 3000..."
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-
-                {/* Feedback / Progress Indicator */}
-                {isGenerating && (
-                  <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center gap-3 text-purple-700 dark:text-purple-300 animate-pulse">
-                    <Sparkles className="w-5 h-5 animate-spin text-purple-500" />
-                    <div className="text-xs font-semibold">
-                      <p>AI is analyzing &apos;{inputWordText.trim()}&apos;...</p>
-                      <p className="text-[11px] opacity-75">
-                        Extracting meaning, Bengali translation, collocations & CEFR level.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {feedbackMessage && (
-                  <div
-                    className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-semibold border ${feedbackMessage.type === "success"
-                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20"
-                      }`}
-                  >
-                    {feedbackMessage.type === "success" ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
-                    )}
-                    <span>{feedbackMessage.text}</span>
-                  </div>
-                )}
-
-                {/* Modal Footer Actions */}
-                <div className="pt-2 flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    disabled={isGenerating}
-                    className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={isGenerating || !inputWordText.trim()}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-sm font-bold shadow-lg shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Generating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 text-amber-300" />
-                        <span>Generate with AI</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )
-      }
+      {/* 5. Add Vocabulary Modal */}
+      <AddVocabularyModal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        handleExecuteAddSingleWord={handleExecuteAddSingleWord}
+        inputWordText={inputWordText}
+        setInputWordText={setInputWordText}
+        userNote={userNote}
+        setUserNote={setUserNote}
+        isGenerating={isGenerating}
+        feedbackMessage={feedbackMessage}
+      />
 
       {/* 6. Update / Edit Vocabulary Modal */}
-      {
-        editingItem && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
-              {/* Modal Header */}
-              <div className="p-5 sm:p-6 bg-gradient-to-r from-indigo-600/10 via-purple-600/10 to-pink-600/10 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                    <Edit3 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white capitalize">
-                        Update &apos;{editingItem.word.word}&apos;
-                      </h3>
-                      <span
-                        className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${POS_COLORS[editingItem.word.partOfSpeech]?.bg || "bg-indigo-500/10"
-                          } ${POS_COLORS[editingItem.word.partOfSpeech]?.text || "text-indigo-600 dark:text-indigo-400"
-                          } ${POS_COLORS[editingItem.word.partOfSpeech]?.border || "border-indigo-500/30"
-                          }`}
-                      >
-                        {POS_COLORS[editingItem.word.partOfSpeech]?.label || editingItem.word.partOfSpeech}
-                      </span>
-                      {editingItem.word.banglaPronunciation && (
-                        <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-800/60">
-                          উচ্চারণ: {editingItem.word.banglaPronunciation}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      {editingItem.word.banglaMeaning}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => !isSavingEdit && setEditingItem(null)}
-                  disabled={isSavingEdit}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Body - Scrollable Form */}
-              <form onSubmit={handleSaveEdit} className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
-                {/* Status & Favorite Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Status Switcher */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                      Vocabulary Status
-                    </label>
-                    <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
-                      {[
-                        { id: "LEARNING", label: "Learning" },
-                        { id: "LEARNED", label: "Learned" },
-                        { id: "MASTERED", label: "Mastered" },
-                      ].map((st) => (
-                        <button
-                          key={st.id}
-                          type="button"
-                          onClick={() => setEditStatus(st.id)}
-                          className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center ${editStatus === st.id
-                            ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm"
-                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                            }`}
-                        >
-                          {st.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Favorite Toggle */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                      Favorite Status
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setEditIsFavorite((prev) => !prev)}
-                      className={`w-full py-2 px-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-semibold transition-all cursor-pointer ${editIsFavorite
-                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
-                        }`}
-                    >
-                      <Star
-                        className={`w-4 h-4 ${editIsFavorite ? "fill-amber-400 text-amber-400" : "text-slate-400"
-                          }`}
-                      />
-                      <span>{editIsFavorite ? "Marked as Favorite" : "Add to Favorites"}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* My Practice Sentences */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5 text-indigo-500" />
-                      Practice Sentences ({editSentences.length})
-                    </label>
-                    <span className="text-[11px] text-slate-400">Add personal usage</span>
-                  </div>
-
-                  {/* Sentences List */}
-                  {editSentences.length > 0 ? (
-                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                      {editSentences.map((sentence, idx) => (
-                        <div
-                          key={idx}
-                          className="group flex items-start justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200"
-                        >
-                          <div className="flex items-start gap-2 flex-1 min-w-0">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                            <span className="leading-relaxed break-words">{sentence}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSentence(idx)}
-                            className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer shrink-0 rounded"
-                            title="Remove sentence"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 italic py-1">
-                      No practice sentences added yet. Write one below!
-                    </p>
-                  )}
-
-                  {/* Add Sentence Input */}
-                  <div className="flex items-center gap-2 pt-1">
-                    <input
-                      type="text"
-                      placeholder="Write a new sentence with this word..."
-                      value={editNewSentence}
-                      onChange={(e) => setEditNewSentence(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddSentenceToEdit();
-                        }
-                      }}
-                      className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddSentenceToEdit}
-                      disabled={!editNewSentence.trim()}
-                      className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed border border-indigo-200 dark:border-indigo-800 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Study Notes */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-indigo-500" />
-                    Study Notes & Mnemonics
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder='e.g. Remember to use with prepositions "in" or "for". IELTS Speaking Part 2...'
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
-                  />
-                </div>
-
-                {/* Feedback Banner */}
-                {editFeedback && (
-                  <div
-                    className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-semibold border ${editFeedback.type === "success"
-                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20"
-                      }`}
-                  >
-                    {editFeedback.type === "success" ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-                    )}
-                    <span>{editFeedback.text}</span>
-                  </div>
-                )}
-
-                {/* Modal Footer Actions */}
-                <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setEditingItem(null)}
-                    disabled={isSavingEdit}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={isSavingEdit}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                  >
-                    {isSavingEdit ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Updating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Save Changes</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )
-      }
+      <EditVocabularyModal
+        editingItem={editingItem}
+        setEditingItem={setEditingItem}
+        isSavingEdit={isSavingEdit}
+        handleSaveEdit={handleSaveEdit}
+        editStatus={editStatus}
+        setEditStatus={setEditStatus}
+        editIsFavorite={editIsFavorite}
+        setEditIsFavorite={setEditIsFavorite}
+        editSentences={editSentences}
+        handleRemoveSentence={handleRemoveSentence}
+        editNewSentence={editNewSentence}
+        setEditNewSentence={setEditNewSentence}
+        handleAddSentenceToEdit={handleAddSentenceToEdit}
+        editNotes={editNotes}
+        setEditNotes={setEditNotes}
+        editFeedback={editFeedback}
+      />
 
       {/* 7. Sweet Custom Delete Confirmation Modal */}
-      {
-        itemToDelete && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#141226] border border-rose-500/20 dark:border-rose-500/30 shadow-[0_25px_60px_-15px_rgba(244,63,94,0.3)] overflow-hidden animate-in zoom-in-95 duration-150 p-6 space-y-5">
-              {/* Glow decorative background */}
-              <div className="absolute -top-12 -right-12 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
+      <DeleteVocabularyModal
+        itemToDelete={itemToDelete}
+        setItemToDelete={setItemToDelete}
+        isDeleting={isDeleting}
+        handleConfirmDelete={handleConfirmDelete}
+      />
 
-              {/* Header with animated icon and close */}
-              <div className="flex items-start justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400 shadow-inner">
-                  <Trash2 className="w-6 h-6" />
-                </div>
-                <button
-                  onClick={() => !isDeleting && setItemToDelete(null)}
-                  disabled={isDeleting}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Title and Message */}
-              <div className="space-y-1.5">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                  Remove Word from Vault?
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Are you sure you want to remove this vocabulary item? You can re-add it anytime with AI.
-                </p>
-              </div>
-
-              {/* Word Preview Card */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-base font-bold text-slate-900 dark:text-white capitalize">
-                      {itemToDelete.word.word}
-                    </h4>
-                    {itemToDelete.word.banglaPronunciation && (
-                      <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200/60 dark:border-indigo-800/60">
-                        উচ্চারণ: {itemToDelete.word.banglaPronunciation}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium mt-0.5">
-                    {itemToDelete.word.banglaMeaning}
-                  </p>
-                </div>
-                <span
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${POS_COLORS[itemToDelete.word.partOfSpeech]?.bg || "bg-indigo-500/10"
-                    } ${POS_COLORS[itemToDelete.word.partOfSpeech]?.text || "text-indigo-600 dark:text-indigo-400"
-                    } ${POS_COLORS[itemToDelete.word.partOfSpeech]?.border || "border-indigo-500/30"
-                    }`}
-                >
-                  {POS_COLORS[itemToDelete.word.partOfSpeech]?.label || itemToDelete.word.partOfSpeech}
-                </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setItemToDelete(null)}
-                  disabled={isDeleting}
-                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  Keep Word
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleConfirmDelete}
-                  disabled={isDeleting}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-xs font-bold shadow-lg shadow-rose-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-                >
-                  {isDeleting ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Removing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Yes, Remove Word</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
-
-      {/* 8. Floating Create Story Button (Bottom Right) */}
-      {
-        isStorySelectMode && (
-          <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-40 animate-in fade-in slide-in-from-bottom-5 duration-200">
-            <button
-              type="button"
-              onClick={() => {
-                if (selectedStoryItems.length === 0) {
-                  alert("Please select at least 1 vocabulary word (recommended 5 to 10) to create your story.");
-                  return;
-                }
-                setStoryCreationError(null);
-                setIsStoryContextModalOpen(true);
-              }}
-              className="group flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-bold text-sm sm:text-base shadow-2xl shadow-orange-500/40 hover:shadow-orange-500/60 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/20"
-              title="Create story with selected vocabulary"
-            >
-              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4 text-amber-200 animate-pulse" />
-              </div>
-              <span>Create Story</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/25 text-xs font-black tracking-wide">
-                {selectedStoryItems.length}
-              </span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          </div>
-        )
-      }
-
-      {/* 9. Story Context Popup Modal */}
-      {
-        isStoryContextModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#141226] border border-amber-500/30 shadow-2xl p-6 sm:p-8 space-y-5 animate-in zoom-in-95 duration-150">
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-md">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                      Create AI Vocabulary Story
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {selectedStoryItems.length} {selectedStoryItems.length === 1 ? "word" : "words"} chosen for this story
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isCreatingStory) setIsStoryContextModalOpen(false);
-                  }}
-                  disabled={isCreatingStory}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Selected Words Pill List */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Selected Words ({selectedStoryItems.length}):
-                  </label>
-                  <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                    {selectedStoryItems.length >= 5 ? "Great selection! ✨" : "5–10 recommended"}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                  {selectedStoryItems.map((item) => (
-                    <span
-                      key={item.id}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-2xs capitalize"
-                    >
-                      <span>{item.word?.word}</span>
-                      {!isCreatingStory && (
-                        <button
-                          type="button"
-                          onClick={() => handleToggleStoryWord(item)}
-                          className="text-slate-400 hover:text-rose-500 transition-colors ml-0.5 cursor-pointer"
-                          title="Remove word"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Context Textarea */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                  <span>Story Context / Theme (Optional)</span>
-                  <span className="text-[11px] font-normal text-slate-400">Optional</span>
-                </label>
-                <textarea
-                  rows={3}
-                  value={storyContext}
-                  onChange={(e) => setStoryContext(e.target.value)}
-                  disabled={isCreatingStory}
-                  placeholder="e.g., A rainy day in Dhaka preparing for an IELTS exam, a conversation at an airport, a tech startup pitch, or a campus memory..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 transition resize-none disabled:opacity-50"
-                />
-              </div>
-
-              {/* Generation Info Banner */}
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-200 space-y-1">
-                <p className="font-semibold flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span>Dual Language Generation</span>
-                </p>
-                <p className="text-[11px] opacity-90">
-                  Will generate both a 🇧🇩 Bangla-English mixed narrative and a 🇬🇧 natural full English narrative incorporating your words.
-                </p>
-              </div>
-
-              {/* Error Message if any */}
-              {storyCreationError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{storyCreationError}</span>
-                </div>
-              )}
-
-              {/* Modal Actions */}
-              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsStoryContextModalOpen(false)}
-                  disabled={isCreatingStory}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExecuteStoryGeneration}
-                  disabled={isCreatingStory || selectedStoryItems.length === 0}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  {isCreatingStory ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Creating Story...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>OK, Create Story</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
-    </div >
+      {/* 8 & 9. Floating Create Story Button & Story Context Modal */}
+      <StoryContextModal
+        isStorySelectMode={isStorySelectMode}
+        selectedStoryItems={selectedStoryItems}
+        setSelectedStoryItems={setSelectedStoryItems}
+        isStoryContextModalOpen={isStoryContextModalOpen}
+        setIsStoryContextModalOpen={setIsStoryContextModalOpen}
+        storyContext={storyContext}
+        setStoryContext={setStoryContext}
+        isCreatingStory={isCreatingStory}
+        storyCreationError={storyCreationError}
+        setStoryCreationError={setStoryCreationError}
+        handleToggleStoryWord={handleToggleStoryWord}
+        handleExecuteStoryGeneration={handleExecuteStoryGeneration}
+      />
+      </div >
   );
 }
 

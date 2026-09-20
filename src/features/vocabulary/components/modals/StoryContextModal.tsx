@@ -13,7 +13,8 @@ export interface StoryContextModalProps {
   isCreatingStory: boolean;
   storyCreationError: string | null;
   setStoryCreationError: (err: string | null) => void;
-  handleCreateStoryFromSelection: () => void;
+  handleToggleStoryWord: (item: MyVocabularyItem) => void;
+  handleExecuteStoryGeneration: () => void;
 }
 
 export default function StoryContextModal({
@@ -27,7 +28,8 @@ export default function StoryContextModal({
   isCreatingStory,
   storyCreationError,
   setStoryCreationError,
-  handleCreateStoryFromSelection,
+  handleToggleStoryWord,
+  handleExecuteStoryGeneration,
 }: StoryContextModalProps) {
   return (
     <>
