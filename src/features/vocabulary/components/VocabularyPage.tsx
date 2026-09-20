@@ -2,23 +2,10 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { createPortal } from "react-dom";
-import { ThemeToggle } from "@/components/shared";
-import { Button } from "@/components/ui/button";
 import {
   MyVocabularyItem,
   PartOfSpeech,
   VocabularyStatus,
-  VerbForms,
-  getVerbForms,
-  getWordRelationText,
-  getWordRelationWord,
-  getWordRelationPartOfSpeech,
-  getWordRelationBangla,
-  getCollocationText,
-  getCollocationMeaning,
-  getCollocationBangla,
-  getCollocationExample,
 } from "@/features/vocabulary/types/vocabulary";
 import {
   fetchMyVocabularies,
@@ -29,36 +16,10 @@ import {
   generateVocabStoryApi,
 } from "@/features/vocabulary/api";
 import {
-  Sparkles,
-  Plus,
-  Search,
-  Volume2,
-  Star,
-  Trash2,
-  Edit3,
-  Check,
-  X,
-  ChevronLeft,
-  ChevronRight,
   BookOpen,
-  Layers,
-  Filter,
+  Plus,
   RefreshCw,
-  Lightbulb,
-  CheckCircle2,
-  AlertCircle,
-  ArrowRight,
-  TrendingUp,
-  Maximize2,
-  Minimize2,
-  GraduationCap,
-  MessageSquare,
-  FileText,
-  Keyboard,
-  Clock,
-  ExternalLink,
 } from "lucide-react";
-import { ALL_POS_OPTIONS, highlightPhrase, POS_COLORS } from "../constants/vocabularyConstants";
 import VocabularyHeader from "./VocabularyHeader";
 import VocabularyFilterBar from "./VocabularyFilterBar";
 import VocabularyStoryBanner from "./VocabularyStoryBanner";

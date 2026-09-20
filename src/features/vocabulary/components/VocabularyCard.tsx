@@ -64,7 +64,7 @@ export default function VocabularyCard({
 
       {/* Main Card Content */}
       <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
-        {/* Top: Word, Pronounce & Quick Action Icons */}
+        {/* inset-block-start: Word, Pronounce & Quick Action Icons */}
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-2">
             {/* Word Title & Audio */}
