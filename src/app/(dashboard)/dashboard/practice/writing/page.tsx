@@ -15,8 +15,8 @@ import {
   Zap,
   Check,
 } from "lucide-react";
-import { fetchMyVocabularies } from "@/features/vocabulary/api/vocabulary";
-import { MyVocabularyItem } from "@/features/vocabulary/types/vocabulary";
+import { fetchMyVocabularies } from "@/features/vocabulary/vocab-vault/api/vocabulary";
+import { MyVocabularyItem } from "@/features/vocabulary/vocab-vault/types/vocabulary";
 
 interface PromptItem {
   id: string;

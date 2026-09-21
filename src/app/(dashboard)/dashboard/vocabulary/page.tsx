@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import VocabularyPage from "@/features/vocabulary/components/VocabularyPage";
+import VocabularyPage from "@/features/vocabulary/vocab-vault/components/VocabularyPage";
 
 export const metadata: Metadata = {
   title: "AI Vocabulary Vault | Fluentia",

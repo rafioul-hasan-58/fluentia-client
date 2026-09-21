@@ -46,7 +46,7 @@ export interface VocabularyFilterBarProps {
   stats: {
     total: number;
     todayCount: number;
-    posCounts: Record<string, number>;
+    posCounts: Partial<Record<PartOfSpeech, number>> | Record<string, number>;
   };
   totalFoundCount: number;
 }
@@ -236,7 +236,7 @@ export default function VocabularyFilterBar({
               {/* Specific POS options */}
               <div className="max-h-60 overflow-y-auto space-y-0.5">
                 {ALL_POS_OPTIONS.map((pos) => {
-                  const count = stats.posCounts[pos] || 0;
+                  const count = (stats.posCounts as Record<string, number>)?.[pos] || 0;
                   const config = POS_COLORS[pos];
                   const isSelected = selectedPos === pos;
 

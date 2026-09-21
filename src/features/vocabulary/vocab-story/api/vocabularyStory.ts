@@ -1,6 +1,6 @@
 import { getApiBaseUrl } from "@/lib/api";
 import { VocabStoryItem } from "@/features/vocabulary/types/vocabulary";
-import { getAuthToken } from "./utilFn";
+import { getAuthToken } from "@/features/vocabulary/vocab-vault/api/utilFn";
 
 /**
  * Generate Bilingual and Full English Vocabulary Story via AI

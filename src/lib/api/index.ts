@@ -4,4 +4,5 @@ export * from "./user";
 export * from "./auth";
 export * from "./levelTest";
 export * from "./admin";
-export * from "@/features/vocabulary/api";
+export * from "@/features/vocabulary/vocab-vault/api";
+export * from "@/features/vocabulary/vocab-story/api";
