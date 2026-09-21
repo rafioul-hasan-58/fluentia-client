@@ -23,13 +23,13 @@ export function AdminDashboardView() {
         subtitle="Real-time monitoring, placement test intelligence, and learner analytics."
         actions={
           <div className="flex items-center gap-2.5">
-            <Link href="/admin/dashboard/questions">
+            <Link href="/dashboard/admin/questions">
               <Button variant="outline" size="sm" className="text-xs font-semibold">
                 <span>📚</span>
                 <span className="hidden sm:inline ml-1.5">Question Bank</span>
               </Button>
             </Link>
-            <Link href="/admin/dashboard/analytics">
+            <Link href="/dashboard/admin/analytics">
               <Button variant="gradient" size="sm" className="text-xs font-bold shadow-sm">
                 <span>📊</span>
                 <span className="ml-1.5">View Analytics</span>
@@ -218,7 +218,7 @@ export function AdminDashboardView() {
 
           <div className="pt-2 border-t border-slate-200 dark:border-white/10">
             <Link
-              href="/admin/dashboard/analytics"
+              href="/dashboard/admin/analytics"
               className="w-full flex items-center justify-center py-2 px-3 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-ink text-xs font-semibold transition-colors"
             >
               Deep Diagnostic Breakdown →
@@ -244,7 +244,7 @@ export function AdminDashboardView() {
             </p>
           </div>
 
-          <Link href="/admin/dashboard/attempts">
+          <Link href="/dashboard/admin/attempts">
             <Button variant="outline" size="sm" className="text-xs font-semibold">
               View All Attempts →
             </Button>

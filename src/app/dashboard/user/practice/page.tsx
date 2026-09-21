@@ -81,7 +81,7 @@ export default function PracticeHubPage() {
 
           <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
             <Link
-              href="/user/dashboard/practice/vocab"
+              href="/dashboard/user/practice/vocab"
               className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-sm hover:shadow-indigo-500/25 transition-all group-hover:translate-x-0.5"
             >
               <span>Launch Vocab Practice</span>
@@ -130,7 +130,7 @@ export default function PracticeHubPage() {
 
           <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
             <Link
-              href="/user/dashboard/practice/writing"
+              href="/dashboard/user/practice/writing"
               className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm shadow-sm hover:shadow-purple-500/25 transition-all group-hover:translate-x-0.5"
             >
               <span>Launch Writing Practice</span>

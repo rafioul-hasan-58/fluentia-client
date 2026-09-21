@@ -76,7 +76,7 @@ const TEST_OPTIONS: TestCardInfo[] = [
     borderColor: "border-fuchsia-500/30 dark:border-fuchsia-500/30 hover:border-fuchsia-500/60",
     buttonGradient: "from-fuchsia-600 via-primary to-purple-600 hover:from-fuchsia-500 hover:via-primary-dark hover:to-purple-500 shadow-fuchsia-500/25",
     buttonText: "Start IELTS Benchmark Test",
-    href: "/user/dashboard/chat?mode=level-test-ielts",
+    href: "/dashboard/user/chat?mode=level-test-ielts",
     popular: false,
   },
 ];

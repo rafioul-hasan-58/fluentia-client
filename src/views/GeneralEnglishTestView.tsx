@@ -787,7 +787,7 @@ export function GeneralEnglishTestView() {
             {/* CTAs */}
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href="/user/dashboard/chat"
+                href="/dashboard/user/chat"
                 className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 text-white font-bold text-sm sm:text-base shadow-lg shadow-purple-500/25 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all text-center inline-flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-4 h-4" />

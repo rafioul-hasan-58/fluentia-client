@@ -30,7 +30,7 @@ const LEARNING_TRACKS: TrackCard[] = [
     glowColor: "from-purple-600/20 to-indigo-500/10",
     borderColor: "hover:border-purple-500/60",
     badgeColor: "bg-purple-500/15 text-purple-600 dark:text-purple-300 border-purple-500/30",
-    href: "/user/dashboard/chat",
+    href: "/dashboard/user/chat",
   },
   {
     id: "ielts",
@@ -41,7 +41,7 @@ const LEARNING_TRACKS: TrackCard[] = [
     glowColor: "from-fuchsia-600/20 to-purple-500/10",
     borderColor: "hover:border-fuchsia-500/60",
     badgeColor: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300 border-fuchsia-500/30",
-    href: "/user/dashboard/chat",
+    href: "/dashboard/user/chat",
   },
   {
     id: "speaking",
@@ -52,7 +52,7 @@ const LEARNING_TRACKS: TrackCard[] = [
     glowColor: "from-violet-600/20 to-purple-500/10",
     borderColor: "hover:border-violet-500/60",
     badgeColor: "bg-violet-500/15 text-violet-600 dark:text-violet-300 border-violet-500/30",
-    href: "/user/dashboard/chat",
+    href: "/dashboard/user/chat",
   },
   {
     id: "vocab",
@@ -63,7 +63,7 @@ const LEARNING_TRACKS: TrackCard[] = [
     glowColor: "from-amber-600/20 to-orange-500/10",
     borderColor: "hover:border-amber-500/60",
     badgeColor: "bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30",
-    href: "/user/dashboard/vocabulary",
+    href: "/dashboard/user/vocabulary",
   },
   {
     id: "writing",
@@ -74,7 +74,7 @@ const LEARNING_TRACKS: TrackCard[] = [
     glowColor: "from-emerald-600/20 to-teal-500/10",
     borderColor: "hover:border-emerald-500/60",
     badgeColor: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30",
-    href: "/user/dashboard/chat",
+    href: "/dashboard/user/chat",
   },
   {
     id: "listening",
@@ -85,7 +85,7 @@ const LEARNING_TRACKS: TrackCard[] = [
     glowColor: "from-purple-600/20 to-pink-500/10",
     borderColor: "hover:border-purple-500/60",
     badgeColor: "bg-purple-500/15 text-purple-600 dark:text-purple-300 border-purple-500/30",
-    href: "/user/dashboard/listening",
+    href: "/dashboard/user/listening",
   },
 ];
 
@@ -193,7 +193,7 @@ export function Hero() {
             {/* CTA Buttons Row */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
               <Link
-                href="/user/dashboard/chat"
+                href="/dashboard/user/chat"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white font-bold text-base transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/40 dark:shadow-[0_0_30px_rgba(124,58,237,0.45)] hover:scale-[1.02] active:scale-95 text-center"
               >
                 <span className="font-bangla text-lg font-bold">শেখা শুরু করুন</span>

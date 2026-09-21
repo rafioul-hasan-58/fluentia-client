@@ -210,7 +210,7 @@ export const GenerateNewStoryModal: React.FC<GenerateNewStoryModalProps> = ({
                     No vocabulary words found in your vault.
                   </p>
                   <Link
-                    href="/user/dashboard/vocabulary"
+                    href="/dashboard/user/vocabulary"
                     className="inline-flex items-center gap-1.5 text-xs text-indigo-500 font-bold hover:underline"
                   >
                     <span>Add words to Vault</span>

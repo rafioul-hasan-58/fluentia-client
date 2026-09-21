@@ -50,7 +50,7 @@ export function Navbar() {
             Get Started
           </a>
           <Link
-            href="/user/dashboard"
+            href="/dashboard/user"
             className="hover:text-primary dark:hover:text-purple-300 transition-colors"
           >
             Dashboard

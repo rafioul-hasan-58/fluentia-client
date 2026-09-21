@@ -31,7 +31,7 @@ export default function NotFound() {
       {/* Top Header */}
       <header className="relative z-10 w-full max-w-5xl mx-auto flex items-center justify-between">
         <Link
-          href="/user/dashboard"
+          href="/dashboard/user"
           className="flex items-center gap-2.5 group focus:outline-none"
         >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-primary to-amber-500 flex items-center justify-center text-white shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform">
@@ -101,7 +101,7 @@ export default function NotFound() {
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-3 pt-1 w-full max-w-xs sm:max-w-sm">
           <Link
-            href="/user/dashboard"
+            href="/dashboard/user"
             className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-amber-500 hover:from-purple-500 hover:via-primary-dark hover:to-amber-400 text-white text-xs sm:text-sm font-bold shadow-md shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer text-center"
           >
             <Home className="w-4 h-4" />
@@ -109,7 +109,7 @@ export default function NotFound() {
           </Link>
 
           <Link
-            href="/user/dashboard/vocabulary"
+            href="/dashboard/user/vocabulary"
             className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10 text-ink text-xs sm:text-sm font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
           >
             <BookOpen className="w-4 h-4 text-primary dark:text-purple-400" />

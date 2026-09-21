@@ -20,7 +20,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) {
-        const redirectUrl = `/login?redirect=${encodeURIComponent(pathname || "/admin/dashboard")}`;
+        const redirectUrl = `/login?redirect=${encodeURIComponent(pathname || "/dashboard/admin")}`;
         router.push(redirectUrl);
       } else {
         setHasChecked(true);
@@ -79,7 +79,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
               variant="outline"
               onClick={() => {
                 logout();
-                router.push("/login?redirect=/admin/dashboard");
+                router.push("/login?redirect=/dashboard/admin");
               }}
               className="flex-1 text-xs font-semibold"
             >
@@ -87,7 +87,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
             </Button>
             <Button
               variant="gradient"
-              onClick={() => router.push("/user/dashboard")}
+              onClick={() => router.push("/dashboard/user")}
               className="flex-1 text-xs font-bold"
             >
               Go to Learner Hub →

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function DashboardRedirect() {
-  redirect("/user/dashboard");
+  redirect("/dashboard/user");
 }

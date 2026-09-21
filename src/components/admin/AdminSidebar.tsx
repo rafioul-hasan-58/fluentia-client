@@ -22,7 +22,7 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
     items: [
       {
         name: "Overview",
-        href: "/admin/dashboard",
+        href: "/dashboard/admin",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect width="7" height="9" x="3" y="3" rx="1" />
@@ -34,7 +34,7 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "Learners & Users",
-        href: "/admin/dashboard/users",
+        href: "/dashboard/admin/users",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -46,7 +46,7 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "Test Attempts",
-        href: "/admin/dashboard/attempts",
+        href: "/dashboard/admin/attempts",
         badge: "Live",
         badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
         icon: ({ className }) => (
@@ -59,7 +59,7 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "Question Bank",
-        href: "/admin/dashboard/questions",
+        href: "/dashboard/admin/questions",
         badgeColor: "bg-purple-500/20 text-purple-400 border-purple-500/30",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -78,7 +78,7 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
     items: [
       {
         name: "Test Analytics",
-        href: "/admin/dashboard/analytics",
+        href: "/dashboard/admin/analytics",
         badge: "Live",
         badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
         icon: ({ className }) => (
@@ -90,7 +90,7 @@ const ADMIN_NAV_SECTIONS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "Platform Settings",
-        href: "/admin/dashboard/settings",
+        href: "/dashboard/admin/settings",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -120,7 +120,7 @@ export function AdminSidebar() {
     <>
       {/* Mobile Top App Bar for Admin */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-paper/95 dark:bg-[#070510]/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 z-30 flex items-center justify-between px-4">
-        <Link href="/admin/dashboard" className="flex items-center gap-2.5">
+        <Link href="/dashboard/admin" className="flex items-center gap-2.5">
           <div className="relative w-8 h-8">
             <Image
               src="/logo.png"
@@ -171,7 +171,7 @@ export function AdminSidebar() {
       >
         {/* Admin Brand Header */}
         <div className="h-16 lg:h-20 flex items-center justify-between px-5 border-b border-slate-200 dark:border-white/10">
-          <Link href="/admin/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 group">
+          <Link href="/dashboard/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 group">
             <div className="relative w-10 h-10 group-hover:scale-105 transition-transform duration-200">
               <Image
                 src="/logo.png"
@@ -234,8 +234,8 @@ export function AdminSidebar() {
               )}
               {section.items.map((item) => {
                 const isActive =
-                  item.href === "/admin/dashboard"
-                    ? pathname === "/admin/dashboard"
+                  item.href === "/dashboard/admin"
+                    ? pathname === "/dashboard/admin"
                     : pathname?.startsWith(item.href);
                 const Icon = item.icon;
 

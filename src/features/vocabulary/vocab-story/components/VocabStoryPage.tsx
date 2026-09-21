@@ -442,7 +442,7 @@ const VocabStoryPage = () => {
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
-              href="/user/dashboard/vocabulary"
+              href="/dashboard/user/vocabulary"
               className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 transition-all flex items-center gap-2 shadow-xs cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-indigo-500" />
@@ -451,7 +451,7 @@ const VocabStoryPage = () => {
 
             <button
               onClick={() => {
-                router.push("/user/dashboard/vocabulary?mode=create-story");
+                router.push("/dashboard/user/vocabulary?mode=create-story");
               }}
               className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
             >
@@ -703,7 +703,7 @@ const VocabStoryPage = () => {
                 setSelectedDate(null);
                 setTodayOnly(false);
               } else {
-                router.push("/user/dashboard/vocabulary?mode=create-story");
+                router.push("/dashboard/user/vocabulary?mode=create-story");
               }
             }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs sm:text-sm font-bold shadow-md transition cursor-pointer"

@@ -163,7 +163,7 @@ export default function DashboardPage() {
               </Link>
 
               <Link
-                href="/user/dashboard/chat"
+                href="/dashboard/user/chat"
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-white/10 dark:text-white hover:bg-slate-800 dark:hover:bg-white/15 text-xs sm:text-sm font-semibold border border-slate-200/20 dark:border-white/10 transition-all hover:scale-[1.02] active:scale-95 text-center"
               >
                 <Sparkles className="w-4 h-4 text-purple-400" />
@@ -171,7 +171,7 @@ export default function DashboardPage() {
               </Link>
 
               <Link
-                href="/user/dashboard/level-test"
+                href="/dashboard/user/level-test"
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-ink text-xs sm:text-sm font-semibold border border-slate-200 dark:border-white/10 transition-all text-center"
               >
                 <BookOpen className="w-4 h-4 text-ink-soft" />
@@ -218,7 +218,7 @@ export default function DashboardPage() {
         </div>
 
         <Link
-          href="/user/dashboard/vocabulary"
+          href="/dashboard/user/vocabulary"
           className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-emerald-500/40 hover:shadow-md transition-all cursor-pointer block"
         >
           <div className="flex items-center justify-between">

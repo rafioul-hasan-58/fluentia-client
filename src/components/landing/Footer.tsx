@@ -45,12 +45,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/user/dashboard" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
+                <Link href="/dashboard/user" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
                   Learning Console
                 </Link>
               </li>
               <li>
-                <Link href="/user/dashboard/chat" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
+                <Link href="/dashboard/user/chat" className="hover:text-primary dark:hover:text-purple-300 transition-colors">
                   AI Practice Coach
                 </Link>
               </li>

@@ -256,7 +256,7 @@ const VocabPracticePage = () => {
                 <div>
                     <div className="flex items-center gap-2">
                         <Link
-                            href="/user/dashboard/practice"
+                            href="/dashboard/user/practice"
                             className="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 flex items-center gap-1"
                         >
                             <ChevronLeft className="w-4 h-4" /> Practice Hub
@@ -542,7 +542,7 @@ const VocabPracticePage = () => {
                             </button>
                         ) : (
                             <Link
-                                href="/user/dashboard/vocabulary"
+                                href="/dashboard/user/vocabulary"
                                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition-all"
                             >
                                 <span>Go to Vocabulary Vault</span>

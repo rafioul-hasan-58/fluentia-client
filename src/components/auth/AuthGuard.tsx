@@ -21,8 +21,8 @@ export function AuthGuard({ children, redirectTo = "/login" }: AuthGuardProps) {
       if (!isAuthenticated) {
         const fullPath =
           typeof window !== "undefined"
-            ? `${pathname || "/user/dashboard"}${window.location.search || ""}`
-            : pathname || "/user/dashboard";
+            ? `${pathname || "/dashboard/user"}${window.location.search || ""}`
+            : pathname || "/dashboard/user";
 
         const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(fullPath)}`;
         router.replace(redirectUrl);
