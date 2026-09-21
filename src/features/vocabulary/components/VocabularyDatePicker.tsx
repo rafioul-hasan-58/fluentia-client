@@ -17,6 +17,7 @@ interface VocabularyDatePickerProps {
   wordCounts?: Record<string, number>; // Map of YYYY-MM-DD -> word count
   className?: string;
   buttonClassName?: string;
+  itemLabel?: string;
 }
 
 const MONTH_NAMES = [
@@ -42,6 +43,7 @@ export function VocabularyDatePicker({
   wordCounts = {},
   className = "",
   buttonClassName = "",
+  itemLabel = "word",
 }: VocabularyDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -222,6 +224,13 @@ export function VocabularyDatePicker({
 
   const selectedDayWordsCount = selectedDate ? wordCounts[selectedDate] || 0 : 0;
 
+  const getItemCountLabel = (count: number) => {
+    if (itemLabel === "story") {
+      return count === 1 ? "story" : "stories";
+    }
+    return count === 1 ? itemLabel : `${itemLabel}s`;
+  };
+
   return (
     <div ref={containerRef} className={`relative inline-block ${className}`}>
       {/* Trigger Button */}
@@ -238,7 +247,11 @@ export function VocabularyDatePicker({
               ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
           }`}
-          title={selectedDate ? `Filtering by ${formattedLabel}` : "Filter vocabulary by date"}
+          title={
+            selectedDate
+              ? `Filtering by ${formattedLabel}`
+              : `Filter ${itemLabel === "story" ? "stories" : "vocabulary"} by date`
+          }
         >
           <div
             className={`p-1 rounded-lg transition-colors ${
@@ -254,7 +267,7 @@ export function VocabularyDatePicker({
 
           {selectedDate && (
             <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-purple-500/20 text-purple-700 dark:text-purple-300">
-              {selectedDayWordsCount} {selectedDayWordsCount === 1 ? "word" : "words"}
+              {selectedDayWordsCount} {getItemCountLabel(selectedDayWordsCount)}
             </span>
           )}
         </button>
@@ -452,7 +465,7 @@ export function VocabularyDatePicker({
                     <strong className="text-slate-700 dark:text-slate-200">
                       {selectedDayWordsCount}
                     </strong>{" "}
-                    {selectedDayWordsCount === 1 ? "word" : "words"} on {formattedLabel}
+                    {getItemCountLabel(selectedDayWordsCount)} on {formattedLabel}
                   </span>
                 </>
               ) : (
