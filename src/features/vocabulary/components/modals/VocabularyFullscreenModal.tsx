@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Edit3,
+  Trash2,
   Star,
   X,
   Volume2,
@@ -56,6 +57,7 @@ export interface VocabularyFullscreenModalProps {
   setEditingNotes: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   handleSaveNotes: (item: MyVocabularyItem) => void;
   savingNoteId: string | null;
+  setItemToDelete?: (item: MyVocabularyItem) => void;
 }
 
 export default function VocabularyFullscreenModal({
@@ -78,6 +80,7 @@ export default function VocabularyFullscreenModal({
   setEditingNotes,
   handleSaveNotes,
   savingNoteId,
+  setItemToDelete,
 }: VocabularyFullscreenModalProps) {
   if (!isMounted || !activeFullscreenVocab) return null;
 
@@ -155,6 +158,18 @@ export default function VocabularyFullscreenModal({
                   <Edit3 className="w-3.5 h-3.5 text-indigo-500" />
                   <span className="hidden sm:inline">Update</span>
                 </button>
+
+                {/* Delete Vocabulary Button */}
+                {setItemToDelete && (
+                  <button
+                    onClick={() => setItemToDelete(activeFullscreenVocab)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 text-xs font-semibold transition-colors cursor-pointer border border-rose-200 dark:border-rose-800/60"
+                    title="Delete Vocabulary"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                    <span className="hidden sm:inline">Delete</span>
+                  </button>
+                )}
 
                 {/* Theme Toggle */}
                 {/* < ThemeToggle /> */}

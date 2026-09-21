@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Sparkles, X, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 
 export interface AddVocabularyModalProps {
@@ -24,10 +25,35 @@ export default function AddVocabularyModal({
   isGenerating,
   feedbackMessage,
 }: AddVocabularyModalProps) {
-  if (!isModalOpen) return null;
+  const [isMounted, setIsMounted] = useState(false);
 
-  return (
-            <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isGenerating) {
+        setIsModalOpen(false);
+      }
+    };
+    if (isModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen, isGenerating, setIsModalOpen]);
+
+  if (!isMounted || !isModalOpen) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={() => !isGenerating && setIsModalOpen(false)}
+    >
+      <div
+        className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
               {/* Modal Header */}
               <div className="p-6 bg-gradient-to-r from-purple-600/10 via-primary/10 to-fuchsia-600/10 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -158,5 +184,7 @@ export default function AddVocabularyModal({
                 </div>
               </form>
             </div>
+    </div>,
+    document.body
   );
 }

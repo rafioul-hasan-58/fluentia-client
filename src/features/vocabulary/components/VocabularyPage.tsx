@@ -891,6 +891,7 @@ export default function VocabularyPage() {
         setEditingNotes={setEditingNotes}
         handleSaveNotes={handleSaveNotes}
         savingNoteId={savingNoteId}
+        setItemToDelete={setItemToDelete}
       />
 
       {/* 5. Add Vocabulary Modal */}

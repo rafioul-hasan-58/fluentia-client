@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { MyVocabularyItem } from "@/features/vocabulary/types/vocabulary";
 import {
   Edit3,
@@ -52,10 +53,35 @@ export default function EditVocabularyModal({
   setEditNotes,
   editFeedback,
 }: EditVocabularyModalProps) {
-  if (!editingItem) return null;
+  const [isMounted, setIsMounted] = useState(false);
 
-  return (
-            <div className="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isSavingEdit) {
+        setEditingItem(null);
+      }
+    };
+    if (editingItem) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [editingItem, isSavingEdit, setEditingItem]);
+
+  if (!isMounted || !editingItem) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={() => !isSavingEdit && setEditingItem(null)}
+    >
+      <div
+        className="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
               {/* Modal Header */}
               <div className="p-5 sm:p-6 bg-gradient-to-r from-indigo-600/10 via-purple-600/10 to-pink-600/10 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
@@ -277,5 +303,7 @@ export default function EditVocabularyModal({
                 </div>
               </form>
             </div>
+    </div>,
+    document.body
   );
 }

@@ -256,6 +256,17 @@ export async function deleteMyVocabulary(id: string): Promise<boolean> {
       });
     }
 
+    // 3. Fallback to DELETE /vocabularies/my/:id if route is different
+    if (!res.ok && res.status === 404) {
+      res = await fetch(`${baseUrl}/vocabularies/my/${id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+    }
+
     if (!res.ok && res.status !== 404) {
       const errData = await res.json().catch(() => null);
       console.warn("Failed to remove vocabulary from vault:", errData?.message || res.statusText);
@@ -266,7 +277,7 @@ export async function deleteMyVocabulary(id: string): Promise<boolean> {
 
   // Update local vault cache
   const vault = getLocalVault();
-  const updated = vault.filter((item) => item.id !== id);
+  const updated = vault.filter((item) => item.id !== id && (item as any)._id !== id);
   saveLocalVault(updated);
   return true;
 }
