@@ -193,7 +193,7 @@ export function HeroProductPreview() {
                   </div>
 
                   <Link
-                    href="/dashboard/chat"
+                    href="/user/dashboard/chat"
                     className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all shadow-md shadow-purple-500/20 hover:scale-[1.02] active:scale-95 text-center"
                   >
                     <span>Practice Weakness</span>
@@ -224,7 +224,7 @@ export function HeroProductPreview() {
                   Ready for live 2-way speaking simulation?
                 </div>
                 <Link
-                  href="/dashboard/chat"
+                  href="/user/dashboard/chat"
                   className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-dark transition-all"
                 >
                   Start Speaking →
@@ -254,7 +254,7 @@ export function HeroProductPreview() {
                   🎯 IELTS Task 2 Essay Diagnostic ready to evaluate
                 </span>
                 <Link
-                  href="/dashboard/chat"
+                  href="/user/dashboard/chat"
                   className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all text-[11px]"
                 >
                   Analyze Essay

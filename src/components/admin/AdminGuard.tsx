@@ -79,7 +79,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
               variant="outline"
               onClick={() => {
                 logout();
-                router.push("/login?redirect=/admin");
+                router.push("/login?redirect=/admin/dashboard");
               }}
               className="flex-1 text-xs font-semibold"
             >
@@ -87,7 +87,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
             </Button>
             <Button
               variant="gradient"
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/user/dashboard")}
               className="flex-1 text-xs font-bold"
             >
               Go to Learner Hub →

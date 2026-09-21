@@ -145,7 +145,7 @@ export default function VocabularyPage() {
       setIsStoryContextModalOpen(false);
       setSelectedStoryItems([]);
       setIsStorySelectMode(false);
-      router.push("/dashboard/vocabulary/stories");
+      router.push("/user/dashboard/vocabulary/stories");
     } catch (err: any) {
       setStoryCreationError(err.message || "Failed to generate vocabulary story. Please try again.");
     } finally {

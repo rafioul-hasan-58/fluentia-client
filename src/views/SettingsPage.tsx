@@ -390,7 +390,7 @@ export default function SettingsPage() {
         {/* Action quick links */}
         <div className="flex items-center gap-2.5">
           <Link
-            href="/dashboard"
+            href="/user/dashboard"
             className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 dark:border-white/10 text-ink-soft hover:text-ink hover:bg-slate-100 dark:hover:bg-white/5 transition-all shadow-2xs"
           >
             ← Back to Dashboard

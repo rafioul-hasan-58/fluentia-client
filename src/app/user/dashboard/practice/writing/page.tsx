@@ -164,7 +164,7 @@ export default function WritingPracticePage() {
         <div>
           <div className="flex items-center gap-2">
             <Link
-              href="/dashboard/practice"
+              href="/user/dashboard/practice"
               className="text-xs font-semibold text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 flex items-center gap-1"
             >
               <ChevronLeft className="w-4 h-4" /> Practice Hub
