@@ -100,12 +100,12 @@ export default function VocabularyFilterBar({
 
   return (
     <div className="space-y-4">
-      {/* Line 1: Quick Filters, Dropdowns & Actions - 2 in a line (50% / 50%) with equal width */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Line 1: Quick Filters, Dropdowns & Actions - 2 in a line (50% / 50%) on mobile, flex-wrap on desktop */}
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-3 justify-start">
         <button
           type="button"
           onClick={() => setFavoritesOnly(!favoritesOnly)}
-          className={`w-full h-12 inline-flex items-center justify-center gap-2 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
+          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
             favoritesOnly
               ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
@@ -116,7 +116,7 @@ export default function VocabularyFilterBar({
               favoritesOnly ? "fill-amber-400 text-amber-400" : "text-slate-400"
             }`}
           />
-          <span className="truncate">Favorites</span>
+          <span className="truncate sm:overflow-visible">Favorites</span>
         </button>
 
         <button
@@ -126,7 +126,7 @@ export default function VocabularyFilterBar({
             setTodayOnly(nextVal);
             if (nextVal) setSelectedDate(null);
           }}
-          className={`w-full h-12 inline-flex items-center justify-center gap-2 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
+          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
             todayOnly
               ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
@@ -137,7 +137,7 @@ export default function VocabularyFilterBar({
               todayOnly ? "text-indigo-500" : "text-slate-400"
             }`}
           />
-          <span className="truncate">Today&apos;s Words</span>
+          <span className="truncate sm:overflow-visible">Today&apos;s Words</span>
           {stats.todayCount > 0 && (
             <span
               className={`ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
@@ -159,16 +159,16 @@ export default function VocabularyFilterBar({
             if (date) setTodayOnly(false);
           }}
           wordCounts={calendarWordCounts}
-          className="w-full"
-          buttonClassName="w-full h-12 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold justify-center"
+          className="w-full sm:w-auto"
+          buttonClassName="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold justify-center sm:justify-start"
         />
 
         {/* Part of Speech Filter Dropdown */}
-        <div ref={posDropdownRef} className="relative w-full">
+        <div ref={posDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
           <button
             type="button"
             onClick={() => setIsPosDropdownOpen((prev) => !prev)}
-            className={`w-full h-12 inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none ${
+            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none ${
               selectedPos !== "ALL"
                 ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
                 : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
@@ -185,7 +185,7 @@ export default function VocabularyFilterBar({
               <Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
 
-            <span className="truncate">
+            <span className="truncate sm:overflow-visible">
               {selectedPos === "ALL"
                 ? "All Types"
                 : POS_COLORS[selectedPos]?.label || selectedPos}
@@ -280,7 +280,7 @@ export default function VocabularyFilterBar({
         <select
           value={selectedSort}
           onChange={(e) => setSelectedSort(e.target.value as any)}
-          className="w-full h-12 px-3 sm:px-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          className="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
         >
           <option value="recent">Recently Added</option>
           <option value="alphabetical">Alphabetical (A - Z)</option>
@@ -290,7 +290,7 @@ export default function VocabularyFilterBar({
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="w-full h-12 px-3 sm:px-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          className="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
         >
           <option value="ALL">All Statuses</option>
           <option value="LEARNING">Learning</option>
@@ -301,7 +301,7 @@ export default function VocabularyFilterBar({
         <select
           value={selectedLevel}
           onChange={(e) => setSelectedLevel(e.target.value)}
-          className="w-full h-12 px-3 sm:px-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          className="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
         >
           <option value="ALL">All Levels</option>
           <option value="A1">A1 Level</option>
@@ -318,7 +318,7 @@ export default function VocabularyFilterBar({
             setIsStorySelectMode(!isStorySelectMode);
             if (isStorySelectMode) setSelectedStoryItems([]);
           }}
-          className={`w-full h-12 inline-flex items-center justify-center gap-2 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
+          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
             isStorySelectMode
               ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-500 shadow-md shadow-orange-500/20"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400"
@@ -326,7 +326,7 @@ export default function VocabularyFilterBar({
           title="Toggle Story Selection Mode"
         >
           <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="truncate">
+          <span className="truncate sm:overflow-visible">
             {isStorySelectMode
               ? `Story Mode (${selectedStoryItems.length})`
               : "Create Story"}
