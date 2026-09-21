@@ -23,6 +23,82 @@ interface NavItem {
   children?: SubNavItem[];
 }
 
+function GeminiAiIcon({
+  className = "w-4 h-4",
+}: {
+  className?: string;
+  active?: boolean;
+}) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Central 4-pointed star outline with curved arcs */}
+      <path
+        d="M13 3.5C13 8 16.5 11.5 21 11.5C16.5 11.5 13 15 13 19.5C13 15 9.5 11.5 5 11.5C9.5 11.5 13 8 13 3.5Z"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Top-right sparkle cross */}
+      <path
+        d="M19 3V7M17 5H21"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      {/* Bottom-left small ring */}
+      <circle
+        cx="6.5"
+        cy="17.5"
+        r="1.8"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+function renderBadge(badge: string, isActive: boolean, isChild: boolean = false) {
+  if (badge === "AI") {
+    return (
+      <span
+        className={`inline-flex items-center justify-center transition-all ${
+          isActive
+            ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]"
+            : "text-purple-400 dark:text-purple-300 hover:text-purple-300 group-hover:scale-110 drop-shadow-[0_0_6px_rgba(192,132,252,0.5)]"
+        }`}
+        title="AI Powered"
+        aria-label="AI Powered"
+      >
+        <GeminiAiIcon
+          className={isChild ? "w-3.5 h-3.5" : "w-4 h-4"}
+        />
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className={`${
+        isChild
+          ? "text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider"
+          : "text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+      } ${
+        isActive
+          ? "bg-white/20 text-white"
+          : isChild
+          ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
+          : "bg-amber-500/20 text-amber-500 dark:text-amber-300 border border-amber-500/30"
+      }`}
+    >
+      {badge}
+    </span>
+  );
+}
+
 const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
   {
     category: "Main",
@@ -404,11 +480,7 @@ export function Sidebar({
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {item.badge && (
-                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-amber-500/20 text-amber-500 dark:text-amber-300 border border-amber-500/30">
-                              {item.badge}
-                            </span>
-                          )}
+                          {item.badge && renderBadge(item.badge, isAnyChildActive, false)}
                           <svg
                             className={`w-4 h-4 text-ink-soft transition-transform duration-200 ${
                               isDropdownOpen ? "rotate-180 text-primary dark:text-purple-400" : ""
@@ -461,17 +533,7 @@ export function Sidebar({
                                   <span>{child.name}</span>
                                 </div>
 
-                                {child.badge && (
-                                  <span
-                                    className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
-                                      isChildActive
-                                        ? "bg-white/20 text-white"
-                                        : "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
-                                    }`}
-                                  >
-                                    {child.badge}
-                                  </span>
-                                )}
+                                {child.badge && renderBadge(child.badge, isChildActive, true)}
                               </Link>
                             );
                           })}
@@ -508,17 +570,7 @@ export function Sidebar({
                       <span>{item.name}</span>
                     </div>
 
-                    {item.badge && (
-                      <span
-                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                          isActive
-                            ? "bg-white/20 text-white"
-                            : "bg-amber-500/20 text-amber-500 dark:text-amber-300 border border-amber-500/30"
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
+                    {item.badge && renderBadge(item.badge, isActive, false)}
                   </Link>
                 );
               })}
