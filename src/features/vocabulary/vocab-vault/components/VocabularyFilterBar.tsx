@@ -13,6 +13,9 @@ import {
   X,
   ChevronDown,
   Tag,
+  ArrowUpDown,
+  CheckCircle2,
+  BarChart3,
 } from "lucide-react";
 import { VocabularyDatePicker } from "./VocabularyDatePicker";
 import { ALL_POS_OPTIONS, POS_COLORS } from "../constants/vocabularyConstants";
@@ -168,22 +171,20 @@ export default function VocabularyFilterBar({
           <button
             type="button"
             onClick={() => setIsPosDropdownOpen((prev) => !prev)}
-            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none ${
+            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${
               selectedPos !== "ALL"
                 ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
                 : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
             }`}
             title="Filter vocabulary by part of speech"
           >
-            <div
-              className={`p-1 rounded-lg transition-colors shrink-0 ${
+            <Tag
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${
                 selectedPos !== "ALL"
-                  ? "bg-purple-600 text-white shadow-sm"
+                  ? "text-purple-600 dark:text-purple-400"
                   : "text-slate-400"
               }`}
-            >
-              <Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </div>
+            />
 
             <span className="truncate sm:overflow-visible">
               {selectedPos === "ALL"
@@ -203,11 +204,13 @@ export default function VocabularyFilterBar({
                 : stats.posCounts[selectedPos] || 0}
             </span>
 
-            <ChevronDown
-              className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
-                isPosDropdownOpen ? "rotate-180" : ""
-              }`}
-            />
+            <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <ChevronDown
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                  isPosDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </div>
           </button>
 
           {/* Dropdown Popover */}
@@ -277,40 +280,67 @@ export default function VocabularyFilterBar({
           )}
         </div>
 
-        <select
-          value={selectedSort}
-          onChange={(e) => setSelectedSort(e.target.value as any)}
-          className="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
-        >
-          <option value="recent">Recently Added</option>
-          <option value="alphabetical">Alphabetical (A - Z)</option>
-          <option value="mastery">Mastery Level</option>
-        </select>
+        {/* Sort Select */}
+        <div className="relative w-full sm:w-auto">
+          <div className="pointer-events-none absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <ArrowUpDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </div>
+          <select
+            value={selectedSort}
+            onChange={(e) => setSelectedSort(e.target.value as any)}
+            className="w-full sm:w-auto h-12 sm:h-auto pl-8 sm:pl-9 pr-7 sm:pr-8 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer appearance-none"
+          >
+            <option value="recent">Recently Added</option>
+            <option value="alphabetical">Alphabetical (A - Z)</option>
+            <option value="mastery">Mastery Level</option>
+          </select>
+          <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </div>
+        </div>
 
-        <select
-          value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
-          className="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
-        >
-          <option value="ALL">All Statuses</option>
-          <option value="LEARNING">Learning</option>
-          <option value="LEARNED">Learned</option>
-          <option value="MASTERED">Mastered</option>
-        </select>
+        {/* Status Select */}
+        <div className="relative w-full sm:w-auto">
+          <div className="pointer-events-none absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </div>
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="w-full sm:w-auto h-12 sm:h-auto pl-8 sm:pl-9 pr-7 sm:pr-8 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer appearance-none"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="LEARNING">Learning</option>
+            <option value="LEARNED">Learned</option>
+            <option value="MASTERED">Mastered</option>
+          </select>
+          <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </div>
+        </div>
 
-        <select
-          value={selectedLevel}
-          onChange={(e) => setSelectedLevel(e.target.value)}
-          className="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
-        >
-          <option value="ALL">All Levels</option>
-          <option value="A1">A1 Level</option>
-          <option value="A2">A2 Level</option>
-          <option value="B1">B1 Level</option>
-          <option value="B2">B2 Level</option>
-          <option value="C1">C1 Level</option>
-          <option value="C2">C2 Level</option>
-        </select>
+        {/* Level Select */}
+        <div className="relative w-full sm:w-auto">
+          <div className="pointer-events-none absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </div>
+          <select
+            value={selectedLevel}
+            onChange={(e) => setSelectedLevel(e.target.value)}
+            className="w-full sm:w-auto h-12 sm:h-auto pl-8 sm:pl-9 pr-7 sm:pr-8 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer appearance-none"
+          >
+            <option value="ALL">All Levels</option>
+            <option value="A1">A1 Level</option>
+            <option value="A2">A2 Level</option>
+            <option value="B1">B1 Level</option>
+            <option value="B2">B2 Level</option>
+            <option value="C1">C1 Level</option>
+            <option value="C2">C2 Level</option>
+          </select>
+          <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </div>
+        </div>
 
         <button
           type="button"
