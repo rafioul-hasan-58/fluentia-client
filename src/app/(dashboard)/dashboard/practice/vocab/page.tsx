@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Volume2,
@@ -14,23 +14,33 @@ import {
   ArrowRight,
   Star,
   Shuffle,
-  Layers,
   HelpCircle,
+  Clock,
+  Calendar,
+  X,
+  Filter,
 } from "lucide-react";
-import { MyVocabularyItem } from "@/features/vocabulary/types/vocabulary";
-import { fetchMyVocabularies } from "@/features/vocabulary/api/vocabulary";
+import { MyVocabularyItem, PartOfSpeech } from "@/features/vocabulary/types/vocabulary";
+import { fetchMyVocabularies, getDateWordCounts } from "@/features/vocabulary/api/vocabulary";
 import { updateMyVocabulary } from "@/features/vocabulary/api/myVocabulary";
-import { POS_COLORS } from "@/features/vocabulary/constants/vocabularyConstants";
+import { ALL_POS_OPTIONS, POS_COLORS } from "@/features/vocabulary/constants/vocabularyConstants";
+import { VocabularyDatePicker } from "@/features/vocabulary/components/VocabularyDatePicker";
 
 type PracticeMode = "flashcards" | "quiz";
 
 export default function VocabPracticePage() {
   const [vocabularies, setVocabularies] = useState<MyVocabularyItem[]>([]);
+  const [allVaultWords, setAllVaultWords] = useState<MyVocabularyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [mode, setMode] = useState<PracticeMode>("flashcards");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [playingWord, setPlayingWord] = useState<string | null>(null);
+
+  // Filters state
+  const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">("ALL");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [todayOnly, setTodayOnly] = useState<boolean>(false);
 
   // Quiz state
   const [quizOptions, setQuizOptions] = useState<string[]>([]);
@@ -38,21 +48,81 @@ export default function VocabPracticePage() {
   const [quizFeedback, setQuizFeedback] = useState<"correct" | "incorrect" | null>(null);
   const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 });
 
-  // Load user vocabulary
+  // Map of YYYY-MM-DD -> word count for calendar indicators
+  const calendarWordCounts = useMemo(() => {
+    return getDateWordCounts(allVaultWords);
+  }, [allVaultWords]);
+
+  // Counts of words per Part of Speech
+  const posCounts = useMemo(() => {
+    const counts: Partial<Record<PartOfSpeech, number>> = {};
+    allVaultWords.forEach((item) => {
+      const pos = item.word?.partOfSpeech as PartOfSpeech;
+      if (pos) {
+        counts[pos] = (counts[pos] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [allVaultWords]);
+
+  // Today's words count
+  const todayCount = useMemo(() => {
+    const today = new Date();
+    return allVaultWords.filter((v) => {
+      const d = v.createdAt || v.updatedAt;
+      if (!d) return false;
+      const date = new Date(d);
+      return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+    }).length;
+  }, [allVaultWords]);
+
+  // Fetch words based on filters
   useEffect(() => {
-    async function loadWords() {
+    let isCancelled = false;
+
+    async function loadFilteredWords() {
       setIsLoading(true);
       try {
-        const items = await fetchMyVocabularies({ limit: 100 });
-        setVocabularies(items);
+        const [filteredItems, totalVault] = await Promise.all([
+          fetchMyVocabularies({
+            partOfSpeech: selectedPos !== "ALL" ? selectedPos : undefined,
+            selectedDate: selectedDate || undefined,
+            todayOnly,
+            limit: 100,
+          }),
+          allVaultWords.length === 0 ? fetchMyVocabularies({ limit: 100 }) : Promise.resolve(allVaultWords),
+        ]);
+
+        if (!isCancelled) {
+          setVocabularies(filteredItems);
+          if (allVaultWords.length === 0) {
+            setAllVaultWords(totalVault);
+          }
+          setCurrentIndex(0);
+          setIsFlipped(false);
+          setSelectedOption(null);
+          setQuizFeedback(null);
+          setQuizScore({ correct: 0, total: 0 });
+        }
       } catch (err) {
-        console.warn("Could not load vocabularies for practice:", err);
+        console.warn("Could not load filtered vocabularies for practice:", err);
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     }
-    loadWords();
-  }, []);
+
+    loadFilteredWords();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedPos, selectedDate, todayOnly]);
 
   const currentWord = vocabularies[currentIndex];
 
@@ -87,13 +157,14 @@ export default function VocabPracticePage() {
 
   // Setup quiz when word changes
   useEffect(() => {
-    if (!currentWord || vocabularies.length < 2) return;
+    if (!currentWord) return;
     setSelectedOption(null);
     setQuizFeedback(null);
 
     const correctAnswer = currentWord.word.meaning;
-    const otherMeanings = vocabularies
-      .filter((v) => v.id !== currentWord.id)
+    const pool = vocabularies.length >= 4 ? vocabularies : allVaultWords;
+    const otherMeanings = pool
+      .filter((v) => v.id !== currentWord.id && v.word.meaning !== correctAnswer)
       .map((v) => v.word.meaning)
       .filter(Boolean);
 
@@ -101,9 +172,10 @@ export default function VocabPracticePage() {
     const shuffledOthers = [...otherMeanings].sort(() => 0.5 - Math.random()).slice(0, 3);
     const options = [...shuffledOthers, correctAnswer].sort(() => 0.5 - Math.random());
     setQuizOptions(options);
-  }, [currentIndex, currentWord, vocabularies]);
+  }, [currentIndex, currentWord, vocabularies, allVaultWords]);
 
   const handleNext = () => {
+    if (vocabularies.length === 0) return;
     setIsFlipped(false);
     setSelectedOption(null);
     setQuizFeedback(null);
@@ -111,6 +183,7 @@ export default function VocabPracticePage() {
   };
 
   const handlePrev = () => {
+    if (vocabularies.length === 0) return;
     setIsFlipped(false);
     setSelectedOption(null);
     setQuizFeedback(null);
@@ -118,6 +191,7 @@ export default function VocabPracticePage() {
   };
 
   const handleShuffle = () => {
+    if (vocabularies.length === 0) return;
     setIsFlipped(false);
     setSelectedOption(null);
     setQuizFeedback(null);
@@ -150,9 +224,17 @@ export default function VocabPracticePage() {
     }));
   };
 
+  const handleResetFilters = () => {
+    setSelectedPos("ALL");
+    setSelectedDate(null);
+    setTodayOnly(false);
+  };
+
+  const hasActiveFilters = selectedPos !== "ALL" || selectedDate !== null || todayOnly;
+
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6 animate-in fade-in duration-300">
-      {/* Navigation Header */}
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6 animate-in fade-in duration-300">
+      {/* Navigation & Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap pb-2 border-b border-slate-200 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
@@ -177,7 +259,7 @@ export default function VocabPracticePage() {
           <button
             type="button"
             onClick={() => setMode("flashcards")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               mode === "flashcards"
                 ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-xs"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -188,7 +270,7 @@ export default function VocabPracticePage() {
           <button
             type="button"
             onClick={() => setMode("quiz")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               mode === "quiz"
                 ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-xs"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -197,6 +279,153 @@ export default function VocabPracticePage() {
             Definition Quiz
           </button>
         </div>
+      </div>
+
+      {/* Filter Bar: Date Filter + Part of Speech Carousel */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        {/* Row 1: Date Filters & Quick Presets */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mr-1">
+            <Filter className="w-3.5 h-3.5" />
+            <span>Filter By:</span>
+          </span>
+
+          {/* All Dates Preset */}
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedDate(null);
+              setTodayOnly(false);
+            }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              !selectedDate && !todayOnly
+                ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
+                : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+            }`}
+          >
+            All Dates
+          </button>
+
+          {/* Today's Words Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const nextVal = !todayOnly;
+              setTodayOnly(nextVal);
+              if (nextVal) setSelectedDate(null);
+            }}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              todayOnly
+                ? "bg-indigo-600 text-white border-indigo-600 shadow-xs font-bold"
+                : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span>Today&apos;s Words</span>
+            {todayCount > 0 && (
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  todayOnly
+                    ? "bg-white/25 text-white"
+                    : "bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
+                }`}
+              >
+                {todayCount}
+              </span>
+            )}
+          </button>
+
+          {/* Interactive Date Picker with Word Counts */}
+          <VocabularyDatePicker
+            selectedDate={selectedDate}
+            onSelectDate={(date: any) => {
+              setSelectedDate(date);
+              if (date) setTodayOnly(false);
+            }}
+            wordCounts={calendarWordCounts}
+          />
+
+          {/* Clear Filters button */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/50 transition-colors ml-auto cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Reset Filters</span>
+            </button>
+          )}
+        </div>
+
+        {/* Row 2: Part of Speech Carousel */}
+        <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {/* All Parts of Speech */}
+            <button
+              type="button"
+              onClick={() => setSelectedPos("ALL")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                selectedPos === "ALL"
+                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+            >
+              All Types ({allVaultWords.length})
+            </button>
+
+            {/* Individual Parts of Speech */}
+            {ALL_POS_OPTIONS.map((pos) => {
+              const count = posCounts[pos] || 0;
+              const config = POS_COLORS[pos];
+              const isSelected = selectedPos === pos;
+
+              return (
+                <button
+                  key={pos}
+                  type="button"
+                  onClick={() => setSelectedPos(pos)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
+                    isSelected
+                      ? `${config.bg} ${config.text} ${config.border} ring-2 ring-indigo-500/20 shadow-xs`
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                  }`}
+                >
+                  <span>{config.label}</span>
+                  <span className="text-[10px] opacity-75 font-mono">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Active Filter Summary Bar */}
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/60 text-xs text-indigo-700 dark:text-indigo-300">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold">Active Session Filter:</span>
+              {todayOnly && (
+                <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white font-medium text-[11px]">
+                  Today&apos;s Words
+                </span>
+              )}
+              {selectedDate && (
+                <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white font-medium text-[11px] flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {selectedDate}
+                </span>
+              )}
+              {selectedPos !== "ALL" && (
+                <span className="px-2 py-0.5 rounded-md bg-purple-600 text-white font-medium text-[11px]">
+                  {POS_COLORS[selectedPos]?.label || selectedPos}
+                </span>
+              )}
+            </div>
+            <span className="font-semibold font-mono shrink-0">
+              {vocabularies.length} {vocabularies.length === 1 ? "word" : "words"} found
+            </span>
+          </div>
+        )}
       </div>
 
       {isLoading ? (
@@ -213,44 +442,65 @@ export default function VocabPracticePage() {
             <BookOpen className="w-7 h-7" />
           </div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-            No Saved Vocabulary Yet
+            {hasActiveFilters
+              ? "No Words Match Your Selected Filters"
+              : "No Saved Vocabulary Yet"}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-            Add words to your personal Vocabulary Vault to start interactive flashcard recall sessions and definition quizzes.
+            {hasActiveFilters
+              ? "Try picking a different date or part of speech, or reset your filters to practice all words in your vault."
+              : "Add words to your personal Vocabulary Vault to start interactive flashcard recall sessions and definition quizzes."}
           </p>
-          <Link
-            href="/dashboard/vocabulary"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition-all"
-          >
-            <span>Go to Vocabulary Vault</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="pt-2 flex items-center justify-center gap-3 flex-wrap">
+            {hasActiveFilters ? (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer"
+              >
+                <span>Reset Filters to Practice All</span>
+                <RotateCw className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <Link
+                href="/dashboard/vocabulary"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition-all"
+              >
+                <span>Go to Vocabulary Vault</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
         </div>
       ) : (
-        /* Practice Container */
+        /* Practice Session Container */
         <div className="space-y-5">
-          {/* Progress & Control Bar */}
+          {/* Session Progress & Navigation Bar */}
           <div className="flex items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-900 dark:text-white font-mono">
-                {currentIndex + 1} / {vocabularies.length}
+              <span className="font-bold text-slate-900 dark:text-white font-mono text-sm">
+                Word {currentIndex + 1} of {vocabularies.length}
               </span>
-              <span className="hidden sm:inline">words in session</span>
+              {selectedPos !== "ALL" && (
+                <span className="text-[11px] font-semibold text-purple-600 dark:text-purple-400">
+                  ({POS_COLORS[selectedPos]?.label})
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleShuffle}
-                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
-                title="Shuffle words"
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                title="Shuffle session words"
               >
                 <Shuffle className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={handlePrev}
-                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                 title="Previous word"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -258,7 +508,7 @@ export default function VocabPracticePage() {
               <button
                 type="button"
                 onClick={handleNext}
-                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                 title="Next word"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -266,12 +516,12 @@ export default function VocabPracticePage() {
             </div>
           </div>
 
-          {/* Flashcard Mode */}
+          {/* 1. Flashcard Mode */}
           {mode === "flashcards" && currentWord && (
             <div className="space-y-4">
               <div
                 onClick={() => setIsFlipped(!isFlipped)}
-                className="min-h-[340px] sm:min-h-[380px] p-6 sm:p-10 rounded-3xl bg-white dark:bg-slate-900 border-2 border-indigo-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600/60 shadow-md cursor-pointer transition-all flex flex-col justify-between select-none group relative overflow-hidden"
+                className="min-h-[350px] sm:min-h-[390px] p-6 sm:p-10 rounded-3xl bg-white dark:bg-slate-900 border-2 border-indigo-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600/60 shadow-md cursor-pointer transition-all flex flex-col justify-between select-none group relative overflow-hidden"
               >
                 {/* Top card bar: Part of Speech + Flip hint */}
                 <div className="flex items-center justify-between">
@@ -312,7 +562,7 @@ export default function VocabPracticePage() {
                           e.stopPropagation();
                           playPronunciation(currentWord.word.word);
                         }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-semibold text-xs border border-indigo-200 dark:border-indigo-800 transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-semibold text-xs border border-indigo-200 dark:border-indigo-800 transition-colors cursor-pointer"
                       >
                         <Volume2
                           className={`w-4 h-4 ${
@@ -338,7 +588,7 @@ export default function VocabPracticePage() {
                       </div>
                     )}
 
-                    {/* Definition */}
+                    {/* English Definition */}
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
                         English Definition
@@ -367,21 +617,21 @@ export default function VocabPracticePage() {
                     <button
                       type="button"
                       onClick={() => handleRateMastery(1)}
-                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-colors"
+                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-colors cursor-pointer"
                     >
                       Hard
                     </button>
                     <button
                       type="button"
                       onClick={() => handleRateMastery(3)}
-                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition-colors"
+                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
                     >
                       Good
                     </button>
                     <button
                       type="button"
                       onClick={() => handleRateMastery(5)}
-                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
+                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
                     >
                       Mastered ⭐
                     </button>
@@ -391,7 +641,7 @@ export default function VocabPracticePage() {
             </div>
           )}
 
-          {/* Quiz Mode */}
+          {/* 2. Definition Quiz Mode */}
           {mode === "quiz" && currentWord && (
             <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md space-y-6">
               {/* Question Header */}
@@ -429,7 +679,7 @@ export default function VocabPracticePage() {
                   const isCorrect = opt === currentWord.word.meaning;
 
                   let style =
-                    "bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-800 dark:text-slate-200";
+                    "bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-800 dark:text-slate-200 cursor-pointer";
                   if (selectedOption) {
                     if (isCorrect) {
                       style =
@@ -480,7 +730,7 @@ export default function VocabPracticePage() {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors shadow-xs cursor-pointer"
                   >
                     <span>Next Word</span>
                     <ChevronRight className="w-4 h-4" />
