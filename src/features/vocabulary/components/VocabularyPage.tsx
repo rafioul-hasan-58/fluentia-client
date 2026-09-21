@@ -9,6 +9,7 @@ import {
 } from "@/features/vocabulary/types/vocabulary";
 import {
   fetchMyVocabularies,
+  fetchMyVocabularyDetails,
   getDateWordCounts,
   addSingleVocabulary,
   updateMyVocabulary,
@@ -224,6 +225,38 @@ export default function VocabularyPage() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [fullscreenVocabId, vocabularies]);
+
+  const [isLoadingFullscreenDetails, setIsLoadingFullscreenDetails] = useState(false);
+
+  // Auto-enrich details when viewing in fullscreen if collocations/sentences are missing
+  useEffect(() => {
+    if (!fullscreenVocabId) return;
+    const currentItem = vocabularies.find((v) => v.id === fullscreenVocabId);
+    if (!currentItem) return;
+
+    const hasCollocations =
+      currentItem.word?.collocations && currentItem.word.collocations.length > 0;
+    const hasExamples =
+      currentItem.word?.exampleSentences && currentItem.word.exampleSentences.length > 0;
+    const hasSynonyms =
+      currentItem.word?.synonyms && currentItem.word.synonyms.length > 0;
+
+    // If details are sparse, fetch complete details from backend
+    if (!hasCollocations || !hasExamples || !hasSynonyms) {
+      setIsLoadingFullscreenDetails(true);
+      fetchMyVocabularyDetails(currentItem)
+        .then((enriched) => {
+          if (enriched && enriched !== currentItem) {
+            setVocabularies((prev) =>
+              prev.map((v) => (v.id === enriched.id ? enriched : v))
+            );
+          }
+        })
+        .finally(() => {
+          setIsLoadingFullscreenDetails(false);
+        });
+    }
+  }, [fullscreenVocabId]);
 
   const loadVocabularies = async () => {
     setIsLoading(true);
@@ -892,6 +925,7 @@ export default function VocabularyPage() {
         handleSaveNotes={handleSaveNotes}
         savingNoteId={savingNoteId}
         setItemToDelete={setItemToDelete}
+        isLoadingDetails={isLoadingFullscreenDetails}
       />
 
       {/* 5. Add Vocabulary Modal */}

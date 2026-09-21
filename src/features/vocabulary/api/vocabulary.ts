@@ -20,8 +20,45 @@ import { getAuthToken, getLocalVault, saveLocalVault } from "./utilFn";
 
 //  Normalizes backend response data structure to ensure safe rendering
 export function normalizeVocabularyItem(data: any): VocabularyItem {
+  if (!data) return {} as VocabularyItem;
+
   const partOfSpeech = (data.partOfSpeech as PartOfSpeech) || "NOUN";
   const verbForms = getVerbForms(data);
+
+  let rawCollocations = data.collocations;
+  if (typeof rawCollocations === "string") {
+    try {
+      rawCollocations = JSON.parse(rawCollocations);
+    } catch {}
+  }
+
+  let rawExampleSentences = data.exampleSentences;
+  if (typeof rawExampleSentences === "string") {
+    try {
+      rawExampleSentences = JSON.parse(rawExampleSentences);
+    } catch {}
+  }
+
+  let rawWordFamily = data.wordFamily;
+  if (typeof rawWordFamily === "string") {
+    try {
+      rawWordFamily = JSON.parse(rawWordFamily);
+    } catch {}
+  }
+
+  let rawSynonyms = data.synonyms;
+  if (typeof rawSynonyms === "string") {
+    try {
+      rawSynonyms = JSON.parse(rawSynonyms);
+    } catch {}
+  }
+
+  let rawAntonyms = data.antonyms;
+  if (typeof rawAntonyms === "string") {
+    try {
+      rawAntonyms = JSON.parse(rawAntonyms);
+    } catch {}
+  }
 
   return {
     id: data.id || `word-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -31,8 +68,8 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
     banglaPronunciation: data.banglaPronunciation || "",
     partOfSpeech,
     verbForms: verbForms || undefined,
-    collocations: Array.isArray(data.collocations)
-      ? data.collocations.map((col: any) => {
+    collocations: Array.isArray(rawCollocations)
+      ? rawCollocations.map((col: any) => {
         const colText = getCollocationText(col);
         const bangla = getCollocationBangla(col, data);
         const example = getCollocationExample(col, data);
@@ -43,9 +80,9 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
         };
       })
       : [],
-    exampleSentences: Array.isArray(data.exampleSentences) ? data.exampleSentences : [],
-    wordFamily: Array.isArray(data.wordFamily)
-      ? data.wordFamily.map((wf: any) => {
+    exampleSentences: Array.isArray(rawExampleSentences) ? rawExampleSentences : [],
+    wordFamily: Array.isArray(rawWordFamily)
+      ? rawWordFamily.map((wf: any) => {
         const word = getWordRelationWord(wf);
         const partOfSpeech = getWordRelationPartOfSpeech(wf);
         const banglaMeaning = getWordRelationBangla(wf);
@@ -56,8 +93,8 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
         };
       })
       : [],
-    synonyms: Array.isArray(data.synonyms) ? data.synonyms : [],
-    antonyms: Array.isArray(data.antonyms) ? data.antonyms : [],
+    synonyms: Array.isArray(rawSynonyms) ? rawSynonyms : [],
+    antonyms: Array.isArray(rawAntonyms) ? rawAntonyms : [],
     englishLevel: data.englishLevel || data.cefrLevel || "B2",
     cefrLevel: data.englishLevel || data.cefrLevel || "B2",
     createdAt: data.createdAt,

@@ -33,6 +33,7 @@ import {
   Lightbulb,
   CheckCircle2,
   Keyboard,
+  RefreshCw,
 } from "lucide-react";
 import { POS_COLORS, highlightPhrase } from "../../constants/vocabularyConstants";
 
@@ -57,6 +58,7 @@ export interface VocabularyFullscreenModalProps {
   handleSaveNotes: (item: MyVocabularyItem) => void;
   savingNoteId: string | null;
   setItemToDelete?: (item: MyVocabularyItem) => void;
+  isLoadingDetails?: boolean;
 }
 
 export default function VocabularyFullscreenModal({
@@ -80,6 +82,7 @@ export default function VocabularyFullscreenModal({
   handleSaveNotes,
   savingNoteId,
   setItemToDelete,
+  isLoadingDetails,
 }: VocabularyFullscreenModalProps) {
   if (!isMounted || !activeFullscreenVocab) return null;
 
@@ -475,6 +478,14 @@ export default function VocabularyFullscreenModal({
 
               {/* Right Column (Collocations, Synonyms/Antonyms, Examples, Notes, Sentences) */}
               <div className="lg:col-span-7 lg:min-h-0 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 space-y-5 pb-8">
+                {/* Enriching / Loading Details Banner */}
+                {isLoadingDetails && (
+                  <div className="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/80 flex items-center gap-3 text-indigo-700 dark:text-indigo-300 text-xs font-semibold animate-pulse">
+                    <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-indigo-500" />
+                    <span>Loading collocations, contextual examples & word relations...</span>
+                  </div>
+                )}
+
                 {/* Collocations */}
                 {activeFullscreenVocab.word.collocations &&
                   activeFullscreenVocab.word.collocations.length > 0 && (

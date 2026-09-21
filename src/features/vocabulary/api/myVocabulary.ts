@@ -3,7 +3,7 @@ import {
   GenerateVocabularyDto,
   MyVocabularyItem,
 } from "@/features/vocabulary/types/vocabulary";
-import { generateVocabularyApi } from "./vocabulary";
+import { generateVocabularyApi, normalizeVocabularyItem } from "./vocabulary";
 import { getApiBaseUrl } from "@/lib/api";
 import { getAuthToken, getLocalVault, saveLocalVault } from "./utilFn";
 
@@ -280,4 +280,107 @@ export async function deleteMyVocabulary(id: string): Promise<boolean> {
   const updated = vault.filter((item) => item.id !== id && (item as any)._id !== id);
   saveLocalVault(updated);
   return true;
+}
+
+/**
+ * Fetch full details for a single personal vocabulary word.
+ * Enriches collocations, example sentences, word family, synonyms, antonyms, notes, sentences.
+ */
+export async function fetchMyVocabularyDetails(
+  item: MyVocabularyItem
+): Promise<MyVocabularyItem> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
+
+  try {
+    // 1. Primary: GET /my-vocabularies/:id (includes full word definition and personal notes/sentences)
+    if (token && item.id && !item.id.startsWith("my-vocab-")) {
+      const res = await fetch(`${baseUrl}/my-vocabularies/${item.id}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data || json;
+        if (data && (data.word || data.collocations || data.exampleSentences)) {
+          const rawWord = data.word || data;
+          const fullWord = normalizeVocabularyItem(rawWord);
+          const updatedItem: MyVocabularyItem = {
+            ...item,
+            ...data,
+            id: item.id,
+            word: fullWord,
+            mySentences: Array.isArray(data.mySentences) ? data.mySentences : item.mySentences,
+            notes: data.notes !== undefined ? data.notes : item.notes,
+          };
+
+          const vault = getLocalVault();
+          const idx = vault.findIndex((v) => v.id === item.id);
+          if (idx !== -1) {
+            vault[idx] = updatedItem;
+            saveLocalVault(vault);
+          }
+          return updatedItem;
+        }
+      }
+    }
+
+    // 2. Secondary: GET /vocabularies/:wordId
+    const wordId = item.wordId || item.word?.id;
+    if (token && wordId && !wordId.startsWith("word-")) {
+      const res = await fetch(`${baseUrl}/vocabularies/${wordId}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const wordData = json.data || json;
+        if (wordData && (wordData.word || wordData.meaning)) {
+          const fullWord = normalizeVocabularyItem(wordData);
+          const updatedItem: MyVocabularyItem = {
+            ...item,
+            word: fullWord,
+          };
+
+          const vault = getLocalVault();
+          const idx = vault.findIndex((v) => v.id === item.id);
+          if (idx !== -1) {
+            vault[idx] = updatedItem;
+            saveLocalVault(vault);
+          }
+          return updatedItem;
+        }
+      }
+    }
+
+    // 3. Fallback: POST /vocabularies/generate for the word text
+    const wordText = item.word?.word;
+    if (wordText) {
+      const fullWord = await generateVocabularyApi(wordText);
+      if (fullWord && (fullWord.collocations?.length || fullWord.exampleSentences?.length || fullWord.meaning)) {
+        const updatedItem: MyVocabularyItem = {
+          ...item,
+          word: fullWord,
+        };
+
+        const vault = getLocalVault();
+        const idx = vault.findIndex((v) => v.id === item.id);
+        if (idx !== -1) {
+          vault[idx] = updatedItem;
+          saveLocalVault(vault);
+        }
+        return updatedItem;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch full vocabulary details:", err);
+  }
+
+  return item;
 }
