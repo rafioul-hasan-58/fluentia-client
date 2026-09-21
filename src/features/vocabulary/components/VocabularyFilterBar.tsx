@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PartOfSpeech } from "@/types";
 import { MyVocabularyItem } from "../types/vocabulary";
 import {
@@ -11,6 +11,8 @@ import {
   Star,
   Table,
   X,
+  ChevronDown,
+  Tag,
 } from "lucide-react";
 import { VocabularyDatePicker } from "./VocabularyDatePicker";
 import { ALL_POS_OPTIONS, POS_COLORS } from "../constants/vocabularyConstants";
@@ -78,6 +80,24 @@ export default function VocabularyFilterBar({
   stats,
   totalFoundCount,
 }: VocabularyFilterBarProps) {
+  const [isPosDropdownOpen, setIsPosDropdownOpen] = useState(false);
+  const posDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close POS dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        posDropdownRef.current &&
+        !posDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsPosDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* Line 1: Favorites, Quick Filters, Dropdowns & Actions (Left-aligned) */}
@@ -138,6 +158,120 @@ export default function VocabularyFilterBar({
           }}
           wordCounts={calendarWordCounts}
         />
+
+        {/* Part of Speech Filter Dropdown */}
+        <div ref={posDropdownRef} className="relative inline-block">
+          <button
+            type="button"
+            onClick={() => setIsPosDropdownOpen((prev) => !prev)}
+            className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer select-none ${
+              selectedPos !== "ALL"
+                ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
+                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
+            }`}
+            title="Filter vocabulary by part of speech"
+          >
+            <div
+              className={`p-1 rounded-lg transition-colors ${
+                selectedPos !== "ALL"
+                  ? "bg-purple-600 text-white shadow-sm"
+                  : "text-slate-400"
+              }`}
+            >
+              <Tag className="w-4 h-4" />
+            </div>
+
+            <span>
+              {selectedPos === "ALL"
+                ? "All Types"
+                : POS_COLORS[selectedPos]?.label || selectedPos}
+            </span>
+
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                selectedPos !== "ALL"
+                  ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+              }`}
+            >
+              {selectedPos === "ALL"
+                ? stats.total
+                : stats.posCounts[selectedPos] || 0}
+            </span>
+
+            <ChevronDown
+              className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                isPosDropdownOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {/* Dropdown Popover */}
+          {isPosDropdownOpen && (
+            <div className="absolute left-0 mt-2 z-50 w-56 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+              {/* All Types option */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedPos("ALL");
+                  setIsPosDropdownOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                  selectedPos === "ALL"
+                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span>All Types</span>
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  {stats.total}
+                </span>
+              </button>
+
+              <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+
+              {/* Specific POS options */}
+              <div className="max-h-60 overflow-y-auto space-y-0.5">
+                {ALL_POS_OPTIONS.map((pos) => {
+                  const count = stats.posCounts[pos] || 0;
+                  const config = POS_COLORS[pos];
+                  const isSelected = selectedPos === pos;
+
+                  return (
+                    <button
+                      key={pos}
+                      type="button"
+                      onClick={() => {
+                        setSelectedPos(pos);
+                        setIsPosDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                        isSelected
+                          ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      } ${count === 0 ? "opacity-50" : ""}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            config?.border?.replace("border-", "bg-") || "bg-indigo-400"
+                          }`}
+                        />
+                        <span>{config?.label || pos}</span>
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
 
         <select
           value={selectedSort}
@@ -255,39 +389,6 @@ export default function VocabularyFilterBar({
         </div>
       </div>
 
-      {/* Line 3: Part of Speech Pill Carousel (Left-aligned) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none justify-start">
-        <button
-          onClick={() => setSelectedPos("ALL")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-            selectedPos === "ALL"
-              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md"
-              : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-          }`}
-        >
-          All Words ({stats.total})
-        </button>
-
-        {ALL_POS_OPTIONS.map((pos) => {
-          const count = stats.posCounts[pos] || 0;
-          const config = POS_COLORS[pos];
-          const isSelected = selectedPos === pos;
-          return (
-            <button
-              key={pos}
-              onClick={() => setSelectedPos(pos)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
-                isSelected
-                  ? `${config.bg} ${config.text} ${config.border} ring-2 ring-indigo-500/20 shadow-sm`
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300"
-              }`}
-            >
-              <span>{config.label}</span>
-              <span className="text-[10px] opacity-75">({count})</span>
-            </button>
-          );
-        })}
-      </div>
 
       {/* Active Date Filter Notice Banner */}
       {selectedDate && (
