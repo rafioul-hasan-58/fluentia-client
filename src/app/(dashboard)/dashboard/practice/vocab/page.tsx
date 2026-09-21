@@ -297,7 +297,7 @@ export default function VocabPracticePage() {
               setSelectedDate(null);
               setTodayOnly(false);
             }}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+            className={`h-10 px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center border transition-all cursor-pointer ${
               !selectedDate && !todayOnly
                 ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
                 : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
@@ -314,7 +314,7 @@ export default function VocabPracticePage() {
               setTodayOnly(nextVal);
               if (nextVal) setSelectedDate(null);
             }}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+            className={`h-10 px-4 rounded-xl text-xs font-semibold inline-flex items-center gap-2 border transition-all cursor-pointer ${
               todayOnly
                 ? "bg-indigo-600 text-white border-indigo-600 shadow-xs font-bold"
                 : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
@@ -324,7 +324,7 @@ export default function VocabPracticePage() {
             <span>Today&apos;s Words</span>
             {todayCount > 0 && (
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                   todayOnly
                     ? "bg-white/25 text-white"
                     : "bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
@@ -343,6 +343,7 @@ export default function VocabPracticePage() {
               if (date) setTodayOnly(false);
             }}
             wordCounts={calendarWordCounts}
+            buttonClassName="h-10 px-4 rounded-xl text-xs font-semibold"
           />
 
           {/* Clear Filters button */}
@@ -350,7 +351,7 @@ export default function VocabPracticePage() {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/50 transition-colors ml-auto cursor-pointer"
+              className="h-10 inline-flex items-center gap-1.5 px-3.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/50 transition-colors ml-auto cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
               <span>Reset Filters</span>

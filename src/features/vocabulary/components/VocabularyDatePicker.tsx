@@ -16,6 +16,7 @@ interface VocabularyDatePickerProps {
   onSelectDate: (dateStr: string | null) => void;
   wordCounts?: Record<string, number>; // Map of YYYY-MM-DD -> word count
   className?: string;
+  buttonClassName?: string;
 }
 
 const MONTH_NAMES = [
@@ -40,6 +41,7 @@ export function VocabularyDatePicker({
   onSelectDate,
   wordCounts = {},
   className = "",
+  buttonClassName = "",
 }: VocabularyDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -227,7 +229,11 @@ export function VocabularyDatePicker({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`group inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer select-none ${
+          className={`group inline-flex items-center gap-2 border transition-all cursor-pointer select-none ${
+            buttonClassName
+              ? buttonClassName
+              : "px-4 py-3 rounded-2xl text-sm font-semibold"
+          } ${
             selectedDate
               ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
