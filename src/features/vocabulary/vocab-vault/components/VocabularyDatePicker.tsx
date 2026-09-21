@@ -232,9 +232,9 @@ export function VocabularyDatePicker({
   };
 
   return (
-    <div ref={containerRef} className={`relative inline-block ${className}`}>
+    <div ref={containerRef} className={`relative ${className || "inline-block"}`}>
       {/* Trigger Button */}
-      <div className="flex items-center">
+      <div className="flex items-center w-full">
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}

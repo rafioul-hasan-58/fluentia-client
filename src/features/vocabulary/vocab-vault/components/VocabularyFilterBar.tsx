@@ -100,45 +100,47 @@ export default function VocabularyFilterBar({
 
   return (
     <div className="space-y-4">
-      {/* Line 1: Favorites, Quick Filters, Dropdowns & Actions (Left-aligned) */}
-      <div className="flex flex-wrap items-center gap-3 justify-start">
+      {/* Line 1: Quick Filters, Dropdowns & Actions - 2 in a line (50% / 50%) with equal width */}
+      <div className="grid grid-cols-2 gap-3">
         <button
+          type="button"
           onClick={() => setFavoritesOnly(!favoritesOnly)}
-          className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${
+          className={`w-full h-12 inline-flex items-center justify-center gap-2 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
             favoritesOnly
               ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
           }`}
         >
           <Star
-            className={`w-4 h-4 ${
+            className={`w-4 h-4 shrink-0 ${
               favoritesOnly ? "fill-amber-400 text-amber-400" : "text-slate-400"
             }`}
           />
-          <span>Favorites</span>
+          <span className="truncate">Favorites</span>
         </button>
 
         <button
+          type="button"
           onClick={() => {
             const nextVal = !todayOnly;
             setTodayOnly(nextVal);
             if (nextVal) setSelectedDate(null);
           }}
-          className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${
+          className={`w-full h-12 inline-flex items-center justify-center gap-2 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
             todayOnly
               ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
           }`}
         >
           <Clock
-            className={`w-4 h-4 ${
+            className={`w-4 h-4 shrink-0 ${
               todayOnly ? "text-indigo-500" : "text-slate-400"
             }`}
           />
-          <span>Today&apos;s Words</span>
+          <span className="truncate">Today&apos;s Words</span>
           {stats.todayCount > 0 && (
             <span
-              className={`ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold ${
+              className={`ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
                 todayOnly
                   ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
@@ -157,14 +159,16 @@ export default function VocabularyFilterBar({
             if (date) setTodayOnly(false);
           }}
           wordCounts={calendarWordCounts}
+          className="w-full"
+          buttonClassName="w-full h-12 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold justify-center"
         />
 
         {/* Part of Speech Filter Dropdown */}
-        <div ref={posDropdownRef} className="relative inline-block">
+        <div ref={posDropdownRef} className="relative w-full">
           <button
             type="button"
             onClick={() => setIsPosDropdownOpen((prev) => !prev)}
-            className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer select-none ${
+            className={`w-full h-12 inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none ${
               selectedPos !== "ALL"
                 ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
                 : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
@@ -172,23 +176,23 @@ export default function VocabularyFilterBar({
             title="Filter vocabulary by part of speech"
           >
             <div
-              className={`p-1 rounded-lg transition-colors ${
+              className={`p-1 rounded-lg transition-colors shrink-0 ${
                 selectedPos !== "ALL"
                   ? "bg-purple-600 text-white shadow-sm"
                   : "text-slate-400"
               }`}
             >
-              <Tag className="w-4 h-4" />
+              <Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
 
-            <span>
+            <span className="truncate">
               {selectedPos === "ALL"
                 ? "All Types"
                 : POS_COLORS[selectedPos]?.label || selectedPos}
             </span>
 
             <span
-              className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+              className={`text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${
                 selectedPos !== "ALL"
                   ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
@@ -200,7 +204,7 @@ export default function VocabularyFilterBar({
             </span>
 
             <ChevronDown
-              className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+              className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
                 isPosDropdownOpen ? "rotate-180" : ""
               }`}
             />
@@ -208,7 +212,7 @@ export default function VocabularyFilterBar({
 
           {/* Dropdown Popover */}
           {isPosDropdownOpen && (
-            <div className="absolute left-0 mt-2 z-50 w-56 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 z-50 w-56 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
               {/* All Types option */}
               <button
                 type="button"
@@ -276,7 +280,7 @@ export default function VocabularyFilterBar({
         <select
           value={selectedSort}
           onChange={(e) => setSelectedSort(e.target.value as any)}
-          className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          className="w-full h-12 px-3 sm:px-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
         >
           <option value="recent">Recently Added</option>
           <option value="alphabetical">Alphabetical (A - Z)</option>
@@ -286,7 +290,7 @@ export default function VocabularyFilterBar({
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          className="w-full h-12 px-3 sm:px-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
         >
           <option value="ALL">All Statuses</option>
           <option value="LEARNING">Learning</option>
@@ -297,7 +301,7 @@ export default function VocabularyFilterBar({
         <select
           value={selectedLevel}
           onChange={(e) => setSelectedLevel(e.target.value)}
-          className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
+          className="w-full h-12 px-3 sm:px-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer"
         >
           <option value="ALL">All Levels</option>
           <option value="A1">A1 Level</option>
@@ -309,19 +313,20 @@ export default function VocabularyFilterBar({
         </select>
 
         <button
+          type="button"
           onClick={() => {
             setIsStorySelectMode(!isStorySelectMode);
             if (isStorySelectMode) setSelectedStoryItems([]);
           }}
-          className={`inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold border transition-all cursor-pointer ${
+          className={`w-full h-12 inline-flex items-center justify-center gap-2 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
             isStorySelectMode
               ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-500 shadow-md shadow-orange-500/20"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400"
           }`}
           title="Toggle Story Selection Mode"
         >
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>
+          <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="truncate">
             {isStorySelectMode
               ? `Story Mode (${selectedStoryItems.length})`
               : "Create Story"}
