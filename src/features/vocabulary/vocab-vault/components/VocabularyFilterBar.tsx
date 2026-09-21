@@ -54,7 +54,7 @@ export interface VocabularyFilterBarProps {
   totalFoundCount: number;
 }
 
-export default function VocabularyFilterBar({
+const VocabularyFilterBar = ({
   searchQuery,
   setSearchQuery,
   selectedPos,
@@ -82,7 +82,7 @@ export default function VocabularyFilterBar({
   setSelectedStoryItems,
   stats,
   totalFoundCount,
-}: VocabularyFilterBarProps) {
+}: VocabularyFilterBarProps) => {
   const [isPosDropdownOpen, setIsPosDropdownOpen] = useState(false);
   const posDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -108,16 +108,14 @@ export default function VocabularyFilterBar({
         <button
           type="button"
           onClick={() => setFavoritesOnly(!favoritesOnly)}
-          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-            favoritesOnly
-              ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm"
-              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
-          }`}
+          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${favoritesOnly
+            ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm"
+            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
+            }`}
         >
           <Star
-            className={`w-4 h-4 shrink-0 ${
-              favoritesOnly ? "fill-amber-400 text-amber-400" : "text-slate-400"
-            }`}
+            className={`w-4 h-4 shrink-0 ${favoritesOnly ? "fill-amber-400 text-amber-400" : "text-slate-400"
+              }`}
           />
           <span className="truncate sm:overflow-visible">Favorites</span>
         </button>
@@ -129,25 +127,22 @@ export default function VocabularyFilterBar({
             setTodayOnly(nextVal);
             if (nextVal) setSelectedDate(null);
           }}
-          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-            todayOnly
-              ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
-              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
-          }`}
+          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${todayOnly
+            ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
+            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300"
+            }`}
         >
           <Clock
-            className={`w-4 h-4 shrink-0 ${
-              todayOnly ? "text-indigo-500" : "text-slate-400"
-            }`}
+            className={`w-4 h-4 shrink-0 ${todayOnly ? "text-indigo-500" : "text-slate-400"
+              }`}
           />
           <span className="truncate sm:overflow-visible">Today&apos;s Words</span>
           {stats.todayCount > 0 && (
             <span
-              className={`hidden sm:inline-flex ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
-                todayOnly
-                  ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-              }`}
+              className={`hidden sm:inline-flex ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 ${todayOnly
+                ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}
             >
               {stats.todayCount}
             </span>
@@ -165,25 +160,43 @@ export default function VocabularyFilterBar({
           className="w-full sm:w-auto"
           buttonClassName="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold justify-center sm:justify-start"
         />
+        {/* create story button */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsStorySelectMode(!isStorySelectMode);
+            if (isStorySelectMode) setSelectedStoryItems([]);
+          }}
+          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${isStorySelectMode
+            ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-500 shadow-md shadow-orange-500/20"
+            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400"
+            }`}
+          title="Toggle Story Selection Mode"
+        >
+          <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="truncate sm:overflow-visible">
+            {isStorySelectMode
+              ? `Story Mode (${selectedStoryItems.length})`
+              : "Create Story"}
+          </span>
+        </button>
 
         {/* Part of Speech Filter Dropdown */}
         <div ref={posDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
           <button
             type="button"
             onClick={() => setIsPosDropdownOpen((prev) => !prev)}
-            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${
-              selectedPos !== "ALL"
-                ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
-                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
-            }`}
+            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${selectedPos !== "ALL"
+              ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
+              }`}
             title="Filter vocabulary by part of speech"
           >
             <Tag
-              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${
-                selectedPos !== "ALL"
-                  ? "text-purple-600 dark:text-purple-400"
-                  : "text-slate-400"
-              }`}
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${selectedPos !== "ALL"
+                ? "text-purple-600 dark:text-purple-400"
+                : "text-slate-400"
+                }`}
             />
 
             <span className="truncate sm:overflow-visible">
@@ -193,11 +206,10 @@ export default function VocabularyFilterBar({
             </span>
 
             <span
-              className={`hidden sm:inline-flex text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${
-                selectedPos !== "ALL"
-                  ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-              }`}
+              className={`hidden sm:inline-flex text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${selectedPos !== "ALL"
+                ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}
             >
               {selectedPos === "ALL"
                 ? stats.total
@@ -206,9 +218,8 @@ export default function VocabularyFilterBar({
 
             <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
               <ChevronDown
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
-                  isPosDropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${isPosDropdownOpen ? "rotate-180" : ""
+                  }`}
               />
             </div>
           </button>
@@ -223,11 +234,10 @@ export default function VocabularyFilterBar({
                   setSelectedPos("ALL");
                   setIsPosDropdownOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                  selectedPos === "ALL"
-                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${selectedPos === "ALL"
+                  ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-slate-400" />
@@ -255,17 +265,15 @@ export default function VocabularyFilterBar({
                         setSelectedPos(pos);
                         setIsPosDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                        isSelected
-                          ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
-                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                      } ${count === 0 ? "opacity-50" : ""}`}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isSelected
+                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        } ${count === 0 ? "opacity-50" : ""}`}
                     >
                       <span className="flex items-center gap-2">
                         <span
-                          className={`w-2 h-2 rounded-full ${
-                            config?.border?.replace("border-", "bg-") || "bg-indigo-400"
-                          }`}
+                          className={`w-2 h-2 rounded-full ${config?.border?.replace("border-", "bg-") || "bg-indigo-400"
+                            }`}
                         />
                         <span>{config?.label || pos}</span>
                       </span>
@@ -342,26 +350,6 @@ export default function VocabularyFilterBar({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setIsStorySelectMode(!isStorySelectMode);
-            if (isStorySelectMode) setSelectedStoryItems([]);
-          }}
-          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-            isStorySelectMode
-              ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-500 shadow-md shadow-orange-500/20"
-              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400"
-          }`}
-          title="Toggle Story Selection Mode"
-        >
-          <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="truncate sm:overflow-visible">
-            {isStorySelectMode
-              ? `Story Mode (${selectedStoryItems.length})`
-              : "Create Story"}
-          </span>
-        </button>
       </div>
 
       {/* Line 2: Search Bar, Refresh & View Mode Switch (Left-aligned) */}
@@ -401,22 +389,20 @@ export default function VocabularyFilterBar({
             <button
               onClick={() => setViewMode("grid")}
               title="Grid View"
-              className={`p-2 rounded-xl transition-all cursor-pointer ${
-                viewMode === "grid"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
+              className={`p-2 rounded-xl transition-all cursor-pointer ${viewMode === "grid"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                }`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("table")}
               title="Table View (Compact)"
-              className={`p-2 rounded-xl transition-all cursor-pointer ${
-                viewMode === "table"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
+              className={`p-2 rounded-xl transition-all cursor-pointer ${viewMode === "table"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                }`}
             >
               <Table className="w-4 h-4" />
             </button>
@@ -461,3 +447,4 @@ export default function VocabularyFilterBar({
     </div>
   );
 }
+export default VocabularyFilterBar;
