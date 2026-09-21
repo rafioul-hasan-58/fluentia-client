@@ -20,7 +20,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) {
-        const redirectUrl = `/login?redirect=${encodeURIComponent(pathname || "/admin")}`;
+        const redirectUrl = `/login?redirect=${encodeURIComponent(pathname || "/admin/dashboard")}`;
         router.push(redirectUrl);
       } else {
         setHasChecked(true);

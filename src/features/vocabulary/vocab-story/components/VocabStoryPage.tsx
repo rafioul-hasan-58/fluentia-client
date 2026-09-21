@@ -8,7 +8,6 @@ import {
   Sparkles,
   BookOpen,
   Search,
-  Plus,
   RefreshCw,
   Trash2,
   Copy,
@@ -22,7 +21,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  Minimize2,
   Clock,
   Columns,
   GraduationCap,
@@ -112,7 +110,7 @@ function renderHighlightedStory(text: string, keywords: string[]) {
   });
 }
 
-export default function VocabStoryPage() {
+const VocabStoryPage = () => {
   const router = useRouter();
   const [stories, setStories] = useState<VocabStoryItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -1615,3 +1613,6 @@ export default function VocabStoryPage() {
     </div>
   );
 }
+
+
+export default VocabStoryPage

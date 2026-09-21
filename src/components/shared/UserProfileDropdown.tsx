@@ -104,7 +104,7 @@ export function UserProfileDropdown() {
           {/* Quick Links Section */}
           <div className="py-1.5 space-y-0.5 text-xs font-semibold">
             <Link
-              href="/dashboard"
+              href="/user/dashboard"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-ink-soft hover:text-ink"
             >
@@ -113,7 +113,7 @@ export function UserProfileDropdown() {
             </Link>
 
             <Link
-              href="/dashboard/settings"
+              href="/user/dashboard/settings"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-ink-soft hover:text-ink"
             >
@@ -122,7 +122,7 @@ export function UserProfileDropdown() {
             </Link>
 
             <Link
-              href="/dashboard/chat"
+              href="/user/dashboard/chat"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-ink-soft hover:text-ink"
             >
@@ -131,7 +131,7 @@ export function UserProfileDropdown() {
             </Link>
 
             <Link
-              href="/dashboard/vocabulary"
+              href="/user/dashboard/vocabulary"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-ink-soft hover:text-ink"
             >

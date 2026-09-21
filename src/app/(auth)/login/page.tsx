@@ -37,7 +37,7 @@ export default function LoginPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      let target = "/dashboard";
+      let target = "/user/dashboard";
       const isAdmin = result.user?.role?.toUpperCase() === "ADMIN";
 
       if (typeof window !== "undefined") {
@@ -48,10 +48,10 @@ export default function LoginPage() {
         } else if (localStorage.getItem("fluentia_level_test_session")) {
           target = "/level-test/general";
         } else if (isAdmin) {
-          target = "/admin";
+          target = "/admin/dashboard";
         }
       } else if (isAdmin) {
-        target = "/admin";
+        target = "/admin/dashboard";
       }
       router.push(target);
     } else {

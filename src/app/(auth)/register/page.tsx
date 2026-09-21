@@ -39,7 +39,7 @@ export default function RegisterPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      let target = "/dashboard";
+      let target = "/user/dashboard";
       if (typeof window !== "undefined") {
         const urlParams = new URLSearchParams(window.location.search);
         const redirectParam = urlParams.get("redirect");

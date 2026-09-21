@@ -105,7 +105,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
     items: [
       {
         name: "Dashboard",
-        href: "/dashboard",
+        href: "/user/dashboard",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect width="7" height="9" x="3" y="3" rx="1" />
@@ -117,7 +117,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "AI Practice Chat",
-        href: "/dashboard/chat",
+        href: "/user/dashboard/chat",
         badge: "AI",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -135,7 +135,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
     items: [
       {
         name: "Skills",
-        href: "/dashboard/skills",
+        href: "/user/dashboard/skills",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
@@ -154,7 +154,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
         children: [
           {
             name: "Vocabulary Vault",
-            href: "/dashboard/vocabulary",
+            href: "/user/dashboard/vocabulary",
             icon: ({ className }) => (
               <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="18" height="18" x="3" y="3" rx="2" />
@@ -164,7 +164,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
           },
           {
             name: "Vocab Story",
-            href: "/dashboard/vocabulary/stories",
+            href: "/user/dashboard/vocabulary/stories",
             badge: "AI",
             icon: ({ className }) => (
               <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -195,7 +195,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
         children: [
           {
             name: "Vocab Practice",
-            href: "/dashboard/practice/vocab",
+            href: "/user/dashboard/practice/vocab",
             badge: "AI",
             icon: ({ className }) => (
               <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -208,7 +208,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
           },
           {
             name: "Writing Practice",
-            href: "/dashboard/practice/writing",
+            href: "/user/dashboard/practice/writing",
             badge: "AI",
             icon: ({ className }) => (
               <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -222,7 +222,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "Reading",
-        href: "/dashboard/reading",
+        href: "/user/dashboard/reading",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
@@ -232,7 +232,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "Speaking",
-        href: "/dashboard/speaking",
+        href: "/user/dashboard/speaking",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
@@ -243,7 +243,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
       },
       {
         name: "Writing",
-        href: "/dashboard/writing",
+        href: "/user/dashboard/writing",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
@@ -257,7 +257,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
     items: [
       {
         name: "Level Test",
-        href: "/dashboard/level-test",
+        href: "/user/dashboard/level-test",
         badge: "Adaptive",
         icon: ({ className }) => (
           <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -268,6 +268,7 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
       },
     ],
   },
+
 ];
 
 interface SidebarProps {
@@ -328,7 +329,7 @@ export function Sidebar({
       {/* Mobile Top App Bar / Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-[#070510]/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 z-30 flex items-center justify-between px-4 sm:px-6">
         <Link
-          href="/dashboard"
+          href="/user/dashboard"
           className="flex items-center gap-2.5 group"
         >
           <div className="relative w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-purple-500 p-0.5 shadow-xs group-hover:scale-105 transition-transform flex items-center justify-center">
@@ -395,7 +396,7 @@ export function Sidebar({
         {/* Brand Header */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200 dark:border-white/10">
           <Link
-            href="/dashboard"
+            href="/user/dashboard"
             onClick={() => setMobileOpen(false)}
             className="flex items-center gap-3 group"
           >
@@ -446,8 +447,8 @@ export function Sidebar({
                 // Handle Dropdown Menu (items with children)
                 if (item.children && item.children.length > 0) {
                   const isAnyChildActive = item.children.some((child) => {
-                    if (child.href === "/dashboard/vocabulary") {
-                      return pathname === "/dashboard/vocabulary";
+                    if (child.href === "/user/dashboard/vocabulary") {
+                      return pathname === "/user/dashboard/vocabulary";
                     }
                     return pathname === child.href || pathname?.startsWith(child.href);
                   });
@@ -499,8 +500,8 @@ export function Sidebar({
                         <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-primary/20 dark:border-purple-500/20 ml-5 my-1 animate-in fade-in slide-in-from-top-1 duration-150">
                           {item.children.map((child) => {
                             const isChildActive =
-                              child.href === "/dashboard/vocabulary"
-                                ? pathname === "/dashboard/vocabulary"
+                              child.href === "/user/dashboard/vocabulary"
+                                ? pathname === "/user/dashboard/vocabulary"
                                 : pathname === child.href || pathname?.startsWith(child.href);
 
                             const SubIcon = child.icon;
@@ -546,7 +547,7 @@ export function Sidebar({
                 // Regular Nav Item
                 const isActive =
                   pathname === item.href ||
-                  (item.href !== "/dashboard" && pathname?.startsWith(item.href || ""));
+                  (item.href !== "/user/dashboard" && pathname?.startsWith(item.href || ""));
 
                 return (
                   <Link
@@ -585,7 +586,7 @@ export function Sidebar({
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
               </div>
               <Link
-                href="/admin"
+                href="/admin/dashboard"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-amber-500/10 to-purple-600/10 hover:from-amber-500/20 hover:to-purple-600/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 shadow-2xs transition-all group"
               >
@@ -606,7 +607,7 @@ export function Sidebar({
           {isAuthenticated && user ? (
             <div className="space-y-2">
               <Link
-                href="/dashboard/settings"
+                href="/user/dashboard/settings"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/5 shadow-2xs transition-all group"
               >
