@@ -140,7 +140,7 @@ export default function VocabularyFilterBar({
           <span className="truncate sm:overflow-visible">Today&apos;s Words</span>
           {stats.todayCount > 0 && (
             <span
-              className={`ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
+              className={`hidden sm:inline-flex ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
                 todayOnly
                   ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
@@ -192,7 +192,7 @@ export default function VocabularyFilterBar({
             </span>
 
             <span
-              className={`text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${
+              className={`hidden sm:inline-flex text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${
                 selectedPos !== "ALL"
                   ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
