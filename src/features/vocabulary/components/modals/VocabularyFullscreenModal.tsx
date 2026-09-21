@@ -100,10 +100,16 @@ export default function VocabularyFullscreenModal({
                   <span>Exit</span>
                 </button>
 
-                <div className=" hidden lg:flex items-center gap-2 text-xs ">
+                <div className="hidden lg:flex items-center gap-2 text-xs">
                   <span className="font-semibold text-slate-600 dark:text-slate-400">
                     Word {activeFullscreenIndex + 1} of {vocabularies.length}
                   </span>
+                  {isLoadingDetails && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60 animate-pulse">
+                      <RefreshCw className="w-2.5 h-2.5 animate-spin text-indigo-500" />
+                      Syncing
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -478,125 +484,185 @@ export default function VocabularyFullscreenModal({
 
               {/* Right Column (Collocations, Synonyms/Antonyms, Examples, Notes, Sentences) */}
               <div className="lg:col-span-7 lg:min-h-0 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 space-y-5 pb-8">
-                {/* Enriching / Loading Details Banner */}
+                {/* Professional AI Enriching Header Card */}
                 {isLoadingDetails && (
-                  <div className="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/80 flex items-center gap-3 text-indigo-700 dark:text-indigo-300 text-xs font-semibold animate-pulse">
-                    <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-indigo-500" />
-                    <span>Loading collocations, contextual examples & word relations...</span>
+                  <div className="relative overflow-hidden p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/10 dark:from-indigo-500/15 dark:via-purple-500/15 dark:to-indigo-500/15 border border-indigo-200/80 dark:border-indigo-800/80 flex items-center justify-between gap-3 shadow-xs backdrop-blur-xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-600 text-white shadow-xs shrink-0">
+                        <Sparkles className="w-4 h-4 animate-spin text-indigo-100" />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>AI Word Enrichment</span>
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                          </span>
+                        </h4>
+                        <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 truncate">
+                          Fetching collocations, contextual examples & word relations...
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 dark:bg-slate-800/80 text-indigo-600 dark:text-indigo-400 text-xs font-semibold border border-indigo-100 dark:border-indigo-900/60 shrink-0 shadow-2xs">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-500" />
+                      <span className="hidden sm:inline font-mono">Syncing</span>
+                    </div>
                   </div>
                 )}
 
                 {/* Collocations */}
                 {activeFullscreenVocab.word.collocations &&
-                  activeFullscreenVocab.word.collocations.length > 0 && (
-                    <div className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-indigo-500 shrink-0" />
-                          <span>Collocations & Common Phrases</span>
-                        </h3>
-                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-slate-700/60">
-                          {activeFullscreenVocab.word.collocations.length} phrases
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-                        {activeFullscreenVocab.word.collocations.map((col, idx) => {
-                          const colText = getCollocationText(col);
-                          const meaning = getCollocationMeaning(col);
-                          const rawBangla = getCollocationBangla(col, activeFullscreenVocab.word);
-                          const rawExample = getCollocationExample(col, activeFullscreenVocab.word);
-
-                          const bangla =
-                            rawBangla ||
-                            (activeFullscreenVocab.word.banglaMeaning
-                              ? `${activeFullscreenVocab.word.banglaMeaning.split(/[,/]/)[0].trim()} সম্পর্কিত ভাবার্থ`
-                              : `${colText}-এর বাংলা ভাবার্থ`);
-
-                          const example =
-                            rawExample ||
-                            `Using "${colText}" helps express ideas naturally in practical English.`;
-
-                          return (
-                            <div
-                              key={idx}
-                              className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50/90 dark:bg-slate-800/50 border border-slate-200/90 dark:border-slate-700/70 hover:border-indigo-300 dark:hover:border-indigo-500/60 hover:bg-white dark:hover:bg-slate-800/80 transition-all shadow-xs flex flex-col justify-between gap-3 group"
-                            >
-                              {/* Header: Number + Phrase + Pronounce */}
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                                  <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 text-[10px] sm:text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                                    {idx + 1}
-                                  </span>
-                                  <div className="min-w-0 flex-1">
-                                    <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight break-words capitalize group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                      {colText}
-                                    </h4>
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => playPronunciation(colText)}
-                                  className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
-                                  title={`Pronounce "${colText}"`}
-                                  aria-label={`Pronounce ${colText}`}
-                                >
-                                  <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                </button>
-                              </div>
-
-                              {/* Bangla Meaning Section */}
-                              {bangla && (
-                                <div className="p-2.5 sm:p-3 rounded-xl bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/60 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5">
-                                  <span className="self-start inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-600 text-white shrink-0 shadow-2xs">
-                                    বাংলা অর্থ
-                                  </span>
-                                  <span className="text-xs sm:text-sm font-semibold text-emerald-950 dark:text-emerald-100 leading-snug break-words">
-                                    {bangla}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* English Meaning (if present) */}
-                              {meaning && (
-                                <div className="text-xs text-slate-600 dark:text-slate-300 flex items-baseline gap-1.5 leading-relaxed">
-                                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0">
-                                    Meaning:
-                                  </span>
-                                  <span className="break-words">{meaning}</span>
-                                </div>
-                              )}
-
-                              {/* Example Sentence Callout */}
-                              {example && (
-                                <div className="pt-2.5 border-t border-slate-200/70 dark:border-slate-700/60 space-y-1.5">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
-                                      <Lightbulb className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                                      Example Sentence
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => playPronunciation(example)}
-                                      className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
-                                      title="Pronounce example sentence"
-                                      aria-label="Pronounce example sentence"
-                                    >
-                                      <Volume2 className="w-3.5 h-3.5" />
-                                    </button>
-                                  </div>
-                                  <div className="p-3 rounded-xl bg-white/90 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/80 shadow-2xs">
-                                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 italic leading-relaxed break-words">
-                                      &ldquo;{highlightPhrase(example, colText)}&rdquo;
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                activeFullscreenVocab.word.collocations.length > 0 ? (
+                  <div className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-indigo-500 shrink-0" />
+                        <span>Collocations & Common Phrases</span>
+                      </h3>
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-slate-700/60">
+                        {activeFullscreenVocab.word.collocations.length} phrases
+                      </span>
                     </div>
-                  )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+                      {activeFullscreenVocab.word.collocations.map((col, idx) => {
+                        const colText = getCollocationText(col);
+                        const meaning = getCollocationMeaning(col);
+                        const rawBangla = getCollocationBangla(col, activeFullscreenVocab.word);
+                        const rawExample = getCollocationExample(col, activeFullscreenVocab.word);
+
+                        const bangla =
+                          rawBangla ||
+                          (activeFullscreenVocab.word.banglaMeaning
+                            ? `${activeFullscreenVocab.word.banglaMeaning.split(/[,/]/)[0].trim()} সম্পর্কিত ভাবার্থ`
+                            : `${colText}-এর বাংলা ভাবার্থ`);
+
+                        const example =
+                          rawExample ||
+                          `Using "${colText}" helps express ideas naturally in practical English.`;
+
+                        return (
+                          <div
+                            key={idx}
+                            className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50/90 dark:bg-slate-800/50 border border-slate-200/90 dark:border-slate-700/70 hover:border-indigo-300 dark:hover:border-indigo-500/60 hover:bg-white dark:hover:bg-slate-800/80 transition-all shadow-xs flex flex-col justify-between gap-3 group"
+                          >
+                            {/* Header: Number + Phrase + Pronounce */}
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                                <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 text-[10px] sm:text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                  {idx + 1}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight break-words capitalize group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    {colText}
+                                  </h4>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => playPronunciation(colText)}
+                                className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
+                                title={`Pronounce "${colText}"`}
+                                aria-label={`Pronounce ${colText}`}
+                              >
+                                <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              </button>
+                            </div>
+
+                            {/* Bangla Meaning Section */}
+                            {bangla && (
+                              <div className="p-2.5 sm:p-3 rounded-xl bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/60 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5">
+                                <span className="self-start inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-600 text-white shrink-0 shadow-2xs">
+                                  বাংলা অর্থ
+                                </span>
+                                <span className="text-xs sm:text-sm font-semibold text-emerald-950 dark:text-emerald-100 leading-snug break-words">
+                                  {bangla}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* English Meaning (if present) */}
+                            {meaning && (
+                              <div className="text-xs text-slate-600 dark:text-slate-300 flex items-baseline gap-1.5 leading-relaxed">
+                                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0">
+                                  Meaning:
+                                </span>
+                                <span className="break-words">{meaning}</span>
+                              </div>
+                            )}
+
+                            {/* Example Sentence Callout */}
+                            {example && (
+                              <div className="pt-2.5 border-t border-slate-200/70 dark:border-slate-700/60 space-y-1.5">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                                    <Lightbulb className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                                    Example Sentence
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => playPronunciation(example)}
+                                    className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
+                                    title="Pronounce example sentence"
+                                    aria-label="Pronounce example sentence"
+                                  >
+                                    <Volume2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                                <div className="p-3 rounded-xl bg-white/90 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/80 shadow-2xs">
+                                  <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 italic leading-relaxed break-words">
+                                    &ldquo;{highlightPhrase(example, colText)}&rdquo;
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : isLoadingDetails ? (
+                  /* Professional Collocations Skeleton */
+                  <div className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 animate-pulse">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-indigo-400 dark:text-indigo-500 shrink-0" />
+                        <div className="h-4 w-48 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                      </div>
+                      <div className="h-5 w-20 bg-slate-100 dark:bg-slate-800 rounded-full" />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+                      {[1, 2].map((idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50/90 dark:bg-slate-800/50 border border-slate-200/90 dark:border-slate-700/70 flex flex-col justify-between gap-3"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-indigo-100/70 dark:bg-indigo-950/70 text-indigo-400 text-[10px] sm:text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                                {idx}
+                              </span>
+                              <div className="space-y-1.5 flex-1 pt-0.5">
+                                <div className="h-4 w-3/5 bg-slate-200 dark:bg-slate-700 rounded-md" />
+                                <div className="h-3 w-4/5 bg-slate-200/70 dark:bg-slate-700/60 rounded-md" />
+                              </div>
+                            </div>
+                            <div className="w-7 h-7 rounded-xl bg-slate-200/60 dark:bg-slate-700/60 shrink-0" />
+                          </div>
+
+                          <div className="space-y-2 pt-1 border-t border-slate-200/60 dark:border-slate-700/50">
+                            <div className="h-3 w-2/3 bg-emerald-100/60 dark:bg-emerald-950/40 rounded" />
+                            <div className="p-2.5 rounded-xl bg-white/90 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/80 space-y-1.5">
+                              <div className="h-2.5 w-full bg-slate-200/80 dark:bg-slate-800 rounded" />
+                              <div className="h-2.5 w-4/5 bg-slate-200/60 dark:bg-slate-800/70 rounded" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 {/* Synonyms & Antonyms Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -616,6 +682,12 @@ export default function VocabularyFullscreenModal({
                             {getWordRelationText(syn)}
                           </span>
                         ))
+                      ) : isLoadingDetails ? (
+                        <div className="flex flex-wrap gap-1.5 animate-pulse w-full">
+                          <div className="h-6 w-16 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-800/50" />
+                          <div className="h-6 w-20 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-800/50" />
+                          <div className="h-6 w-14 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-800/50" />
+                        </div>
                       ) : (
                         <span className="text-xs text-slate-400">None listed</span>
                       )}
@@ -638,6 +710,12 @@ export default function VocabularyFullscreenModal({
                             {getWordRelationText(ant)}
                           </span>
                         ))
+                      ) : isLoadingDetails ? (
+                        <div className="flex flex-wrap gap-1.5 animate-pulse w-full">
+                          <div className="h-6 w-16 rounded-lg bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/50 dark:border-rose-800/50" />
+                          <div className="h-6 w-20 rounded-lg bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/50 dark:border-rose-800/50" />
+                          <div className="h-6 w-14 rounded-lg bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/50 dark:border-rose-800/50" />
+                        </div>
                       ) : (
                         <span className="text-xs text-slate-400">None listed</span>
                       )}
@@ -647,24 +725,42 @@ export default function VocabularyFullscreenModal({
 
                 {/* Example Sentences */}
                 {activeFullscreenVocab.word.exampleSentences &&
-                  activeFullscreenVocab.word.exampleSentences.length > 0 && (
-                    <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4 text-amber-500" />
-                        Contextual Examples
-                      </h3>
-                      <div className="space-y-2">
-                        {activeFullscreenVocab.word.exampleSentences.map((sent, idx) => (
-                          <div
-                            key={idx}
-                            className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 text-xs sm:text-sm text-slate-700 dark:text-slate-300 italic leading-relaxed"
-                          >
-                            &ldquo;{sent}&rdquo;
-                          </div>
-                        ))}
+                activeFullscreenVocab.word.exampleSentences.length > 0 ? (
+                  <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-amber-500" />
+                      Contextual Examples
+                    </h3>
+                    <div className="space-y-2">
+                      {activeFullscreenVocab.word.exampleSentences.map((sent, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 text-xs sm:text-sm text-slate-700 dark:text-slate-300 italic leading-relaxed"
+                        >
+                          &ldquo;{sent}&rdquo;
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : isLoadingDetails ? (
+                  /* Professional Contextual Examples Skeleton */
+                  <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-amber-400/60 dark:text-amber-500/60" />
+                      <div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-1.5">
+                        <div className="h-3 w-11/12 bg-slate-200 dark:bg-slate-700 rounded" />
+                        <div className="h-3 w-3/4 bg-slate-200/70 dark:bg-slate-700/60 rounded" />
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-1.5">
+                        <div className="h-3 w-10/12 bg-slate-200 dark:bg-slate-700 rounded" />
+                        <div className="h-3 w-1/2 bg-slate-200/70 dark:bg-slate-700/60 rounded" />
                       </div>
                     </div>
-                  )}
+                  </div>
+                ) : null}
 
                 {/* Practice Sentences */}
                 <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
