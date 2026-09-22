@@ -130,7 +130,7 @@ export interface VocabularyFilterOptions {
   status?: VocabularyStatus | "ALL" | string;
   isFavorite?: boolean;
   englishLevel?: string;
-  sortBy?: "recent" | "alphabetical" | "mastery";
+  sortBy?: "asc" | "desc" | string;
   favoritesOnly?: boolean;
   todayOnly?: boolean;
   selectedDate?: string | null;

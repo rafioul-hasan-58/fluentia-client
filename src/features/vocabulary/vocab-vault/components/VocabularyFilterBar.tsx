@@ -44,8 +44,8 @@ export interface VocabularyFilterBarProps {
   setSelectedStatus: (val: string) => void;
   selectedLevel: string;
   setSelectedLevel: (val: string) => void;
-  selectedSort: "recent" | "alphabetical" | "mastery";
-  setSelectedSort: (val: "recent" | "alphabetical" | "mastery") => void;
+  selectedSort: "asc" | "desc";
+  setSelectedSort: (val: "asc" | "desc") => void;
   favoritesOnly: boolean;
   setFavoritesOnly: (val: boolean | ((prev: boolean) => boolean)) => void;
   todayOnly: boolean;
@@ -346,9 +346,8 @@ const VocabularyFilterBar = ({
             onChange={(e) => setSelectedSort(e.target.value as any)}
             className="w-full sm:w-auto h-12 sm:h-auto pl-8 sm:pl-9 pr-7 sm:pr-8 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer appearance-none"
           >
-            <option value="recent">Recently Added</option>
-            <option value="alphabetical">Alphabetical (A - Z)</option>
-            <option value="mastery">Mastery Level</option>
+            <option value="desc">Newest First</option>
+            <option value="asc">Oldest First</option>
           </select>
           <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
             <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -382,17 +381,6 @@ const VocabularyFilterBar = ({
                 ? "All Statuses"
                 : ALL_STATUS_OPTIONS.find((s) => s.id === selectedStatus)?.label || selectedStatus}
             </span>
-
-            {/* <span
-              className={`hidden sm:inline-flex text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${selectedStatus !== "ALL"
-                ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}
-            >
-              {selectedStatus === "ALL"
-                ? stats.total
-                : getStatusCount(selectedStatus)}
-            </span> */}
 
             <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
               <ChevronDown

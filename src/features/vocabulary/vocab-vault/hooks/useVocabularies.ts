@@ -32,7 +32,7 @@ export function useVocabularies() {
   const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
-  const [selectedSort, setSelectedSort] = useState<"recent" | "alphabetical" | "mastery">("recent");
+  const [selectedSort, setSelectedSort] = useState<"asc" | "desc">("desc");
   const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false);
   const [todayOnly, setTodayOnly] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

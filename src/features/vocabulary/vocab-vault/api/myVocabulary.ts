@@ -191,9 +191,10 @@ export async function fetchMyVocabularies(
       queryParams.append("date", options.selectedDate);
     }
 
-    // 8. Sorting
+    // 8. Sorting (backend expects 'asc' or 'desc')
     if (options.sortBy) {
-      queryParams.append("sortBy", options.sortBy);
+      const sortVal = options.sortBy === "asc" ? "asc" : "desc";
+      queryParams.append("sortBy", sortVal);
     }
 
     const queryString = `?${queryParams.toString()}`;
