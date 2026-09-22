@@ -1,6 +1,7 @@
 import {
   AddVocabularyDto,
   GenerateVocabularyDto,
+  IFetchVocabulariesResult,
   MyVocabularyItem,
   VocabularyFilterOptions,
 } from "@/features/vocabulary/types/vocabulary";
@@ -131,7 +132,7 @@ export async function addVocabularyWithAi(dto: AddVocabularyDto) {
 export async function fetchMyVocabularies(
   options: VocabularyFilterOptions = {},
   signal?: AbortSignal
-): Promise<MyVocabularyItem[]> {
+): Promise<IFetchVocabulariesResult> {
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 

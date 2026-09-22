@@ -154,7 +154,7 @@ const VocabularyPage = () => {
 
   const handleExecuteStoryGeneration = async () => {
     if (selectedStoryItems.length === 0) {
-      setStoryCreationError("Please select at least 1 vocabulary word (recommended 5 to 10).");
+      setStoryCreationError("Please select at least 1 vocabulary word (recommended 10 to 15.");
       return;
     }
     setIsCreatingStory(true);

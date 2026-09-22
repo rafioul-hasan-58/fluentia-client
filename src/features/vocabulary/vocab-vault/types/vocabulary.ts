@@ -1,3 +1,5 @@
+import { IMeta } from "@/types/utils";
+
 export type PartOfSpeech =
   | "NOUN"
   | "PRONOUN"
@@ -70,19 +72,16 @@ export interface MyVocabularyItem {
   createdAt: string;
   updatedAt: string;
 }
-
-export interface PersonalVocabulariesMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
+export interface IFetchVocabulariesResult {
+  data: MyVocabularyItem[];
+  meta: IMeta
 }
 
 export interface PersonalVocabulariesResponse {
   success: boolean;
   statusCode: number;
   message: string;
-  meta?: PersonalVocabulariesMeta;
+  meta?: IMeta
   data: MyVocabularyItem[] | {
     message?: string;
     items?: MyVocabularyItem[];
