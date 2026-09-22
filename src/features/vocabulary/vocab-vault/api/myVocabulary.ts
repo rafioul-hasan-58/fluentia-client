@@ -79,7 +79,7 @@ export async function addSingleVocabulary(
     word: wordInfo,
     mySentences: dto.mySentences || [],
     notes: dto.notes || null,
-    status: "LEARNING",
+    vocabularyStatus: "LEARNING",
     masteryLevel: 1,
     isFavorite: false,
     createdAt: now,
@@ -199,8 +199,7 @@ export async function fetchMyVocabularies(
       const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
         ...item,
         id: item.id || item._id,
-        status: item.vocabularyStatus || item.status || "LEARNING",
-        vocabularyStatus: item.vocabularyStatus || item.status || "LEARNING",
+        vocabularyStatus: item.vocabularyStatus || "LEARNING",
         isFavorite: item.isFavorite ?? false,
         word: normalizeVocabularyItem(item.word || item),
       }));
@@ -266,7 +265,7 @@ export async function fetchMyVocabularies(
 //  */
 export async function updateMyVocabulary(
   id: string,
-  updates: Partial<MyVocabularyItem> & { vocabularyStatus?: string }
+  updates: Partial<MyVocabularyItem>
 ): Promise<MyVocabularyItem> {
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
@@ -277,8 +276,8 @@ export async function updateMyVocabulary(
   if (updates.masteryLevel !== undefined) {
     payload.masteryLevel = updates.masteryLevel;
   }
-  if (updates.status !== undefined || updates.vocabularyStatus !== undefined) {
-    payload.vocabularyStatus = updates.vocabularyStatus || updates.status;
+  if (updates.vocabularyStatus !== undefined) {
+    payload.vocabularyStatus = updates.vocabularyStatus;
   }
   if (updates.isFavorite !== undefined) {
     payload.isFavorite = updates.isFavorite;

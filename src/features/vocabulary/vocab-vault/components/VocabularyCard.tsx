@@ -164,9 +164,9 @@ export default function VocabularyCard({
               </span>
             )}
 
-            {item.status && item.status !== "LEARNING" && (
+            {item.vocabularyStatus && item.vocabularyStatus !== "LEARNING" && (
               <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
-                {item.status}
+                {item.vocabularyStatus}
               </span>
             )}
 

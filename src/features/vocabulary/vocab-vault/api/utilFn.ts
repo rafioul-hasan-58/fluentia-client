@@ -64,7 +64,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
     },
     mySentences: ["I am striving to become more resilient in the face of IELTS exam pressure."],
     notes: "Frequently asked in IELTS Speaking Part 2 describing personality challenges.",
-    status: "LEARNING",
+    vocabularyStatus: "LEARNING",
     masteryLevel: 4,
     isFavorite: true,
     createdAt: new Date(Date.now() - 3600 * 1000 * 24 * 2).toISOString(),
@@ -132,7 +132,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
     },
     mySentences: ["Vocabulary has a significant impact on fluent English speaking."],
     notes: "Crucial academic and IELTS band vocabulary.",
-    status: "LEARNING",
+    vocabularyStatus: "LEARNING",
     masteryLevel: 5,
     isFavorite: true,
     createdAt: new Date(Date.now() - 3600 * 1000 * 24 * 3).toISOString(),
@@ -193,7 +193,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
     },
     mySentences: ["Taking 30 minutes daily for vocabulary is a pragmatic way to reach C1."],
     notes: "Great replacement for 'practical' in IELTS Writing Task 2 essays.",
-    status: "LEARNING",
+    vocabularyStatus: "LEARNING",
     masteryLevel: 4,
     isFavorite: false,
     createdAt: new Date(Date.now() - 3600 * 1000 * 24 * 1).toISOString(),
@@ -249,7 +249,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
     },
     mySentences: ["Learning English on Fluentia was a delightful serendipity in my life."],
     notes: "Superb word for IELTS Speaking Part 3 or descriptive writing.",
-    status: "MASTERED",
+    vocabularyStatus: "MASTERED",
     masteryLevel: 3,
     isFavorite: true,
     createdAt: new Date(Date.now() - 3600 * 1000 * 24 * 4).toISOString(),
@@ -323,7 +323,7 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
     },
     mySentences: ["Listening to soft acoustic music helps soothe my mind after intensive study."],
     notes: "Essential IELTS vocabulary for emotions, health, and wellbeing topics.",
-    status: "LEARNING",
+    vocabularyStatus: "LEARNING",
     masteryLevel: 4,
     isFavorite: false,
     createdAt: new Date(Date.now() - 3600 * 1000 * 24 * 1).toISOString(),
@@ -479,7 +479,7 @@ export function filterAndSortList(
 
   if (options.status && options.status !== "ALL") {
     filtered = filtered.filter(
-      (item) => (item.vocabularyStatus || item.status) === options.status
+      (item) => item.vocabularyStatus === options.status
     );
   }
 

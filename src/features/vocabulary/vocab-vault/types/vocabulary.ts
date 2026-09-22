@@ -66,7 +66,6 @@ export interface MyVocabularyItem {
   word: VocabularyItem;
   mySentences: string[];
   notes?: string | null;
-  status?: VocabularyStatus | string;
   vocabularyStatus?: VocabularyStatus | string;
   isFavorite?: boolean;
   masteryLevel?: number;

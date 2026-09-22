@@ -147,7 +147,7 @@ export default function VocabularyFullscreenModal({
                     <button
                       key={st}
                       onClick={() => handleSetStatus(activeFullscreenVocab, st)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${(activeFullscreenVocab.status || "LEARNING") === st
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${(activeFullscreenVocab.vocabularyStatus || "LEARNING") === st
                         ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                         }`}

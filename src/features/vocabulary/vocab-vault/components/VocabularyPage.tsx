@@ -449,7 +449,7 @@ const VocabularyPage = () => {
           : item.masteryLevel * 20
         : 60
     );
-    setEditStatus(item.status || "LEARNING");
+    setEditStatus(item.vocabularyStatus || "LEARNING");
     setEditIsFavorite(item.isFavorite || false);
     setEditFeedback(null);
   };
@@ -486,7 +486,6 @@ const VocabularyPage = () => {
         mySentences: finalSentences,
         masteryLevel: editMastery,
         vocabularyStatus: editStatus,
-        status: editStatus as any,
         isFavorite: editIsFavorite,
       });
 
@@ -498,7 +497,7 @@ const VocabularyPage = () => {
               notes: editNotes.trim() || null,
               mySentences: finalSentences,
               masteryLevel: Math.round(editMastery / 20) || 1,
-              status: editStatus as any,
+              vocabularyStatus: editStatus as any,
               isFavorite: editIsFavorite,
             }
             : v
@@ -552,7 +551,7 @@ const VocabularyPage = () => {
     baseList.forEach((v) => {
       const pos = v.word.partOfSpeech;
       posCounts[pos] = (posCounts[pos] || 0) + 1;
-      if ((v.masteryLevel || 0) >= 4 || v.status === "MASTERED") masteredCount++;
+      if ((v.masteryLevel || 0) >= 4 || v.vocabularyStatus === "MASTERED") masteredCount++;
     });
 
     return { total, favorites, todayCount, posCounts, masteredCount };

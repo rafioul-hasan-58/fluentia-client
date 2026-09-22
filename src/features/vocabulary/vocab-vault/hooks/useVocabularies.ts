@@ -161,13 +161,13 @@ export function useVocabularies() {
   // Mutation: Toggle status (LEARNING / MASTERED / REVIEWING)
   const handleSetStatus = async (item: MyVocabularyItem, status: VocabularyStatus) => {
     const updater = (prev: MyVocabularyItem[]) =>
-      prev.map((v) => (v.id === item.id ? { ...v, status } : v));
+      prev.map((v) => (v.id === item.id ? { ...v, vocabularyStatus: status } : v));
 
     setVocabularies(updater);
     setAllVaultWords(updater);
 
     try {
-      await updateMyVocabulary(item.id, { status });
+      await updateMyVocabulary(item.id, { vocabularyStatus: status });
     } catch (err) {
       console.warn("Could not sync status update", err);
     }
