@@ -155,7 +155,7 @@ const VocabularyFilterBar = ({
       0
     );
   };
-
+console.log('status',stats)
   return (
     <div className="space-y-4">
       {/* Line 1: Quick Filters, Dropdowns & Actions - 2 in a line (50% / 50%) on mobile, flex-wrap on desktop */}

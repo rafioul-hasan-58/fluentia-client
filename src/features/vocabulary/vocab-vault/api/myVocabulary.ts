@@ -191,10 +191,28 @@ export async function fetchMyVocabularies(
       queryParams.append("date", options.selectedDate);
     }
 
-    // 8. Sorting (backend expects 'asc' or 'desc')
-    if (options.sortBy) {
-      const sortVal = options.sortBy === "asc" ? "asc" : "desc";
-      queryParams.append("sortBy", sortVal);
+    // 8. Sorting
+    let sortField: string | undefined;
+    let sortDirection: "asc" | "desc" | undefined = options.sortOrder;
+
+    if (options.sortBy === "alphabetical") {
+      sortField = "word.word";
+      sortDirection = sortDirection || "asc";
+    } else if (options.sortBy === "mastery") {
+      sortField = "masteryLevel";
+      sortDirection = sortDirection || "desc";
+    } else if (options.sortBy === "recent") {
+      sortField = "createdAt";
+      sortDirection = sortDirection || "desc";
+    } else if (options.sortBy) {
+      sortField = options.sortBy;
+    }
+
+    if (sortField) {
+      queryParams.append("sortBy", sortField);
+    }
+    if (sortDirection) {
+      queryParams.append("sortOrder", sortDirection);
     }
 
     const queryString = `?${queryParams.toString()}`;
