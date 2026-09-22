@@ -186,17 +186,17 @@ export default function VocabularyFullscreenModal({
                 <button
                   onClick={() => handleToggleFavorite(activeFullscreenVocab)}
                   title={
-                    activeFullscreenVocab.isFavorite || activeFullscreenVocab.isFavourate
+                    activeFullscreenVocab.isFavorite
                       ? "Remove from favorites"
                       : "Add to favorites"
                   }
-                  className={`p-2 rounded-xl transition-colors cursor-pointer border ${activeFullscreenVocab.isFavorite || activeFullscreenVocab.isFavourate
+                  className={`p-2 rounded-xl transition-colors cursor-pointer border ${activeFullscreenVocab.isFavorite
                     ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-slate-200 dark:border-slate-700"
                     }`}
                 >
                   <Star
-                    className={`w-4 h-4 ${activeFullscreenVocab.isFavorite || activeFullscreenVocab.isFavourate
+                    className={`w-4 h-4 ${activeFullscreenVocab.isFavorite
                       ? "fill-amber-400 text-amber-400"
                       : ""
                       }`}

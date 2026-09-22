@@ -450,7 +450,7 @@ const VocabularyPage = () => {
         : 60
     );
     setEditStatus(item.status || "LEARNING");
-    setEditIsFavorite(item.isFavorite || item.isFavourate || false);
+    setEditIsFavorite(item.isFavorite || false);
     setEditFeedback(null);
   };
 
@@ -487,7 +487,6 @@ const VocabularyPage = () => {
         masteryLevel: editMastery,
         vocabularyStatus: editStatus,
         status: editStatus as any,
-        isFavourate: editIsFavorite,
         isFavorite: editIsFavorite,
       });
 
@@ -500,7 +499,6 @@ const VocabularyPage = () => {
               mySentences: finalSentences,
               masteryLevel: Math.round(editMastery / 20) || 1,
               status: editStatus as any,
-              isFavourate: editIsFavorite,
               isFavorite: editIsFavorite,
             }
             : v
@@ -536,7 +534,7 @@ const VocabularyPage = () => {
   const stats = useMemo(() => {
     const baseList = allVaultWords.length > 0 ? allVaultWords : vocabularies;
     const total = baseList.length;
-    const favorites = baseList.filter((v) => v.isFavorite || v.isFavourate).length;
+    const favorites = baseList.filter((v) => v.isFavorite).length;
     const posCounts: Partial<Record<PartOfSpeech, number>> = {};
     let masteredCount = 0;
     const today = new Date();

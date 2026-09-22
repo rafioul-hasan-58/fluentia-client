@@ -35,7 +35,7 @@ export default function VocabularyCard({
 }: VocabularyCardProps) {
   const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
   const isAudioPlaying = playingWord === item.word.word;
-  const isFav = item.isFavorite || item.isFavourate;
+  const isFav = item.isFavorite;
   const displayLevel = item.word.englishLevel || item.word.cefrLevel;
 
   return (

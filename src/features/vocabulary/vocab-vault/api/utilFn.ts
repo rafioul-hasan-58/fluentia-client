@@ -493,10 +493,10 @@ export function filterAndSortList(
     );
   }
 
-  if (options.favoritesOnly || options.isFavourate === true) {
-    filtered = filtered.filter((item) => item.isFavorite || item.isFavourate);
-  } else if (options.isFavourate === false) {
-    filtered = filtered.filter((item) => !item.isFavorite && !item.isFavourate);
+  if (options.favoritesOnly || options.isFavorite === true) {
+    filtered = filtered.filter((item) => item.isFavorite);
+  } else if (options.isFavorite === false) {
+    filtered = filtered.filter((item) => !item.isFavorite);
   }
 
   if (options.selectedDate) {

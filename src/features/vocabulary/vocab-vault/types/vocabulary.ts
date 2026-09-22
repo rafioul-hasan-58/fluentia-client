@@ -68,7 +68,6 @@ export interface MyVocabularyItem {
   notes?: string | null;
   status?: VocabularyStatus | string;
   vocabularyStatus?: VocabularyStatus | string;
-  isFavourate?: boolean;
   isFavorite?: boolean;
   masteryLevel?: number;
   createdAt: string;
@@ -120,7 +119,7 @@ export interface VocabularyFilterOptions {
   search?: string;
   partOfSpeech?: PartOfSpeech | "ALL";
   status?: VocabularyStatus | "ALL" | string;
-  isFavourate?: boolean;
+  isFavorite?: boolean;
   englishLevel?: string;
   sortBy?: "recent" | "alphabetical" | "mastery";
   favoritesOnly?: boolean;

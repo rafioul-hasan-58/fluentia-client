@@ -57,7 +57,7 @@ export default function VocabularyTableView({
                       {items.map((item) => {
                         const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
                         const isAudioPlaying = playingWord === item.word.word;
-                        const isFav = item.isFavorite || item.isFavourate;
+                        const isFav = item.isFavorite;
                         const displayLevel = item.word.englishLevel || item.word.cefrLevel;
                         const isSelectedForStory = selectedStoryItems.some((s) => s.id === item.id);
 

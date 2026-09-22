@@ -144,10 +144,10 @@ export async function fetchMyVocabularies(
       queryParams.append("status", options.status);
     }
 
-    if (options.isFavourate !== undefined) {
-      queryParams.append("isFavourate", String(options.isFavourate));
+    if (options.isFavorite !== undefined) {
+      queryParams.append("isFavorite", String(options.isFavorite));
     } else if (options.favoritesOnly) {
-      queryParams.append("isFavourate", "true");
+      queryParams.append("isFavorite", "true");
     }
 
     if (options.partOfSpeech && options.partOfSpeech !== "ALL") {
@@ -201,8 +201,7 @@ export async function fetchMyVocabularies(
         id: item.id || item._id,
         status: item.vocabularyStatus || item.status || "LEARNING",
         vocabularyStatus: item.vocabularyStatus || item.status || "LEARNING",
-        isFavorite: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
-        isFavourate: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
+        isFavorite: item.isFavorite ?? false,
         word: normalizeVocabularyItem(item.word || item),
       }));
 
@@ -213,7 +212,7 @@ export async function fetchMyVocabularies(
         !options.partOfSpeech &&
         !options.status &&
         !options.favoritesOnly &&
-        !options.isFavourate &&
+        !options.isFavorite &&
         !options.selectedDate
       ) {
         saveLocalVault(formatted);
@@ -281,8 +280,8 @@ export async function updateMyVocabulary(
   if (updates.status !== undefined || updates.vocabularyStatus !== undefined) {
     payload.vocabularyStatus = updates.vocabularyStatus || updates.status;
   }
-  if (updates.isFavourate !== undefined || updates.isFavorite !== undefined) {
-    payload.isFavourate = updates.isFavourate ?? updates.isFavorite;
+  if (updates.isFavorite !== undefined) {
+    payload.isFavorite = updates.isFavorite;
   }
 
   try {

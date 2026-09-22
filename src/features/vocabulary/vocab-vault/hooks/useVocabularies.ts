@@ -136,13 +136,13 @@ export function useVocabularies() {
 
   // Mutation: Toggle favorite
   const handleToggleFavorite = async (item: MyVocabularyItem) => {
-    const isCurrentlyFav = item.isFavorite || item.isFavourate || false;
+    const isCurrentlyFav = item.isFavorite || false;
     const updatedFav = !isCurrentlyFav;
 
     const updater = (prev: MyVocabularyItem[]) =>
       prev.map((v) =>
         v.id === item.id
-          ? { ...v, isFavorite: updatedFav, isFavourate: updatedFav }
+          ? { ...v, isFavorite: updatedFav }
           : v
       );
 
@@ -152,7 +152,6 @@ export function useVocabularies() {
     try {
       await updateMyVocabulary(item.id, {
         isFavorite: updatedFav,
-        isFavourate: updatedFav,
       });
     } catch (err) {
       console.warn("Could not sync favorite toggle", err);
