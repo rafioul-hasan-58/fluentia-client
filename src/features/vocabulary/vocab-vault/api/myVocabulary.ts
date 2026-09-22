@@ -129,7 +129,8 @@ export async function addVocabularyWithAi(dto: AddVocabularyDto) {
 }
 // fetch user saved vocab items.
 export async function fetchMyVocabularies(
-  options: VocabularyFilterOptions = {}
+  options: VocabularyFilterOptions = {},
+  signal?: AbortSignal
 ): Promise<MyVocabularyItem[]> {
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
@@ -176,6 +177,7 @@ export async function fetchMyVocabularies(
     // 1. Primary endpoint: GET /my-vocabularies/find-all
     let res = await fetch(`${baseUrl}/my-vocabularies/find-all${queryString}`, {
       method: "GET",
+      signal,
       headers: {
         Accept: "*/*",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -222,7 +224,10 @@ export async function fetchMyVocabularies(
 
       return filterAndSortList(formatted, options);
     }
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.name === "AbortError" || signal?.aborted) {
+      throw err;
+    }
     // Network offline or error: graceful fallback to local vault
     console.warn("fetchMyVocabularies API request failed, fallback to local vault:", err);
   }

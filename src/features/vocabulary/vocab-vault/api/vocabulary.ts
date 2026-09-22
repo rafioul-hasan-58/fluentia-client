@@ -3,8 +3,6 @@ import {
   VocabularyItem,
   PartOfSpeech,
   GenerateVocabularyResponse,
-  VocabularyFilterOptions,
-  VerbForms,
   getVerbForms,
   getCollocationText,
   getCollocationBangla,
@@ -15,8 +13,7 @@ import {
 } from "@/features/vocabulary/types/vocabulary";
 import { getApiBaseUrl } from "@/lib/api/config";
 import { getAuthToken, getLocalVault, saveLocalVault } from "./utilFn";
-
-
+export { fetchMyVocabularies } from "./myVocabulary";
 
 //  Normalizes backend response data structure to ensure safe rendering
 export function normalizeVocabularyItem(data: any): VocabularyItem {

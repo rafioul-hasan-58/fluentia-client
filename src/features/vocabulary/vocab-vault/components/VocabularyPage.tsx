@@ -8,14 +8,13 @@ import {
   VocabularyStatus,
 } from "@/features/vocabulary/types/vocabulary";
 import {
-  fetchMyVocabularies,
   fetchMyVocabularyDetails,
   getDateWordCounts,
   addSingleVocabulary,
   updateMyVocabulary,
-  deleteMyVocabulary,
   generateVocabStoryApi,
 } from "@/features/vocabulary/api";
+import { useVocabularies } from "../hooks";
 import {
   BookOpen,
   Plus,
@@ -35,18 +34,54 @@ import StoryContextModal from "./modals/StoryContextModal";
 
 
 
-export default function VocabularyPage() {
-  const [vocabularies, setVocabularies] = useState<MyVocabularyItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">("ALL");
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
-  const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
-  const [selectedSort, setSelectedSort] = useState<"recent" | "alphabetical" | "mastery">("recent");
-  const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false);
-  const [todayOnly, setTodayOnly] = useState<boolean>(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [allVaultWords, setAllVaultWords] = useState<MyVocabularyItem[]>([]);
+const VocabularyPage = () => {
+  const {
+    vocabularies,
+    allVaultWords,
+    isLoading,
+    filters,
+    setters,
+    loadVocabularies,
+    handleToggleFavorite,
+    handleSetStatus,
+    handleSetMastery,
+    handleAddSentence,
+    handleSaveNotes,
+    handleConfirmDelete,
+    itemToDelete,
+    setItemToDelete,
+    isDeleting,
+    editingNotes,
+    setEditingNotes,
+    savingNoteId,
+    newSentenceInputs,
+    setNewSentenceInputs,
+  } = useVocabularies();
+
+  const {
+    searchQuery,
+    selectedPos,
+    selectedStatus,
+    selectedLevel,
+    selectedSort,
+    favoritesOnly,
+    todayOnly,
+    selectedDate,
+  } = filters;
+
+  const {
+    setSearchQuery,
+    setSelectedPos,
+    setSelectedStatus,
+    setSelectedLevel,
+    setSelectedSort,
+    setFavoritesOnly,
+    setTodayOnly,
+    setSelectedDate,
+    setVocabularies,
+    setAllVaultWords,
+  } = setters;
+
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [playingWord, setPlayingWord] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState<boolean>(false);
@@ -82,13 +117,6 @@ export default function VocabularyPage() {
     text: string;
   } | null>(null);
 
-
-  // Editing notes tracker
-  const [editingNotes, setEditingNotes] = useState<Record<string, string>>({});
-  const [savingNoteId, setSavingNoteId] = useState<string | null>(null);
-
-  // New sentence builder tracker
-  const [newSentenceInputs, setNewSentenceInputs] = useState<Record<string, string>>({});
 
   // Update/Edit Modal State
   const [editingItem, setEditingItem] = useState<MyVocabularyItem | null>(null);
@@ -164,26 +192,9 @@ export default function VocabularyPage() {
     text: string;
   } | null>(null);
 
-  // Sweet Delete Modal State
-  const [itemToDelete, setItemToDelete] = useState<MyVocabularyItem | null>(null);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
-
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  useEffect(() => {
-    loadVocabularies();
-  }, [
-    searchQuery,
-    selectedPos,
-    selectedStatus,
-    selectedLevel,
-    selectedSort,
-    favoritesOnly,
-    todayOnly,
-    selectedDate,
-  ]);
 
   // Handle Fullscreen Scroll Lock & Keyboard Navigation
   useEffect(() => {
@@ -258,31 +269,7 @@ export default function VocabularyPage() {
     }
   }, [fullscreenVocabId]);
 
-  const loadVocabularies = async () => {
-    setIsLoading(true);
-    try {
-      const [items, allItems] = await Promise.all([
-        fetchMyVocabularies({
-          search: searchQuery,
-          partOfSpeech: selectedPos,
-          status: selectedStatus !== "ALL" ? (selectedStatus as any) : undefined,
-          englishLevel: selectedLevel !== "ALL" ? selectedLevel : undefined,
-          sortBy: selectedSort,
-          favoritesOnly,
-          todayOnly,
-          selectedDate,
-          limit: 100,
-        }),
-        fetchMyVocabularies({ limit: 100 }),
-      ]);
-      setVocabularies(items);
-      setAllVaultWords(allItems);
-    } catch (err) {
-      console.error("Failed to load vocabularies", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   // Voice caching state for speech synthesis
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -389,103 +376,7 @@ export default function VocabularyPage() {
     window.speechSynthesis.speak(utterance);
   };
 
-  // Toggle favorite (supporting both isFavourate and isFavorite)
-  const handleToggleFavorite = async (item: MyVocabularyItem) => {
-    const isCurrentlyFav = item.isFavorite || item.isFavourate || false;
-    const updatedFav = !isCurrentlyFav;
-    setVocabularies((prev) =>
-      prev.map((v) =>
-        v.id === item.id
-          ? { ...v, isFavorite: updatedFav, isFavourate: updatedFav }
-          : v
-      )
-    );
-    try {
-      await updateMyVocabulary(item.id, {
-        isFavorite: updatedFav,
-        isFavourate: updatedFav,
-      });
-    } catch (err) {
-      console.warn("Could not sync favorite toggle", err);
-    }
-  };
 
-  // Toggle status (LEARNING / MASTERED / REVIEWING)
-  const handleSetStatus = async (item: MyVocabularyItem, status: VocabularyStatus) => {
-    setVocabularies((prev) =>
-      prev.map((v) => (v.id === item.id ? { ...v, status } : v))
-    );
-    try {
-      await updateMyVocabulary(item.id, { status });
-    } catch (err) {
-      console.warn("Could not sync status update", err);
-    }
-  };
-
-  // Rate mastery (1-5)
-  const handleSetMastery = async (item: MyVocabularyItem, level: number) => {
-    setVocabularies((prev) =>
-      prev.map((v) => (v.id === item.id ? { ...v, masteryLevel: level } : v))
-    );
-    try {
-      await updateMyVocabulary(item.id, { masteryLevel: level });
-    } catch (err) {
-      console.warn("Could not sync mastery update", err);
-    }
-  };
-
-  // Sweet Delete word confirmation
-  const handleConfirmDelete = async () => {
-    if (!itemToDelete) return;
-    const targetId = itemToDelete.id;
-    setIsDeleting(true);
-
-    if (fullscreenVocabId === targetId) {
-      setFullscreenVocabId(null);
-    }
-
-    setVocabularies((prev) => prev.filter((v) => v.id !== targetId));
-    try {
-      await deleteMyVocabulary(targetId);
-    } catch (err) {
-      console.warn("Could not sync deletion", err);
-    } finally {
-      setIsDeleting(false);
-      setItemToDelete(null);
-    }
-  };
-
-  // Add Practice Sentence
-  const handleAddSentence = async (item: MyVocabularyItem) => {
-    const sentence = (newSentenceInputs[item.id] || "").trim();
-    if (!sentence) return;
-
-    const updatedSentences = [...(item.mySentences || []), sentence];
-    setVocabularies((prev) =>
-      prev.map((v) => (v.id === item.id ? { ...v, mySentences: updatedSentences } : v))
-    );
-    setNewSentenceInputs((prev) => ({ ...prev, [item.id]: "" }));
-
-    try {
-      await updateMyVocabulary(item.id, { mySentences: updatedSentences });
-    } catch (err) {
-      console.warn("Could not sync sentence addition", err);
-    }
-  };
-
-  // Save Notes
-  const handleSaveNotes = async (item: MyVocabularyItem) => {
-    const noteText = editingNotes[item.id] ?? item.notes ?? "";
-    setSavingNoteId(item.id);
-    try {
-      await updateMyVocabulary(item.id, { notes: noteText });
-      setVocabularies((prev) =>
-        prev.map((v) => (v.id === item.id ? { ...v, notes: noteText } : v))
-      );
-    } finally {
-      setSavingNoteId(null);
-    }
-  };
 
 
   // Fullscreen Navigation (Prev / Next)
@@ -966,7 +857,13 @@ export default function VocabularyPage() {
         itemToDelete={itemToDelete}
         setItemToDelete={setItemToDelete}
         isDeleting={isDeleting}
-        handleConfirmDelete={handleConfirmDelete}
+        handleConfirmDelete={() => {
+          handleConfirmDelete((id) => {
+            if (fullscreenVocabId === id) {
+              setFullscreenVocabId(null);
+            }
+          });
+        }}
       />
 
       {/* 8 & 9. Floating Create Story Button & Story Context Modal */}
@@ -983,7 +880,8 @@ export default function VocabularyPage() {
         handleToggleStoryWord={handleToggleStoryWord}
         handleExecuteStoryGeneration={handleExecuteStoryGeneration}
       />
-      </div >
+    </div >
   );
 }
 
+export default VocabularyPage;
