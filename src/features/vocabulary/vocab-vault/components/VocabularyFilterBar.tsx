@@ -67,7 +67,7 @@ export interface VocabularyFilterBarProps {
     posCounts: Partial<Record<PartOfSpeech, number>> | Record<string, number>;
     statusCounts?: Record<string, number>;
     levelCounts?: Record<string, number>;
-    favoriteCount:number;
+    favoriteCount: number;
   };
   totalFoundCount: number;
 }
@@ -156,7 +156,6 @@ const VocabularyFilterBar = ({
       0
     );
   };
-console.log('status',stats)
   return (
     <div className="space-y-4">
       {/* Line 1: Quick Filters, Dropdowns & Actions - 2 in a line (50% / 50%) on mobile, flex-wrap on desktop */}
@@ -174,7 +173,7 @@ console.log('status',stats)
               }`}
           />
           <span className="truncate sm:overflow-visible">Favorites</span>
-           {stats.favoriteCount > 0 && (
+          {stats.favoriteCount > 0 && (
             <span
               className={`hidden sm:inline-flex ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 ${todayOnly
                 ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
