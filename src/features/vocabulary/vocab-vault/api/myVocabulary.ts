@@ -8,7 +8,13 @@ import {
 } from "@/features/vocabulary/types/vocabulary";
 import { generateVocabularyApi, normalizeVocabularyItem } from "./vocabulary";
 import { getApiBaseUrl } from "@/lib/api";
-import { filterAndSortList, getAuthToken, getLocalVault, saveLocalVault } from "./utilFn";
+import {
+  getAuthToken,
+  getCachedPage,
+  getLocalVault,
+  saveCachedPage,
+  saveLocalVault,
+} from "./utilFn";
 
 /**
  * Add Single Vocabulary Word using AI Generation
@@ -129,7 +135,7 @@ export async function addVocabularyWithAi(dto: AddVocabularyDto) {
     },
   };
 }
-// fetch user saved vocab items.
+// Fetch user saved vocab items with server-side pagination & filtering
 export async function fetchMyVocabularies(
   options: VocabularyFilterOptions = {},
   signal?: AbortSignal
@@ -137,47 +143,63 @@ export async function fetchMyVocabularies(
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 
+  const page = options.page || 1;
+  const limit = options.limit || 12;
+
   try {
     const queryParams = new URLSearchParams();
 
-    if (options.status && options.status !== "ALL") {
-      queryParams.append("status", options.status);
-    }
+    // 1. Pagination parameters (defaults to 12 matching UI)
+    queryParams.append("page", String(page));
+    queryParams.append("limit", String(limit));
 
-    if (options.isFavorite !== undefined) {
-      queryParams.append("isFavorite", String(options.isFavorite));
-    } else if (options.favoritesOnly) {
-      queryParams.append("isFavorite", "true");
-    }
-
-    if (options.partOfSpeech && options.partOfSpeech !== "ALL") {
-      queryParams.append("partOfSpeech", options.partOfSpeech);
-    }
-
-    if (options.englishLevel && options.englishLevel !== "ALL") {
-      queryParams.append("englishLevel", options.englishLevel);
-    }
-
+    // 2. Search parameter
     if (options.search && options.search.trim()) {
       queryParams.append("search", options.search.trim());
     }
 
-    if (options.page) {
-      queryParams.append("page", String(options.page));
+    // 3. Part of speech filter
+    if (options.partOfSpeech && options.partOfSpeech !== "ALL") {
+      queryParams.append("partOfSpeech", options.partOfSpeech);
     }
 
-    // Default backend limit is 10 if omitted. Pass requested limit or default to 100 for client views
-    const fetchLimit = options.limit ?? 100;
-    queryParams.append("limit", String(fetchLimit));
+    // 4. Status filter
+    if (options.status && options.status !== "ALL") {
+      queryParams.append("status", options.status);
+    }
 
+    // 5. English / CEFR level
+    if (options.englishLevel && options.englishLevel !== "ALL") {
+      queryParams.append("englishLevel", options.englishLevel);
+    }
+
+    // 6. Favorites (send both isFavorite and isFavourate for backend schema compatibility)
+    const favVal =
+      options.isFavorite !== undefined
+        ? String(options.isFavorite)
+        : options.favoritesOnly
+          ? "true"
+          : undefined;
+
+    if (favVal !== undefined) {
+      queryParams.append("isFavorite", favVal);
+      queryParams.append("isFavourate", favVal);
+    }
+
+    // 7. Date filter
     if (options.selectedDate) {
       queryParams.append("date", options.selectedDate);
     }
 
-    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+    // 8. Sorting
+    if (options.sortBy) {
+      queryParams.append("sortBy", options.sortBy);
+    }
 
-    // 1. Primary endpoint: GET /my-vocabularies/find-all
-    let res = await fetch(`${baseUrl}/my-vocabularies/find-all${queryString}`, {
+    const queryString = `?${queryParams.toString()}`;
+
+    // Primary endpoint: GET /my-vocabularies/find-all
+    const res = await fetch(`${baseUrl}/my-vocabularies/find-all${queryString}`, {
       method: "GET",
       signal,
       headers: {
@@ -200,38 +222,36 @@ export async function fetchMyVocabularies(
         ...item,
         id: item.id || item._id,
         vocabularyStatus: item.vocabularyStatus || "LEARNING",
-        isFavorite: item.isFavorite ?? false,
+        isFavorite: item.isFavorite ?? item.isFavourate ?? false,
         word: normalizeVocabularyItem(item.word || item),
       }));
 
-      // Cache to vault when fetching general list
-      if (
-        token &&
-        !options.search &&
-        !options.partOfSpeech &&
-        !options.status &&
-        !options.favoritesOnly &&
-        !options.isFavorite &&
-        !options.selectedDate
-      ) {
-        saveLocalVault(formatted);
+      let meta: IMeta | null = null;
+      if (data.meta && typeof data.meta.total === "number") {
+        meta = {
+          page: Number(data.meta.page) || page,
+          limit: Number(data.meta.limit) || limit,
+          total: Number(data.meta.total) || 0,
+          totalPages:
+            Number(data.meta.totalPages) ||
+            Math.max(1, Math.ceil((Number(data.meta.total) || 0) / limit)),
+        };
+      } else if (data.data && typeof data.data.total === "number") {
+        meta = {
+          page: Number(data.data.page) || page,
+          limit: Number(data.data.limit) || limit,
+          total: Number(data.data.total) || 0,
+          totalPages:
+            Number(data.data.totalPages) ||
+            Math.max(1, Math.ceil((Number(data.data.total) || 0) / limit)),
+        };
       }
 
-      const filtered = filterAndSortList(formatted, options);
-
-      const meta: IMeta = data.meta || {
-        page: options.page || 1,
-        limit: options.limit || 100,
-        total: filtered.length,
-        totalPages: Math.ceil(filtered.length / (options.limit || 100)) || 1,
-      };
-
-      if (data.meta) {
-        (filtered as any).meta = data.meta;
-      }
+      // Cache the CURRENT page's items
+      saveCachedPage(page, limit, options, formatted);
 
       return {
-        data: filtered,
+        data: formatted,
         meta,
       };
     }
@@ -239,23 +259,22 @@ export async function fetchMyVocabularies(
     if (err?.name === "AbortError" || signal?.aborted) {
       throw err;
     }
-    // Network offline or error: graceful fallback to local vault
-    console.warn("fetchMyVocabularies API request failed, fallback to local vault:", err);
+    // Network offline or error: graceful fallback to cached page
+    console.warn("fetchMyVocabularies API request failed, fallback to cached page:", err);
   }
 
-  const localItems = getLocalVault();
-  const filtered = filterAndSortList(localItems, options);
-  const meta: IMeta = {
-    page: options.page || 1,
-    limit: options.limit || 100,
-    total: filtered.length,
-    totalPages: Math.ceil(filtered.length / (options.limit || 100)) || 1,
-  };
-  (filtered as any).meta = meta;
+  // Offline fallback: check cached page for current filters
+  const cachedPage = getCachedPage(page, limit, options);
+  if (cachedPage) {
+    return {
+      data: cachedPage,
+      meta: null,
+    };
+  }
 
   return {
-    data: filtered,
-    meta,
+    data: [],
+    meta: null,
   };
 }
 

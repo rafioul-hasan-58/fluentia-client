@@ -74,7 +74,17 @@ export interface MyVocabularyItem {
 }
 export interface IFetchVocabulariesResult {
   data: MyVocabularyItem[];
-  meta: IMeta
+  meta: IMeta | null;
+}
+
+export interface VocabularyStats {
+  totalWords: number;
+  favoriteCount: number;
+  masteredCount: number;
+  todaysVocab: number;
+  statuses: Record<string, number>;
+  levels: Record<string, number>;
+  partOfSpeeches: Record<string, number>;
 }
 
 export interface PersonalVocabulariesResponse {

@@ -8,12 +8,11 @@ import {
 } from "@/features/vocabulary/types/vocabulary";
 import {
   fetchMyVocabularyDetails,
-  getDateWordCounts,
   addSingleVocabulary,
   updateMyVocabulary,
   generateVocabStoryApi,
 } from "@/features/vocabulary/api";
-import { useVocabularies } from "../hooks";
+import { useVocabularies, useLegacyCalendarCounts } from "../hooks";
 import {
   BookOpen,
   Plus,
@@ -35,8 +34,13 @@ import StoryContextModal from "./modals/StoryContextModal";
 const VocabularyPage = () => {
   const {
     vocabularies,
-    allVaultWords,
+    meta,
+    stats,
     isLoading,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
     filters,
     setters,
     loadVocabularies,
@@ -55,6 +59,8 @@ const VocabularyPage = () => {
     newSentenceInputs,
     setNewSentenceInputs,
   } = useVocabularies();
+
+  const { calendarWordCounts, reloadCalendarCounts } = useLegacyCalendarCounts();
 
   const {
     searchQuery,
@@ -82,24 +88,6 @@ const VocabularyPage = () => {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [playingWord, setPlayingWord] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState<boolean>(false);
-
-  // Pagination State (Default 12 per screen, matching Question Bank style)
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(12);
-
-  // Reset to page 1 whenever filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    searchQuery,
-    selectedPos,
-    selectedStatus,
-    selectedLevel,
-    selectedSort,
-    favoritesOnly,
-    todayOnly,
-    selectedDate,
-  ]);
 
   // Fullscreen Single Vocab View State
   const [fullscreenVocabId, setFullscreenVocabId] = useState<string | null>(null);
@@ -416,8 +404,9 @@ const VocabularyPage = () => {
         text: response.message || `Successfully generated '${response.item.word.word}' with AI!`,
       });
 
-      // Reload list
+      // Reload list & calendar counts
       await loadVocabularies();
+      reloadCalendarCounts();
 
       // Reset modal inputs after brief delay
       setTimeout(() => {
@@ -523,39 +512,23 @@ const VocabularyPage = () => {
     }
   };
 
-  // Map of YYYY-MM-DD -> word count for calendar indicators
-  const calendarWordCounts = useMemo(() => {
-    const list = allVaultWords.length > 0 ? allVaultWords : vocabularies;
-    return getDateWordCounts(list);
-  }, [allVaultWords, vocabularies]);
+  // Metrics computation mapped from server-side stats endpoint
+  const headerStats = useMemo(() => {
+    return {
+      total: stats?.totalWords ?? meta?.total ?? vocabularies.length,
+      favorites: stats?.favoriteCount ?? 0,
+      todayCount: stats?.todaysVocab ?? 0,
+      masteredCount: stats?.masteredCount ?? 0,
+    };
+  }, [stats, meta, vocabularies.length]);
 
-  // Metrics computation (always reflective of total vault or active list)
-  const stats = useMemo(() => {
-    const baseList = allVaultWords.length > 0 ? allVaultWords : vocabularies;
-    const total = baseList.length;
-    const favorites = baseList.filter((v) => v.isFavorite).length;
-    const posCounts: Partial<Record<PartOfSpeech, number>> = {};
-    let masteredCount = 0;
-    const today = new Date();
-    const todayCount = baseList.filter((v) => {
-      const d = v.createdAt || v.updatedAt;
-      if (!d) return false;
-      const date = new Date(d);
-      return (
-        date.getFullYear() === today.getFullYear() &&
-        date.getMonth() === today.getMonth() &&
-        date.getDate() === today.getDate()
-      );
-    }).length;
-
-    baseList.forEach((v) => {
-      const pos = v.word.partOfSpeech;
-      posCounts[pos] = (posCounts[pos] || 0) + 1;
-      if ((v.masteryLevel || 0) >= 4 || v.vocabularyStatus === "MASTERED") masteredCount++;
-    });
-
-    return { total, favorites, todayCount, posCounts, masteredCount };
-  }, [allVaultWords, vocabularies]);
+  const filterBarStats = useMemo(() => {
+    return {
+      total: stats?.totalWords ?? meta?.total ?? vocabularies.length,
+      todayCount: stats?.todaysVocab ?? 0,
+      posCounts: (stats?.partOfSpeeches as any) ?? {},
+    };
+  }, [stats, meta, vocabularies.length]);
 
   // Active fullscreen vocabulary object & index
   const activeFullscreenVocab = useMemo(() => {
@@ -568,31 +541,26 @@ const VocabularyPage = () => {
     return vocabularies.findIndex((v) => v.id === fullscreenVocabId);
   }, [fullscreenVocabId, vocabularies]);
 
-  // Pagination calculations (Default 12 per screen)
-  const totalCount = vocabularies.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  // Pagination calculations straight from server-side meta
+  const totalCount = meta?.total ?? vocabularies.length;
+  const totalPages = meta?.totalPages ?? Math.max(1, Math.ceil(totalCount / pageSize));
 
-  // Keep currentPage valid when totalCount or pageSize changes
+  // Keep currentPage valid when totalPages changes
   useEffect(() => {
-    if (currentPage > totalPages) {
+    if (totalPages > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [totalPages, currentPage]);
+  }, [totalPages, currentPage, setCurrentPage]);
 
   const startRecord = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const endRecord = Math.min(currentPage * pageSize, totalCount);
-
-  // Slice vocabularies for current screen display
-  const paginatedVocabularies = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return vocabularies.slice(start, start + pageSize);
-  }, [vocabularies, currentPage, pageSize]);
+  const endRecord =
+    totalCount === 0 ? 0 : Math.min(startRecord + vocabularies.length - 1, totalCount);
 
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Header Banner & Action */}
       <VocabularyHeader
-        stats={stats}
+        stats={headerStats}
         todayOnly={todayOnly}
         setTodayOnly={setTodayOnly}
         setSelectedDate={setSelectedDate}
@@ -626,8 +594,8 @@ const VocabularyPage = () => {
         setIsStorySelectMode={setIsStorySelectMode}
         selectedStoryItems={selectedStoryItems}
         setSelectedStoryItems={setSelectedStoryItems}
-        stats={stats}
-        totalFoundCount={vocabularies.length}
+        stats={filterBarStats}
+        totalFoundCount={totalCount}
       />
 
       {/* Story Selection Mode Banner */}
@@ -738,7 +706,7 @@ const VocabularyPage = () => {
           <>
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-                {paginatedVocabularies.map((item) => (
+                {vocabularies.map((item) => (
                   <VocabularyCard
                     key={item.id}
                     item={item}
@@ -757,7 +725,7 @@ const VocabularyPage = () => {
               </div>
             ) : (
               <VocabularyTableView
-                items={paginatedVocabularies}
+                items={vocabularies}
                 isStorySelectMode={isStorySelectMode}
                 selectedStoryItems={selectedStoryItems}
                 handleToggleStoryWord={handleToggleStoryWord}

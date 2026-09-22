@@ -542,3 +542,77 @@ export function filterAndSortList(
 
   return filtered;
 }
+
+const PAGE_CACHE_PREFIX = "vault:page:";
+const PAGE_CACHE_INDEX_KEY = "vault:page:cache_keys";
+const MAX_CACHED_PAGES = 5;
+
+function computeFilterKey(
+  options: VocabularyFilterOptions,
+  page: number,
+  limit: number
+): string {
+  const parts = [
+    `p:${page}`,
+    `l:${limit}`,
+    `s:${options.search?.trim() || ""}`,
+    `pos:${options.partOfSpeech || "ALL"}`,
+    `st:${options.status || "ALL"}`,
+    `lvl:${options.englishLevel || "ALL"}`,
+    `sort:${options.sortBy || "recent"}`,
+    `fav:${options.favoritesOnly ?? options.isFavorite ?? false}`,
+    `d:${options.selectedDate || ""}`,
+    `today:${options.todayOnly || false}`,
+  ];
+  return parts.join("&");
+}
+
+export function saveCachedPage(
+  page: number,
+  limit: number,
+  options: VocabularyFilterOptions,
+  items: MyVocabularyItem[]
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    const filterKey = computeFilterKey(options, page, limit);
+    const storageKey = `${PAGE_CACHE_PREFIX}${filterKey}`;
+
+    let keys: string[] = [];
+    try {
+      const stored = localStorage.getItem(PAGE_CACHE_INDEX_KEY);
+      if (stored) keys = JSON.parse(stored);
+    } catch {}
+
+    keys = [storageKey, ...keys.filter((k) => k !== storageKey)];
+
+    while (keys.length > MAX_CACHED_PAGES) {
+      const evicted = keys.pop();
+      if (evicted) localStorage.removeItem(evicted);
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(items));
+    localStorage.setItem(PAGE_CACHE_INDEX_KEY, JSON.stringify(keys));
+  } catch (err) {
+    console.warn("Failed to save cached page:", err);
+  }
+}
+
+export function getCachedPage(
+  page: number,
+  limit: number,
+  options: VocabularyFilterOptions
+): MyVocabularyItem[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const filterKey = computeFilterKey(options, page, limit);
+    const storageKey = `${PAGE_CACHE_PREFIX}${filterKey}`;
+    const raw = localStorage.getItem(storageKey);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn("Failed to get cached page:", err);
+  }
+  return null;
+}

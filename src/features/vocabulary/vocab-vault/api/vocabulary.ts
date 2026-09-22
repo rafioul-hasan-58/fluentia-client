@@ -2,6 +2,7 @@ import {
   MyVocabularyItem,
   VocabularyItem,
   PartOfSpeech,
+  VocabularyStats,
   GenerateVocabularyResponse,
   getVerbForms,
   getCollocationText,
@@ -413,16 +414,44 @@ export function getDateWordCounts(items: MyVocabularyItem[]): Record<string, num
   return counts;
 }
 
+/**
+ * Fetches aggregated vocabulary vault statistics from the backend.
+ * Endpoint: GET /api/v1/my-vocabularies/stats
+ */
+export async function fetchMyVocabularyStats(): Promise<VocabularyStats | null> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
 
+  try {
+    const res = await fetch(`${baseUrl}/my-vocabularies/stats`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
 
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.data) {
+        const d = json.data;
+        return {
+          totalWords: typeof d.totalWords === "number" ? d.totalWords : 0,
+          favoriteCount: typeof d.favoriteCount === "number" ? d.favoriteCount : 0,
+          masteredCount: typeof d.masteredCount === "number" ? d.masteredCount : 0,
+          todaysVocab: typeof d.todaysVocab === "number" ? d.todaysVocab : 0,
+          statuses: typeof d.statuses === "object" && d.statuses !== null ? d.statuses : {},
+          levels: typeof d.levels === "object" && d.levels !== null ? d.levels : {},
+          partOfSpeeches:
+            typeof d.partOfSpeeches === "object" && d.partOfSpeeches !== null
+              ? d.partOfSpeeches
+              : {},
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("fetchMyVocabularyStats API request failed:", err);
+  }
 
-
-
-
-
-
-
-
-
-
-
+  return null;
+}

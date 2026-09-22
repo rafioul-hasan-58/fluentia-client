@@ -6,19 +6,25 @@ import {
   MyVocabularyItem,
   PartOfSpeech,
   VocabularyStatus,
+  VocabularyStats,
 } from "@/features/vocabulary/types/vocabulary";
 import {
   fetchMyVocabularies,
+  fetchMyVocabularyStats,
   updateMyVocabulary,
   deleteMyVocabulary,
 } from "@/features/vocabulary/api";
 
 export function useVocabularies() {
-  // Vocabulary data
+  // Vocabulary data (single page at a time)
   const [vocabularies, setVocabularies] = useState<MyVocabularyItem[]>([]);
-  const [allVaultWords, setAllVaultWords] = useState<MyVocabularyItem[]>([]);
   const [meta, setMeta] = useState<IMeta | null>(null);
+  const [stats, setStats] = useState<VocabularyStats | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Pagination state (default: 12 per screen, matching Question Bank)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(12);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -42,7 +48,7 @@ export function useVocabularies() {
   // Inline sentence builder tracker
   const [newSentenceInputs, setNewSentenceInputs] = useState<Record<string, string>>({});
 
-  // Active AbortController for filtered fetch
+  // Active AbortController for page requests
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // 1. Debounce search query (300ms)
@@ -53,23 +59,39 @@ export function useVocabularies() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // 2. Fetch full vault (runs once on mount, and callable after mutations)
-  const fetchFullVault = useCallback(async () => {
+  // 2. Reset currentPage to 1 whenever any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    debouncedSearchQuery,
+    selectedPos,
+    selectedStatus,
+    selectedLevel,
+    selectedSort,
+    favoritesOnly,
+    todayOnly,
+    selectedDate,
+    pageSize,
+  ]);
+
+  // 3. Fetch vocabulary stats from dedicated endpoint GET /my-vocabularies/stats
+  const fetchStats = useCallback(async () => {
     try {
-      const res = await fetchMyVocabularies({ limit: 100 });
-      setAllVaultWords(res.data);
-    } catch (err: any) {
-      if (err?.name !== "AbortError") {
-        console.error("Failed to fetch full vault words", err);
+      const data = await fetchMyVocabularyStats();
+      if (data) {
+        setStats(data);
       }
+    } catch (err) {
+      console.warn("Failed to fetch vocabulary stats", err);
     }
   }, []);
 
+  // Load stats once on mount
   useEffect(() => {
-    fetchFullVault();
-  }, [fetchFullVault]);
+    fetchStats();
+  }, [fetchStats]);
 
-  // 3. Fetch filtered list with AbortController to prevent race conditions
+  // 4. Fetch server-side paginated list with AbortController
   const fetchFilteredList = useCallback(async () => {
     // Abort previous in-flight request
     if (abortControllerRef.current) {
@@ -83,6 +105,8 @@ export function useVocabularies() {
     try {
       const res = await fetchMyVocabularies(
         {
+          page: currentPage,
+          limit: pageSize,
           search: debouncedSearchQuery,
           partOfSpeech: selectedPos,
           status: selectedStatus !== "ALL" ? (selectedStatus as any) : undefined,
@@ -91,7 +115,6 @@ export function useVocabularies() {
           favoritesOnly,
           todayOnly,
           selectedDate,
-          limit: 100,
         },
         controller.signal
       );
@@ -99,6 +122,16 @@ export function useVocabularies() {
       if (!controller.signal.aborted) {
         setVocabularies(res.data);
         setMeta(res.meta);
+
+        // Stage 6: If meta.total > 0 but page returned empty (out of bounds), auto-redirect
+        if (
+          res.meta &&
+          res.meta.total > 0 &&
+          res.data.length === 0 &&
+          currentPage > res.meta.totalPages
+        ) {
+          setCurrentPage(res.meta.totalPages);
+        }
       }
     } catch (err: any) {
       if (err?.name !== "AbortError" && !controller.signal.aborted) {
@@ -110,6 +143,8 @@ export function useVocabularies() {
       }
     }
   }, [
+    currentPage,
+    pageSize,
     debouncedSearchQuery,
     selectedPos,
     selectedStatus,
@@ -120,6 +155,7 @@ export function useVocabularies() {
     selectedDate,
   ]);
 
+  // Refetch whenever currentPage or any filter dependencies change
   useEffect(() => {
     fetchFilteredList();
     return () => {
@@ -131,58 +167,69 @@ export function useVocabularies() {
 
   // Combined reload function (e.g. for refresh button or after adding word)
   const loadVocabularies = useCallback(async () => {
-    await Promise.all([fetchFilteredList(), fetchFullVault()]);
-  }, [fetchFilteredList, fetchFullVault]);
+    await Promise.all([fetchFilteredList(), fetchStats()]);
+  }, [fetchFilteredList, fetchStats]);
 
   // Mutation: Toggle favorite
   const handleToggleFavorite = async (item: MyVocabularyItem) => {
     const isCurrentlyFav = item.isFavorite || false;
     const updatedFav = !isCurrentlyFav;
 
-    const updater = (prev: MyVocabularyItem[]) =>
-      prev.map((v) =>
-        v.id === item.id
-          ? { ...v, isFavorite: updatedFav }
-          : v
-      );
+    setVocabularies((prev) =>
+      prev.map((v) => (v.id === item.id ? { ...v, isFavorite: updatedFav } : v))
+    );
 
-    setVocabularies(updater);
-    setAllVaultWords(updater);
+    // Optimistic stats favorite count adjustment
+    if (stats) {
+      setStats({
+        ...stats,
+        favoriteCount: Math.max(0, stats.favoriteCount + (updatedFav ? 1 : -1)),
+      });
+    }
 
     try {
       await updateMyVocabulary(item.id, {
         isFavorite: updatedFav,
       });
+      // Sync fresh stats
+      fetchStats();
     } catch (err) {
       console.warn("Could not sync favorite toggle", err);
+      // Revert optimistic update
+      setVocabularies((prev) =>
+        prev.map((v) => (v.id === item.id ? { ...v, isFavorite: isCurrentlyFav } : v))
+      );
+      fetchStats();
     }
   };
 
   // Mutation: Toggle status (LEARNING / MASTERED / REVIEWING)
   const handleSetStatus = async (item: MyVocabularyItem, status: VocabularyStatus) => {
-    const updater = (prev: MyVocabularyItem[]) =>
-      prev.map((v) => (v.id === item.id ? { ...v, vocabularyStatus: status } : v));
-
-    setVocabularies(updater);
-    setAllVaultWords(updater);
+    const oldStatus = item.vocabularyStatus;
+    setVocabularies((prev) =>
+      prev.map((v) => (v.id === item.id ? { ...v, vocabularyStatus: status } : v))
+    );
 
     try {
       await updateMyVocabulary(item.id, { vocabularyStatus: status });
+      fetchStats();
     } catch (err) {
       console.warn("Could not sync status update", err);
+      setVocabularies((prev) =>
+        prev.map((v) => (v.id === item.id ? { ...v, vocabularyStatus: oldStatus } : v))
+      );
     }
   };
 
   // Mutation: Rate mastery (1-5)
   const handleSetMastery = async (item: MyVocabularyItem, level: number) => {
-    const updater = (prev: MyVocabularyItem[]) =>
-      prev.map((v) => (v.id === item.id ? { ...v, masteryLevel: level } : v));
-
-    setVocabularies(updater);
-    setAllVaultWords(updater);
+    setVocabularies((prev) =>
+      prev.map((v) => (v.id === item.id ? { ...v, masteryLevel: level } : v))
+    );
 
     try {
       await updateMyVocabulary(item.id, { masteryLevel: level });
+      fetchStats();
     } catch (err) {
       console.warn("Could not sync mastery update", err);
     }
@@ -194,11 +241,9 @@ export function useVocabularies() {
     if (!sentence) return;
 
     const updatedSentences = [...(item.mySentences || []), sentence];
-    const updater = (prev: MyVocabularyItem[]) =>
-      prev.map((v) => (v.id === item.id ? { ...v, mySentences: updatedSentences } : v));
-
-    setVocabularies(updater);
-    setAllVaultWords(updater);
+    setVocabularies((prev) =>
+      prev.map((v) => (v.id === item.id ? { ...v, mySentences: updatedSentences } : v))
+    );
     setNewSentenceInputs((prev) => ({ ...prev, [item.id]: "" }));
 
     try {
@@ -214,10 +259,9 @@ export function useVocabularies() {
     setSavingNoteId(item.id);
     try {
       await updateMyVocabulary(item.id, { notes: noteText });
-      const updater = (prev: MyVocabularyItem[]) =>
-        prev.map((v) => (v.id === item.id ? { ...v, notes: noteText } : v));
-      setVocabularies(updater);
-      setAllVaultWords(updater);
+      setVocabularies((prev) =>
+        prev.map((v) => (v.id === item.id ? { ...v, notes: noteText } : v))
+      );
     } finally {
       setSavingNoteId(null);
     }
@@ -233,11 +277,11 @@ export function useVocabularies() {
       onDeleted(targetId);
     }
 
-    setVocabularies((prev) => prev.filter((v) => v.id !== targetId));
-    setAllVaultWords((prev) => prev.filter((v) => v.id !== targetId));
-
     try {
       await deleteMyVocabulary(targetId);
+      // Reload stats and refetch current page
+      await fetchStats();
+      await fetchFilteredList();
     } catch (err) {
       console.warn("Could not sync deletion", err);
     } finally {
@@ -248,11 +292,16 @@ export function useVocabularies() {
 
   return {
     vocabularies,
-    allVaultWords,
     meta,
+    stats,
     isLoading,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
     filters: {
       searchQuery,
+      debouncedSearchQuery,
       selectedPos,
       selectedStatus,
       selectedLevel,
@@ -271,10 +320,11 @@ export function useVocabularies() {
       setTodayOnly,
       setSelectedDate,
       setVocabularies,
-      setAllVaultWords,
       setMeta,
+      setStats,
     },
     loadVocabularies,
+    fetchStats,
     handleToggleFavorite,
     handleSetStatus,
     handleSetMastery,
