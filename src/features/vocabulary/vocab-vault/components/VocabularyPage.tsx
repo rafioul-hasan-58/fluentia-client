@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   MyVocabularyItem,
   PartOfSpeech,
-  VocabularyStatus,
 } from "@/features/vocabulary/types/vocabulary";
 import {
   fetchMyVocabularyDetails,
@@ -31,7 +30,6 @@ import AddVocabularyModal from "./modals/AddVocabularyModal";
 import EditVocabularyModal from "./modals/EditVocabularyModal";
 import DeleteVocabularyModal from "./modals/DeleteVocabularyModal";
 import StoryContextModal from "./modals/StoryContextModal";
-
 
 
 const VocabularyPage = () => {
@@ -79,7 +77,6 @@ const VocabularyPage = () => {
     setTodayOnly,
     setSelectedDate,
     setVocabularies,
-    setAllVaultWords,
   } = setters;
 
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -147,7 +144,7 @@ const VocabularyPage = () => {
       if (exists) {
         return prev.filter((p) => p.id !== item.id);
       }
-      if (prev.length >= 10) {
+      if (prev.length >= 15) {
         alert("You can select up to 10 vocabulary words for a story.");
         return prev;
       }
