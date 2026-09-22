@@ -67,6 +67,7 @@ export interface VocabularyFilterBarProps {
     posCounts: Partial<Record<PartOfSpeech, number>> | Record<string, number>;
     statusCounts?: Record<string, number>;
     levelCounts?: Record<string, number>;
+    favoriteCount:number;
   };
   totalFoundCount: number;
 }
@@ -173,6 +174,16 @@ console.log('status',stats)
               }`}
           />
           <span className="truncate sm:overflow-visible">Favorites</span>
+           {stats.favoriteCount > 0 && (
+            <span
+              className={`hidden sm:inline-flex ml-0.5 text-xs px-1.5 py-0.5 rounded-full font-bold shrink-0 ${todayOnly
+                ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}
+            >
+              {stats.favoriteCount}
+            </span>
+          )}
         </button>
 
         <button

@@ -529,6 +529,7 @@ const VocabularyPage = () => {
       posCounts: (stats?.partOfSpeeches as any) ?? {},
       statusCounts: (stats?.statuses as any) ?? {},
       levelCounts: (stats?.levels as any) ?? {},
+      favoriteCount: stats?.favoriteCount ?? 0,
     };
   }, [stats, meta, vocabularies.length]);
 
