@@ -2,10 +2,11 @@ import {
   AddVocabularyDto,
   GenerateVocabularyDto,
   MyVocabularyItem,
+  VocabularyFilterOptions,
 } from "@/features/vocabulary/types/vocabulary";
 import { generateVocabularyApi, normalizeVocabularyItem } from "./vocabulary";
 import { getApiBaseUrl } from "@/lib/api";
-import { getAuthToken, getLocalVault, saveLocalVault } from "./utilFn";
+import { filterAndSortList, getAuthToken, getLocalVault, saveLocalVault } from "./utilFn";
 
 /**
  * Add Single Vocabulary Word using AI Generation
@@ -126,7 +127,109 @@ export async function addVocabularyWithAi(dto: AddVocabularyDto) {
     },
   };
 }
+// fetch user saved vocab items.
+export async function fetchMyVocabularies(
+  options: VocabularyFilterOptions = {}
+): Promise<MyVocabularyItem[]> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
 
+  try {
+    const queryParams = new URLSearchParams();
+
+    if (options.status && options.status !== "ALL") {
+      queryParams.append("status", options.status);
+    }
+
+    if (options.isFavourate !== undefined) {
+      queryParams.append("isFavourate", String(options.isFavourate));
+    } else if (options.favoritesOnly) {
+      queryParams.append("isFavourate", "true");
+    }
+
+    if (options.partOfSpeech && options.partOfSpeech !== "ALL") {
+      queryParams.append("partOfSpeech", options.partOfSpeech);
+    }
+
+    if (options.englishLevel && options.englishLevel !== "ALL") {
+      queryParams.append("englishLevel", options.englishLevel);
+    }
+
+    if (options.search && options.search.trim()) {
+      queryParams.append("search", options.search.trim());
+    }
+
+    if (options.page) {
+      queryParams.append("page", String(options.page));
+    }
+
+    // Default backend limit is 10 if omitted. Pass requested limit or default to 100 for client views
+    const fetchLimit = options.limit ?? 100;
+    queryParams.append("limit", String(fetchLimit));
+
+    if (options.selectedDate) {
+      queryParams.append("date", options.selectedDate);
+    }
+
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+    // 1. Primary endpoint: GET /my-vocabularies/find-all
+    let res = await fetch(`${baseUrl}/my-vocabularies/find-all${queryString}`, {
+      method: "GET",
+      headers: {
+        Accept: "*/*",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const rawList = Array.isArray(data.data)
+        ? data.data
+        : Array.isArray(data.data?.items)
+          ? data.data.items
+          : Array.isArray(data)
+            ? data
+            : [];
+
+      const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
+        ...item,
+        id: item.id || item._id,
+        status: item.vocabularyStatus || item.status || "LEARNING",
+        vocabularyStatus: item.vocabularyStatus || item.status || "LEARNING",
+        isFavorite: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
+        isFavourate: item.isFavourate !== undefined ? item.isFavourate : (item.isFavorite ?? false),
+        word: normalizeVocabularyItem(item.word || item),
+      }));
+
+      // Cache to vault when fetching general list
+      if (
+        token &&
+        !options.search &&
+        !options.partOfSpeech &&
+        !options.status &&
+        !options.favoritesOnly &&
+        !options.isFavourate &&
+        !options.selectedDate
+      ) {
+        saveLocalVault(formatted);
+      }
+
+      // Attach meta to array if returned by server
+      if (data.meta) {
+        (formatted as any).meta = data.meta;
+      }
+
+      return filterAndSortList(formatted, options);
+    }
+  } catch (err) {
+    // Network offline or error: graceful fallback to local vault
+    console.warn("fetchMyVocabularies API request failed, fallback to local vault:", err);
+  }
+
+  const localItems = getLocalVault();
+  return filterAndSortList(localItems, options);
+}
 
 // /**
 //  * Update personal notes, practice sentences, favorite status or mastery

@@ -4,6 +4,7 @@ import {
   getCollocationText,
   getVerbForms,
   MyVocabularyItem,
+  VocabularyFilterOptions,
 } from "../types/vocabulary";
 
 // Pre-seeded high-yield vocabulary items for instant rich exploration
@@ -445,3 +446,99 @@ export const saveLocalVault = (items: MyVocabularyItem[]) => {
     console.warn("Failed to write local vocabulary vault", err);
   }
 };
+
+export function filterAndSortList(
+  items: MyVocabularyItem[],
+  options: VocabularyFilterOptions
+): MyVocabularyItem[] {
+  let filtered = [...items];
+
+  if (options.search) {
+    const q = options.search.toLowerCase().trim();
+    filtered = filtered.filter(
+      (item) =>
+        item.word.word.toLowerCase().includes(q) ||
+        item.word.meaning.toLowerCase().includes(q) ||
+        item.word.banglaMeaning.toLowerCase().includes(q) ||
+        (item.word.banglaPronunciation &&
+          item.word.banglaPronunciation.toLowerCase().includes(q)) ||
+        (Array.isArray(item.word.synonyms) &&
+          item.word.synonyms.some((s: any) =>
+            typeof s === "string"
+              ? s.toLowerCase().includes(q)
+              : s?.word?.toLowerCase().includes(q)
+          ))
+    );
+  }
+
+  if (options.partOfSpeech && options.partOfSpeech !== "ALL") {
+    filtered = filtered.filter(
+      (item) => item.word.partOfSpeech === options.partOfSpeech
+    );
+  }
+
+  if (options.status && options.status !== "ALL") {
+    filtered = filtered.filter(
+      (item) => (item.vocabularyStatus || item.status) === options.status
+    );
+  }
+
+  if (options.englishLevel && options.englishLevel !== "ALL") {
+    filtered = filtered.filter(
+      (item) =>
+        (item.word.englishLevel &&
+          item.word.englishLevel.toUpperCase() === options.englishLevel?.toUpperCase()) ||
+        (item.word.cefrLevel &&
+          item.word.cefrLevel.toUpperCase() === options.englishLevel?.toUpperCase())
+    );
+  }
+
+  if (options.favoritesOnly || options.isFavourate === true) {
+    filtered = filtered.filter((item) => item.isFavorite || item.isFavourate);
+  } else if (options.isFavourate === false) {
+    filtered = filtered.filter((item) => !item.isFavorite && !item.isFavourate);
+  }
+
+  if (options.selectedDate) {
+    const targetDate = options.selectedDate;
+    filtered = filtered.filter((item) => {
+      const dateStr = item.createdAt || item.updatedAt;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return false;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}` === targetDate;
+    });
+  }
+
+  if (options.todayOnly) {
+    const today = new Date();
+    filtered = filtered.filter((item) => {
+      const dateStr = item.createdAt || item.updatedAt;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return (
+        d.getFullYear() === today.getFullYear() &&
+        d.getMonth() === today.getMonth() &&
+        d.getDate() === today.getDate()
+      );
+    });
+  }
+
+  if (options.sortBy === "alphabetical") {
+    filtered.sort((a, b) => a.word.word.localeCompare(b.word.word));
+  } else if (options.sortBy === "mastery") {
+    filtered.sort((a, b) => (b.masteryLevel || 0) - (a.masteryLevel || 0));
+  } else {
+    // recent
+    filtered.sort(
+      (a, b) =>
+        new Date(b.createdAt || 0).getTime() -
+        new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  return filtered;
+}
