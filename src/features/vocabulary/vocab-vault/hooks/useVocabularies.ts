@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
+  IMeta,
   MyVocabularyItem,
   PartOfSpeech,
   VocabularyStatus,
@@ -16,6 +17,7 @@ export function useVocabularies() {
   // Vocabulary data
   const [vocabularies, setVocabularies] = useState<MyVocabularyItem[]>([]);
   const [allVaultWords, setAllVaultWords] = useState<MyVocabularyItem[]>([]);
+  const [meta, setMeta] = useState<IMeta | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Filter state
@@ -54,8 +56,8 @@ export function useVocabularies() {
   // 2. Fetch full vault (runs once on mount, and callable after mutations)
   const fetchFullVault = useCallback(async () => {
     try {
-      const allItems = await fetchMyVocabularies({ limit: 100 });
-      setAllVaultWords(allItems);
+      const res = await fetchMyVocabularies({ limit: 100 });
+      setAllVaultWords(res.data);
     } catch (err: any) {
       if (err?.name !== "AbortError") {
         console.error("Failed to fetch full vault words", err);
@@ -79,7 +81,7 @@ export function useVocabularies() {
 
     setIsLoading(true);
     try {
-      const items = await fetchMyVocabularies(
+      const res = await fetchMyVocabularies(
         {
           search: debouncedSearchQuery,
           partOfSpeech: selectedPos,
@@ -95,7 +97,8 @@ export function useVocabularies() {
       );
 
       if (!controller.signal.aborted) {
-        setVocabularies(items);
+        setVocabularies(res.data);
+        setMeta(res.meta);
       }
     } catch (err: any) {
       if (err?.name !== "AbortError" && !controller.signal.aborted) {
@@ -247,6 +250,7 @@ export function useVocabularies() {
   return {
     vocabularies,
     allVaultWords,
+    meta,
     isLoading,
     filters: {
       searchQuery,
@@ -269,6 +273,7 @@ export function useVocabularies() {
       setSelectedDate,
       setVocabularies,
       setAllVaultWords,
+      setMeta,
     },
     loadVocabularies,
     handleToggleFavorite,

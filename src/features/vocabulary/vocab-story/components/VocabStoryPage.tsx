@@ -182,8 +182,8 @@ const VocabStoryPage = () => {
   const loadVaultWords = async () => {
     setIsLoadingVault(true);
     try {
-      const items = await fetchMyVocabularies();
-      setVaultWords(items);
+      const res = await fetchMyVocabularies();
+      setVaultWords(res.data);
     } catch (err: any) {
       console.error("Failed to load vault words", err);
     } finally {
@@ -739,7 +739,7 @@ const VocabStoryPage = () => {
                 {/* Main Card Content */}
                 <div className="p-4 sm:p-5 space-y-3.5 flex-1 flex flex-col justify-between">
                   <div className="space-y-3">
-                    {/* Top: Badges & Quick Action */}
+                    {/* inset-block-start: Badges & Quick Action */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold text-[10px] border border-amber-500/20">
@@ -825,7 +825,7 @@ const VocabStoryPage = () => {
                     </div>
                   </div>
 
-                  {/* Card Bottom: View Details Action */}
+                  {/* Card inset-block-end: View Details Action */}
                   <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
                     <button
                       onClick={() => setActiveStoryId(story.id)}
@@ -850,7 +850,7 @@ const VocabStoryPage = () => {
           <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100/95 dark:bg-[#0c0a17]/95 backdrop-blur-md text-slate-900 dark:text-white flex flex-col overflow-hidden animate-in fade-in duration-200">
             {/* Top Navigation & Controls Bar */}
             <div className="shrink-0 w-full px-4 sm:px-8 py-3 bg-white/90 dark:bg-[#131024]/90 border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 sm:gap-4 z-30 shadow-xs">
-              {/* Left: Breadcrumbs / Back & Story Counter */}
+              {/* inset-inline-start: Breadcrumbs / Back & Story Counter */}
               <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => setActiveStoryId(null)}
@@ -894,7 +894,7 @@ const VocabStoryPage = () => {
                 </button>
               </div>
 
-              {/* Right: Copy All, Delete & Close */}
+              {/* inset-inline-end: Copy All, Delete & Close */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() =>
@@ -1136,7 +1136,7 @@ const VocabStoryPage = () => {
               ) : (
                 /* Side-by-Side Dual View */
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left: Bangla-English Mixed */}
+                  {/* inset-inline-start: Bangla-English Mixed */}
                   <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#141226] border border-amber-500/25 space-y-5 shadow-sm">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                       <div className="flex items-center gap-2">
@@ -1158,7 +1158,7 @@ const VocabStoryPage = () => {
                     </div>
                   </div>
 
-                  {/* Right: Full English */}
+                  {/* inset-inline-end: Full English */}
                   <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#141226] border border-indigo-500/25 space-y-5 shadow-sm">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                       <div className="flex items-center gap-2">

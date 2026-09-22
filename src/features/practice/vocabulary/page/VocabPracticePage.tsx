@@ -104,7 +104,7 @@ const VocabPracticePage = () => {
         async function loadFilteredWords() {
             setIsLoading(true);
             try {
-                const [filteredItems, totalVault] = await Promise.all([
+                const [filteredRes, totalVaultRes] = await Promise.all([
                     fetchMyVocabularies({
                         partOfSpeech: selectedPos !== "ALL" ? selectedPos : undefined,
                         selectedDate: selectedDate || undefined,
@@ -115,9 +115,9 @@ const VocabPracticePage = () => {
                 ]);
 
                 if (!isCancelled) {
-                    setVocabularies(filteredItems);
+                    setVocabularies(filteredRes.data);
                     if (allVaultWords.length === 0) {
-                        setAllVaultWords(totalVault);
+                        setAllVaultWords(Array.isArray(totalVaultRes) ? totalVaultRes : totalVaultRes.data);
                     }
                     setCurrentIndex(0);
                     setIsFlipped(false);

@@ -2,6 +2,7 @@ import {
   AddVocabularyDto,
   GenerateVocabularyDto,
   IFetchVocabulariesResult,
+  IMeta,
   MyVocabularyItem,
   VocabularyFilterOptions,
 } from "@/features/vocabulary/types/vocabulary";
@@ -218,12 +219,23 @@ export async function fetchMyVocabularies(
         saveLocalVault(formatted);
       }
 
-      // Attach meta to array if returned by server
+      const filtered = filterAndSortList(formatted, options);
+
+      const meta: IMeta = data.meta || {
+        page: options.page || 1,
+        limit: options.limit || 100,
+        total: filtered.length,
+        totalPages: Math.ceil(filtered.length / (options.limit || 100)) || 1,
+      };
+
       if (data.meta) {
-        (formatted as any).meta = data.meta;
+        (filtered as any).meta = data.meta;
       }
 
-      return filterAndSortList(formatted, options);
+      return {
+        data: filtered,
+        meta,
+      };
     }
   } catch (err: any) {
     if (err?.name === "AbortError" || signal?.aborted) {
@@ -234,7 +246,19 @@ export async function fetchMyVocabularies(
   }
 
   const localItems = getLocalVault();
-  return filterAndSortList(localItems, options);
+  const filtered = filterAndSortList(localItems, options);
+  const meta: IMeta = {
+    page: options.page || 1,
+    limit: options.limit || 100,
+    total: filtered.length,
+    totalPages: Math.ceil(filtered.length / (options.limit || 100)) || 1,
+  };
+  (filtered as any).meta = meta;
+
+  return {
+    data: filtered,
+    meta,
+  };
 }
 
 // /**

@@ -1,5 +1,7 @@
 import { IMeta } from "@/types/utils";
 
+export type { IMeta };
+
 export type PartOfSpeech =
   | "NOUN"
   | "PRONOUN"

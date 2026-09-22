@@ -84,7 +84,7 @@ export default function WritingPracticePage() {
   // Load user vocabulary for word bank
   useEffect(() => {
     fetchMyVocabularies({ limit: 15 })
-      .then((items) => setVaultWords(items))
+      .then((res) => setVaultWords(res.data))
       .catch((err) => console.warn("Failed to load vault words for writing helper", err));
   }, []);
 
