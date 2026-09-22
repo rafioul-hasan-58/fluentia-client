@@ -527,6 +527,8 @@ const VocabularyPage = () => {
       total: stats?.totalWords ?? meta?.total ?? vocabularies.length,
       todayCount: stats?.todaysVocab ?? 0,
       posCounts: (stats?.partOfSpeeches as any) ?? {},
+      statusCounts: (stats?.statuses as any) ?? {},
+      levelCounts: (stats?.levels as any) ?? {},
     };
   }, [stats, meta, vocabularies.length]);
 

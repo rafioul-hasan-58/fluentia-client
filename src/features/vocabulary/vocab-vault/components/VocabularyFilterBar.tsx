@@ -20,6 +20,21 @@ import {
 import { VocabularyDatePicker } from "./VocabularyDatePicker";
 import { ALL_POS_OPTIONS, POS_COLORS } from "../constants/vocabularyConstants";
 
+export const ALL_STATUS_OPTIONS = [
+  { id: "LEARNING", label: "Learning", dotColor: "bg-amber-400" },
+  { id: "LEARNED", label: "Learned", dotColor: "bg-blue-400" },
+  { id: "MASTERED", label: "Mastered", dotColor: "bg-emerald-400" },
+];
+
+export const ALL_LEVEL_OPTIONS = [
+  { id: "A1", label: "A1 Level", dotColor: "bg-emerald-400" },
+  { id: "A2", label: "A2 Level", dotColor: "bg-teal-400" },
+  { id: "B1", label: "B1 Level", dotColor: "bg-sky-400" },
+  { id: "B2", label: "B2 Level", dotColor: "bg-indigo-400" },
+  { id: "C1", label: "C1 Level", dotColor: "bg-purple-400" },
+  { id: "C2", label: "C2 Level", dotColor: "bg-amber-400" },
+];
+
 export interface VocabularyFilterBarProps {
   searchQuery: string;
   setSearchQuery: (val: string) => void;
@@ -50,6 +65,8 @@ export interface VocabularyFilterBarProps {
     total: number;
     todayCount: number;
     posCounts: Partial<Record<PartOfSpeech, number>> | Record<string, number>;
+    statusCounts?: Record<string, number>;
+    levelCounts?: Record<string, number>;
   };
   totalFoundCount: number;
 }
@@ -84,22 +101,60 @@ const VocabularyFilterBar = ({
   totalFoundCount,
 }: VocabularyFilterBarProps) => {
   const [isPosDropdownOpen, setIsPosDropdownOpen] = useState(false);
-  const posDropdownRef = useRef<HTMLDivElement>(null);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
 
-  // Close POS dropdown on outside click
+  const posDropdownRef = useRef<HTMLDivElement>(null);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+  const levelDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
       if (
         posDropdownRef.current &&
-        !posDropdownRef.current.contains(event.target as Node)
+        !posDropdownRef.current.contains(target)
       ) {
         setIsPosDropdownOpen(false);
+      }
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(target)
+      ) {
+        setIsStatusDropdownOpen(false);
+      }
+      if (
+        levelDropdownRef.current &&
+        !levelDropdownRef.current.contains(target)
+      ) {
+        setIsLevelDropdownOpen(false);
       }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const getStatusCount = (statusKey: string): number => {
+    if (!stats.statusCounts) return 0;
+    return (
+      stats.statusCounts[statusKey] ??
+      stats.statusCounts[statusKey.toUpperCase()] ??
+      stats.statusCounts[statusKey.toLowerCase()] ??
+      0
+    );
+  };
+
+  const getLevelCount = (levelKey: string): number => {
+    if (!stats.levelCounts) return 0;
+    return (
+      stats.levelCounts[levelKey] ??
+      stats.levelCounts[levelKey.toUpperCase()] ??
+      stats.levelCounts[levelKey.toLowerCase()] ??
+      0
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -185,7 +240,11 @@ const VocabularyFilterBar = ({
         <div ref={posDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
           <button
             type="button"
-            onClick={() => setIsPosDropdownOpen((prev) => !prev)}
+            onClick={() => {
+              setIsPosDropdownOpen((prev) => !prev);
+              setIsStatusDropdownOpen(false);
+              setIsLevelDropdownOpen(false);
+            }}
             className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${selectedPos !== "ALL"
               ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
@@ -203,17 +262,6 @@ const VocabularyFilterBar = ({
               {selectedPos === "ALL"
                 ? "All Types"
                 : POS_COLORS[selectedPos]?.label || selectedPos}
-            </span>
-
-            <span
-              className={`hidden sm:inline-flex text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${selectedPos !== "ALL"
-                ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}
-            >
-              {selectedPos === "ALL"
-                ? stats.total
-                : stats.posCounts[selectedPos] || 0}
             </span>
 
             <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -307,47 +355,218 @@ const VocabularyFilterBar = ({
           </div>
         </div>
 
-        {/* Status Select */}
-        <div className="relative w-full sm:w-auto">
-          <div className="pointer-events-none absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </div>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full sm:w-auto h-12 sm:h-auto pl-8 sm:pl-9 pr-7 sm:pr-8 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer appearance-none"
+        {/* Status Filter Dropdown */}
+        <div ref={statusDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
+          <button
+            type="button"
+            onClick={() => {
+              setIsStatusDropdownOpen((prev) => !prev);
+              setIsPosDropdownOpen(false);
+              setIsLevelDropdownOpen(false);
+            }}
+            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${selectedStatus !== "ALL"
+              ? "bg-gradient-to-r from-emerald-600/15 via-teal-600/15 to-emerald-600/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-sm shadow-emerald-500/10 ring-2 ring-emerald-500/20 font-bold"
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-emerald-400 dark:hover:border-emerald-500/50"
+              }`}
+            title="Filter vocabulary by status"
           >
-            <option value="ALL">All Statuses</option>
-            <option value="LEARNING">Learning</option>
-            <option value="LEARNED">Learned</option>
-            <option value="MASTERED">Mastered</option>
-          </select>
-          <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
-            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </div>
+            <CheckCircle2
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${selectedStatus !== "ALL"
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-slate-400"
+                }`}
+            />
+
+            <span className="truncate sm:overflow-visible">
+              {selectedStatus === "ALL"
+                ? "All Statuses"
+                : ALL_STATUS_OPTIONS.find((s) => s.id === selectedStatus)?.label || selectedStatus}
+            </span>
+
+            {/* <span
+              className={`hidden sm:inline-flex text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${selectedStatus !== "ALL"
+                ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}
+            >
+              {selectedStatus === "ALL"
+                ? stats.total
+                : getStatusCount(selectedStatus)}
+            </span> */}
+
+            <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <ChevronDown
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${isStatusDropdownOpen ? "rotate-180" : ""
+                  }`}
+              />
+            </div>
+          </button>
+
+          {/* Status Dropdown Popover */}
+          {isStatusDropdownOpen && (
+            <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 z-50 w-52 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+              {/* All Statuses option */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedStatus("ALL");
+                  setIsStatusDropdownOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${selectedStatus === "ALL"
+                  ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span>All Statuses</span>
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  {stats.total}
+                </span>
+              </button>
+
+              <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+
+              {/* Status options */}
+              <div className="space-y-0.5">
+                {ALL_STATUS_OPTIONS.map((st) => {
+                  const count = getStatusCount(st.id);
+                  const isSelected = selectedStatus === st.id;
+
+                  return (
+                    <button
+                      key={st.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedStatus(st.id);
+                        setIsStatusDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isSelected
+                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        } ${count === 0 ? "opacity-50" : ""}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${st.dotColor}`} />
+                        <span>{st.label}</span>
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Level Select */}
-        <div className="relative w-full sm:w-auto">
-          <div className="pointer-events-none absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-            <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </div>
-          <select
-            value={selectedLevel}
-            onChange={(e) => setSelectedLevel(e.target.value)}
-            className="w-full sm:w-auto h-12 sm:h-auto pl-8 sm:pl-9 pr-7 sm:pr-8 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer appearance-none"
+        {/* Level Filter Dropdown */}
+        <div ref={levelDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
+          <button
+            type="button"
+            onClick={() => {
+              setIsLevelDropdownOpen((prev) => !prev);
+              setIsPosDropdownOpen(false);
+              setIsStatusDropdownOpen(false);
+            }}
+            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${selectedLevel !== "ALL"
+              ? "bg-gradient-to-r from-blue-600/15 via-indigo-600/15 to-cyan-600/15 border-blue-500/40 text-blue-700 dark:text-blue-300 shadow-sm shadow-blue-500/10 ring-2 ring-blue-500/20 font-bold"
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-blue-400 dark:hover:border-blue-500/50"
+              }`}
+            title="Filter vocabulary by CEFR level"
           >
-            <option value="ALL">All Levels</option>
-            <option value="A1">A1 Level</option>
-            <option value="A2">A2 Level</option>
-            <option value="B1">B1 Level</option>
-            <option value="B2">B2 Level</option>
-            <option value="C1">C1 Level</option>
-            <option value="C2">C2 Level</option>
-          </select>
-          <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
-            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </div>
+            <BarChart3
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${selectedLevel !== "ALL"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-400"
+                }`}
+            />
+
+            <span className="truncate sm:overflow-visible">
+              {selectedLevel === "ALL"
+                ? "All Levels"
+                : ALL_LEVEL_OPTIONS.find((l) => l.id === selectedLevel)?.label || `${selectedLevel} Level`}
+            </span>
+
+            {/* <span
+              className={`hidden sm:inline-flex text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${selectedLevel !== "ALL"
+                ? "bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}
+            >
+              {selectedLevel === "ALL"
+                ? stats.total
+                : getLevelCount(selectedLevel)}
+            </span> */}
+
+            <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <ChevronDown
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${isLevelDropdownOpen ? "rotate-180" : ""
+                  }`}
+              />
+            </div>
+          </button>
+
+          {/* Level Dropdown Popover */}
+          {isLevelDropdownOpen && (
+            <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 z-50 w-52 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+              {/* All Levels option */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedLevel("ALL");
+                  setIsLevelDropdownOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${selectedLevel === "ALL"
+                  ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span>All Levels</span>
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  {stats.total}
+                </span>
+              </button>
+
+              <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+
+              {/* Level options */}
+              <div className="max-h-60 overflow-y-auto space-y-0.5">
+                {ALL_LEVEL_OPTIONS.map((lvl) => {
+                  const count = getLevelCount(lvl.id);
+                  const isSelected = selectedLevel === lvl.id;
+
+                  return (
+                    <button
+                      key={lvl.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedLevel(lvl.id);
+                        setIsLevelDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isSelected
+                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        } ${count === 0 ? "opacity-50" : ""}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${lvl.dotColor}`} />
+                        <span>{lvl.label}</span>
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
