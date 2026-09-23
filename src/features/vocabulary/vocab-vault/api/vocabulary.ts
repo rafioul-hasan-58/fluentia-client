@@ -416,14 +416,17 @@ export function getDateWordCounts(items: MyVocabularyItem[]): Record<string, num
 
 /**
  * Fetches aggregated vocabulary vault statistics from the backend.
- * Endpoint: GET /api/v1/my-vocabularies/stats
+ * Endpoint: GET /api/v1/my-vocabularies/stats?month=YYYY-MM
  */
-export async function fetchMyVocabularyStats(): Promise<VocabularyStats | null> {
+export async function fetchMyVocabularyStats(
+  month?: string
+): Promise<VocabularyStats | null> {
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 
   try {
-    const res = await fetch(`${baseUrl}/my-vocabularies/stats`, {
+    const queryString = month ? `?month=${encodeURIComponent(month)}` : "";
+    const res = await fetch(`${baseUrl}/my-vocabularies/stats${queryString}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -445,6 +448,10 @@ export async function fetchMyVocabularyStats(): Promise<VocabularyStats | null> 
           partOfSpeeches:
             typeof d.partOfSpeeches === "object" && d.partOfSpeeches !== null
               ? d.partOfSpeeches
+              : {},
+          dateWordCounts:
+            typeof d.dateWordCounts === "object" && d.dateWordCounts !== null
+              ? d.dateWordCounts
               : {},
         };
       }

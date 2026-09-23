@@ -85,6 +85,7 @@ export interface VocabularyStats {
   statuses: Record<string, number>;
   levels: Record<string, number>;
   partOfSpeeches: Record<string, number>;
+  dateWordCounts?: Record<string, number>;
 }
 
 export interface PersonalVocabulariesResponse {

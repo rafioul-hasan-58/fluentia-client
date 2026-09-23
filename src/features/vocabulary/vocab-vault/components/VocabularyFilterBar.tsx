@@ -53,6 +53,7 @@ export interface VocabularyFilterBarProps {
   selectedDate: string | null;
   setSelectedDate: (date: string | null) => void;
   calendarWordCounts: Record<string, number>;
+  onMonthChange?: (month: string) => void;
   viewMode: "grid" | "table";
   setViewMode: (mode: "grid" | "table") => void;
   loadVocabularies: () => void;
@@ -90,6 +91,7 @@ const VocabularyFilterBar = ({
   selectedDate,
   setSelectedDate,
   calendarWordCounts,
+  onMonthChange,
   viewMode,
   setViewMode,
   loadVocabularies,
@@ -222,6 +224,7 @@ const VocabularyFilterBar = ({
             if (date) setTodayOnly(false);
           }}
           wordCounts={calendarWordCounts}
+          onMonthChange={onMonthChange}
           className="w-full sm:w-auto"
           buttonClassName="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold justify-center sm:justify-start"
         />

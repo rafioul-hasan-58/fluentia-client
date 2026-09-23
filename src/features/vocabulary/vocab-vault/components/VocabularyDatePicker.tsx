@@ -18,6 +18,7 @@ interface VocabularyDatePickerProps {
   className?: string;
   buttonClassName?: string;
   itemLabel?: string;
+  onMonthChange?: (monthStr: string) => void; // Format: YYYY-MM
 }
 
 const MONTH_NAMES = [
@@ -44,6 +45,7 @@ export function VocabularyDatePicker({
   className = "",
   buttonClassName = "",
   itemLabel = "word",
+  onMonthChange,
 }: VocabularyDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -96,17 +98,40 @@ export function VocabularyDatePicker({
   const viewYear = currentViewDate.getFullYear();
   const viewMonth = currentViewDate.getMonth();
 
+  // Notify parent on mount/open of current month
+  useEffect(() => {
+    if (isOpen && onMonthChange) {
+      const monthStr = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`;
+      onMonthChange(monthStr);
+    }
+  }, [isOpen, viewYear, viewMonth, onMonthChange]);
+
   const handlePrevMonth = () => {
-    setCurrentViewDate(new Date(viewYear, viewMonth - 1, 1));
+    const nextDate = new Date(viewYear, viewMonth - 1, 1);
+    setCurrentViewDate(nextDate);
+    if (onMonthChange) {
+      const m = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}`;
+      onMonthChange(m);
+    }
   };
 
   const handleNextMonth = () => {
-    setCurrentViewDate(new Date(viewYear, viewMonth + 1, 1));
+    const nextDate = new Date(viewYear, viewMonth + 1, 1);
+    setCurrentViewDate(nextDate);
+    if (onMonthChange) {
+      const m = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}`;
+      onMonthChange(m);
+    }
   };
 
   const handleJumpToToday = () => {
     const today = new Date();
-    setCurrentViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
+    const nextDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    setCurrentViewDate(nextDate);
+    if (onMonthChange) {
+      const m = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}`;
+      onMonthChange(m);
+    }
   };
 
   // Build calendar matrix (6 weeks x 7 days)
@@ -419,7 +444,7 @@ export function VocabularyDatePicker({
                     onSelectDate(cell.dateStr);
                     setIsOpen(false);
                   }}
-                  className={`group relative flex flex-col items-center justify-center h-10 w-full rounded-xl text-xs font-medium transition-all duration-150 cursor-pointer ${
+                  className={`group relative flex flex-col items-center justify-center h-11 w-full rounded-xl text-xs font-medium transition-all duration-150 cursor-pointer ${
                     cell.isSelected
                       ? "bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold shadow-md shadow-purple-600/30 scale-105 z-10"
                       : cell.isToday
@@ -438,16 +463,18 @@ export function VocabularyDatePicker({
                 >
                   <span className="leading-none">{cell.dayNumber}</span>
 
-                  {/* Activity Indicator Dot */}
+                  {/* Activity Indicator Word Count Badge */}
                   {hasWords && (
-                    <div className="flex items-center justify-center mt-1">
+                    <div className="flex items-center justify-center mt-0.5">
                       <span
-                        className={`w-1.5 h-1.5 rounded-full transition-transform group-hover:scale-125 ${
+                        className={`px-1 py-[0.5px] min-w-[15px] text-[9px] font-bold rounded-full leading-none transition-transform group-hover:scale-110 flex items-center justify-center ${
                           cell.isSelected
-                            ? "bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]"
-                            : "bg-purple-500 dark:bg-purple-400 shadow-[0_0_6px_rgba(168,85,247,0.6)]"
+                            ? "bg-white/30 text-white shadow-sm"
+                            : "bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-700/40 shadow-[0_0_6px_rgba(168,85,247,0.2)]"
                         }`}
-                      />
+                      >
+                        {cell.wordCount}
+                      </span>
                     </div>
                   )}
                 </button>

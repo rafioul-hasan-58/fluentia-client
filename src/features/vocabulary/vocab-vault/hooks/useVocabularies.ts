@@ -74,10 +74,13 @@ export function useVocabularies() {
     pageSize,
   ]);
 
-  // 3. Fetch vocabulary stats from dedicated endpoint GET /my-vocabularies/stats
-  const fetchStats = useCallback(async () => {
+  // 3. Fetch vocabulary stats from dedicated endpoint GET /my-vocabularies/stats?month=YYYY-MM
+  const fetchStats = useCallback(async (month?: string) => {
     try {
-      const data = await fetchMyVocabularyStats();
+      const targetMonth =
+        month ||
+        `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      const data = await fetchMyVocabularyStats(targetMonth);
       if (data) {
         setStats(data);
       }

@@ -60,7 +60,14 @@ const VocabularyPage = () => {
     setNewSentenceInputs,
   } = useVocabularies();
 
-  const { calendarWordCounts, reloadCalendarCounts } = useLegacyCalendarCounts();
+  const { calendarWordCounts, fetchMonthCounts, reloadCalendarCounts } = useLegacyCalendarCounts();
+
+  const combinedCalendarWordCounts = useMemo(() => {
+    return {
+      ...(stats?.dateWordCounts || {}),
+      ...calendarWordCounts,
+    };
+  }, [stats?.dateWordCounts, calendarWordCounts]);
 
   const {
     searchQuery,
@@ -588,7 +595,8 @@ const VocabularyPage = () => {
         setTodayOnly={setTodayOnly}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        calendarWordCounts={calendarWordCounts}
+        calendarWordCounts={combinedCalendarWordCounts}
+        onMonthChange={fetchMonthCounts}
         viewMode={viewMode}
         setViewMode={setViewMode}
         loadVocabularies={loadVocabularies}
