@@ -12,23 +12,16 @@ import {
   updateMyVocabulary,
   generateVocabStoryApi,
 } from "@/features/vocabulary/api";
-import { useVocabularies, useLegacyCalendarCounts } from "../hooks";
+
 import {
   BookOpen,
   Plus,
   RefreshCw,
 } from "lucide-react";
-import VocabularyHeader from "./VocabularyHeader";
-import VocabularyFilterBar from "./VocabularyFilterBar";
-import VocabularyStoryBanner from "./VocabularyStoryBanner";
-import VocabularyPagination from "./VocabularyPagination";
-import VocabularyCard from "./VocabularyCard";
-import VocabularyTableView from "./VocabularyTableView";
-import VocabularyFullscreenModal from "./modals/VocabularyFullscreenModal";
-import AddVocabularyModal from "./modals/AddVocabularyModal";
-import EditVocabularyModal from "./modals/EditVocabularyModal";
-import DeleteVocabularyModal from "./modals/DeleteVocabularyModal";
-import StoryContextModal from "./modals/StoryContextModal";
+import { useLegacyCalendarCounts, useVocabularies } from "../vocab-vault/hooks";
+import { VocabularyCard, VocabularyFilterBar, VocabularyHeader, VocabularyPagination, VocabularyStoryBanner, VocabularyTableView } from "../vocab-vault/components";
+import { AddVocabularyModal, DeleteVocabularyModal, EditVocabularyModal, StoryContextModal, VocabularyFullscreenModal } from "../vocab-vault/components/modals";
+
 
 
 const VocabularyPage = () => {
