@@ -13,7 +13,7 @@ import {
   getWordRelationBangla,
 } from "@/features/vocabulary/types/vocabulary";
 import { getApiBaseUrl } from "@/lib/api/config";
-import { getAuthToken, getLocalVault, saveLocalVault } from "./utilFn";
+import { getAuthToken, getLocalVault, saveLocalVault } from "../hooks/utilFn";
 export { fetchMyVocabularies } from "./myVocabulary";
 
 //  Normalizes backend response data structure to ensure safe rendering
@@ -27,35 +27,35 @@ export function normalizeVocabularyItem(data: any): VocabularyItem {
   if (typeof rawCollocations === "string") {
     try {
       rawCollocations = JSON.parse(rawCollocations);
-    } catch {}
+    } catch { }
   }
 
   let rawExampleSentences = data.exampleSentences;
   if (typeof rawExampleSentences === "string") {
     try {
       rawExampleSentences = JSON.parse(rawExampleSentences);
-    } catch {}
+    } catch { }
   }
 
   let rawWordFamily = data.wordFamily;
   if (typeof rawWordFamily === "string") {
     try {
       rawWordFamily = JSON.parse(rawWordFamily);
-    } catch {}
+    } catch { }
   }
 
   let rawSynonyms = data.synonyms;
   if (typeof rawSynonyms === "string") {
     try {
       rawSynonyms = JSON.parse(rawSynonyms);
-    } catch {}
+    } catch { }
   }
 
   let rawAntonyms = data.antonyms;
   if (typeof rawAntonyms === "string") {
     try {
       rawAntonyms = JSON.parse(rawAntonyms);
-    } catch {}
+    } catch { }
   }
 
   return {

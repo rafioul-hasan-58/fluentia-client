@@ -14,7 +14,7 @@ import {
   getLocalVault,
   saveCachedPage,
   saveLocalVault,
-} from "./utilFn";
+} from "../hooks/utilFn";
 
 /**
  * Add Single Vocabulary Word using AI Generation
