@@ -287,7 +287,7 @@ const VocabularyFilterBar = ({
 
           {/* Dropdown Popover */}
           {isPosDropdownOpen && (
-            <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 z-50 w-56 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute left-0 mt-2 z-50 w-56 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
               {/* All Types option */}
               <button
                 type="button"
