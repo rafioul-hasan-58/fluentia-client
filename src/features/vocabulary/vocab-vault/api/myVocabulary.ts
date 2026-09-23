@@ -1,11 +1,4 @@
-import {
-  AddVocabularyDto,
-  GenerateVocabularyDto,
-  IFetchVocabulariesResult,
-  IMeta,
-  MyVocabularyItem,
-  VocabularyFilterOptions,
-} from "@/features/vocabulary/types/vocabulary";
+
 import { generateVocabularyApi, normalizeVocabularyItem } from "./vocabulary";
 import { getApiBaseUrl } from "@/lib/api";
 import {
@@ -15,6 +8,7 @@ import {
   saveCachedPage,
   saveLocalVault,
 } from "../hooks/utilFn";
+import { AddVocabularyDto, GenerateVocabularyDto, IFetchVocabulariesResult, IMeta, MyVocabularyItem, VocabularyFilterOptions } from "@/types";
 
 /**
  * Add Single Vocabulary Word using AI Generation

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { MyVocabularyItem } from "@/features/vocabulary/types/vocabulary";
 import {
   Edit3,
   Star,
@@ -15,6 +14,7 @@ import {
   Check,
 } from "lucide-react";
 import { POS_COLORS } from "../../constants/vocabularyConstants";
+import { MyVocabularyItem } from "@/types";
 
 export interface EditVocabularyModalProps {
   editingItem: MyVocabularyItem | null;

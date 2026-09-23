@@ -1,10 +1,7 @@
 import React from "react";
-import {
-  MyVocabularyItem,
-  getVerbForms,
-} from "@/features/vocabulary/types/vocabulary";
 import { Check, Edit3, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
 import { POS_COLORS } from "../constants/vocabularyConstants";
+import { getVerbForms, MyVocabularyItem } from "@/types";
 
 interface VocabularyCardProps {
   item: MyVocabularyItem;

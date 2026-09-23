@@ -1,5 +1,5 @@
 import {
-  MyVocabularyItem,
+
   VocabularyItem,
   PartOfSpeech,
   VocabularyStats,
@@ -11,9 +11,11 @@ import {
   getWordRelationWord,
   getWordRelationPartOfSpeech,
   getWordRelationBangla,
-} from "@/features/vocabulary/types/vocabulary";
+  MyVocabularyItem,
+} from "@/types";
 import { getApiBaseUrl } from "@/lib/api/config";
-import { getAuthToken, getLocalVault, saveLocalVault } from "../hooks/utilFn";
+import { getAuthToken} from "../hooks/utilFn";
+
 export { fetchMyVocabularies } from "./myVocabulary";
 
 //  Normalizes backend response data structure to ensure safe rendering

@@ -2,19 +2,7 @@
 
 import React from "react";
 import { createPortal } from "react-dom";
-import { PartOfSpeech, VocabularyStatus } from "@/types";
-import {
-  MyVocabularyItem,
-  getVerbForms,
-  getWordRelationText,
-  getWordRelationWord,
-  getWordRelationPartOfSpeech,
-  getWordRelationBangla,
-  getCollocationText,
-  getCollocationMeaning,
-  getCollocationBangla,
-  getCollocationExample,
-} from "@/features/vocabulary/types/vocabulary";
+import { getCollocationBangla, getCollocationExample, getCollocationMeaning, getCollocationText, getVerbForms, getWordRelationBangla, getWordRelationPartOfSpeech, getWordRelationText, getWordRelationWord, MyVocabularyItem, PartOfSpeech, VocabularyStatus } from "@/types";
 import {
   Minimize2,
   ChevronLeft,

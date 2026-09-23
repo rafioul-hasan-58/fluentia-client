@@ -1,4 +1,4 @@
-import { MyVocabularyItem } from "@/features/vocabulary/types/vocabulary";
+import { MyVocabularyItem } from "@/types";
 import { Sparkles } from "lucide-react";
 
 interface VocabularyStoryBannerProps {

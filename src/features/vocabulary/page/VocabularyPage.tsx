@@ -3,17 +3,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-  MyVocabularyItem,
-  PartOfSpeech,
-} from "@/features/vocabulary/types/vocabulary";
-import {
-  fetchMyVocabularyDetails,
-  addSingleVocabulary,
-  updateMyVocabulary,
-  generateVocabStoryApi,
-} from "@/features/vocabulary/api";
-
-import {
   BookOpen,
   Plus,
   RefreshCw,
@@ -21,6 +10,9 @@ import {
 import { useLegacyCalendarCounts, useVocabularies } from "../vocab-vault/hooks";
 import { VocabularyCard, VocabularyFilterBar, VocabularyHeader, VocabularyPagination, VocabularyStoryBanner, VocabularyTableView } from "../vocab-vault/components";
 import { AddVocabularyModal, DeleteVocabularyModal, EditVocabularyModal, StoryContextModal, VocabularyFullscreenModal } from "../vocab-vault/components/modals";
+import { MyVocabularyItem } from "@/types";
+import { addSingleVocabulary, fetchMyVocabularyDetails, updateMyVocabulary } from "../vocab-vault";
+import { generateVocabStoryApi } from "../vocab-story";
 
 
 

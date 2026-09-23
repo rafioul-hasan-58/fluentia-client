@@ -1,6 +1,6 @@
 import React from "react";
-import { MyVocabularyItem } from "@/features/vocabulary/types/vocabulary";
 import { Sparkles, ArrowRight, X, AlertCircle, RefreshCw } from "lucide-react";
+import { MyVocabularyItem } from "@/types";
 
 export interface StoryContextModalProps {
   isStorySelectMode: boolean;

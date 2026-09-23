@@ -1,19 +1,8 @@
 "use client";
 
+import { IMeta, MyVocabularyItem, PartOfSpeech, VocabularyStats, VocabularyStatus } from "@/types";
 import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  IMeta,
-  MyVocabularyItem,
-  PartOfSpeech,
-  VocabularyStatus,
-  VocabularyStats,
-} from "@/features/vocabulary/types/vocabulary";
-import {
-  fetchMyVocabularies,
-  fetchMyVocabularyStats,
-  updateMyVocabulary,
-  deleteMyVocabulary,
-} from "@/features/vocabulary/api";
+import { deleteMyVocabulary, fetchMyVocabularies, fetchMyVocabularyStats, updateMyVocabulary } from "../api";
 
 export function useVocabularies() {
   // Vocabulary data (single page at a time)
