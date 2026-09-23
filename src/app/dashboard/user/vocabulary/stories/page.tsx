@@ -1,5 +1,5 @@
+import { VocabStoryPage } from "@/features/vocabulary/page";
 import { Metadata } from "next";
-import VocabStoryPage from "@/features/vocabulary/vocab-story/components/VocabStoryPage";
 
 export const metadata: Metadata = {
   title: "AI Vocabulary Stories | Fluentia",

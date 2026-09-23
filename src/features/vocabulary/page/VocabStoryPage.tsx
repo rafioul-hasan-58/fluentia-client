@@ -31,15 +31,11 @@ import {
   MyVocabularyItem,
   KeywordExplanationItem,
 } from "@/features/vocabulary/vocab-vault/types/vocabulary";
-import {
-  fetchVocabStoriesApi,
-  deleteVocabStoryApi,
-  updateVocabStoryTitleApi,
-  generateVocabStoryApi,
-} from "../api/vocabularyStory";
+
 import { fetchMyVocabularies } from "@/features/vocabulary/vocab-vault/api/vocabulary";
 import { VocabularyDatePicker } from "@/features/vocabulary/vocab-vault/components/VocabularyDatePicker";
-import GenerateNewStoryModal from "./Modals/GenerateNewStoryModal";
+import { GenerateNewStoryModal } from "../vocab-story/components/Modals";
+import { deleteVocabStoryApi, fetchVocabStoriesApi, generateVocabStoryApi, updateVocabStoryTitleApi } from "../vocab-story";
 
 // Helper to underline target vocabulary keywords within story text (pure underline, no background color)
 function renderHighlightedStory(text: string, keywords: string[]) {
