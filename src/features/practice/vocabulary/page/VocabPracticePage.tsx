@@ -128,22 +128,42 @@ const VocabPracticePage = () => {
         return counts;
     }, [stats, allVaultWords]);
 
-    // Today's words count from stats with fallback
+    // Helper to robustly check if a word matches a given date (local or UTC)
+    const isWordFromDate = (item: MyVocabularyItem, targetDate: string): boolean => {
+        const ds = item.createdAt || item.updatedAt;
+        if (!ds) return false;
+        if (ds.startsWith(targetDate)) return true;
+        const d = new Date(ds);
+        if (isNaN(d.getTime())) return false;
+        const ly = d.getFullYear();
+        const lm = String(d.getMonth() + 1).padStart(2, "0");
+        const ld = String(d.getDate()).padStart(2, "0");
+        if (`${ly}-${lm}-${ld}` === targetDate) return true;
+        const uy = d.getUTCFullYear();
+        const um = String(d.getUTCMonth() + 1).padStart(2, "0");
+        const ud = String(d.getUTCDate()).padStart(2, "0");
+        return `${uy}-${um}-${ud}` === targetDate;
+    };
+
+    // Active target date string (YYYY-MM-DD) whether from todayOnly or selectedDate
+    const activeTargetDate = useMemo(() => {
+        if (todayOnly) {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        }
+        return selectedDate;
+    }, [todayOnly, selectedDate]);
+
+    // Today's words count from stats with fallback to vault words
     const todayCount = useMemo(() => {
-        if (typeof stats?.todaysVocab === "number") {
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        const localMatchCount = allVaultWords.filter((w) => isWordFromDate(w, todayStr)).length;
+        if (localMatchCount > 0) return localMatchCount;
+        if (typeof stats?.todaysVocab === "number" && stats.todaysVocab > 0) {
             return stats.todaysVocab;
         }
-        const today = new Date();
-        return allVaultWords.filter((v) => {
-            const d = v.createdAt || v.updatedAt;
-            if (!d) return false;
-            const date = new Date(d);
-            return (
-                date.getFullYear() === today.getFullYear() &&
-                date.getMonth() === today.getMonth() &&
-                date.getDate() === today.getDate()
-            );
-        }).length;
+        return 0;
     }, [stats, allVaultWords]);
 
     // Fetch words based on filters & selected word limit
@@ -154,21 +174,58 @@ const VocabPracticePage = () => {
             setIsLoading(true);
             try {
                 const fetchLimit = wordLimit === 0 ? Math.max(stats?.totalWords || 500, 100) : wordLimit;
+                // If date filter is active, fetch a larger candidate pool (up to 1000) so historical words are found
+                const queryLimit = activeTargetDate ? 1000 : fetchLimit;
+
                 const [filteredRes, totalVaultRes] = await Promise.all([
                     fetchMyVocabularies({
                         partOfSpeech: selectedPos !== "ALL" ? selectedPos : undefined,
-                        selectedDate: selectedDate || undefined,
+                        selectedDate: activeTargetDate || undefined,
                         todayOnly,
-                        limit: fetchLimit,
+                        limit: queryLimit,
                     }),
-                    allVaultWords.length === 0 ? fetchMyVocabularies({ limit: 100 }) : Promise.resolve(allVaultWords),
+                    allVaultWords.length === 0 ? fetchMyVocabularies({ limit: 1000 }) : Promise.resolve({ data: allVaultWords, meta: null }),
                 ]);
 
                 if (!isCancelled) {
-                    setVocabularies(filteredRes.data);
-                    if (allVaultWords.length === 0) {
-                        setAllVaultWords(Array.isArray(totalVaultRes) ? totalVaultRes : totalVaultRes.data);
+                    const pool = totalVaultRes && Array.isArray(totalVaultRes.data) && totalVaultRes.data.length > 0
+                        ? totalVaultRes.data
+                        : allVaultWords;
+
+                    if (allVaultWords.length === 0 && pool.length > 0) {
+                        setAllVaultWords(pool);
                     }
+
+                    let matchedWords: MyVocabularyItem[] = [];
+
+                    if (activeTargetDate) {
+                        // Combine candidates from backend response and vault pool
+                        const combinedMap = new Map<string, MyVocabularyItem>();
+                        (filteredRes.data || []).forEach((w) => combinedMap.set(w.id, w));
+                        pool.forEach((w) => combinedMap.set(w.id, w));
+
+                        matchedWords = Array.from(combinedMap.values()).filter((w) => isWordFromDate(w, activeTargetDate));
+
+                        if (selectedPos !== "ALL") {
+                            matchedWords = matchedWords.filter((w) => w.word?.partOfSpeech === selectedPos);
+                        }
+                    } else {
+                        let baseList = filteredRes.data || [];
+                        if (selectedPos !== "ALL") {
+                            baseList = baseList.filter((w) => w.word?.partOfSpeech === selectedPos);
+                            if (baseList.length === 0 && pool.length > 0) {
+                                baseList = pool.filter((w) => w.word?.partOfSpeech === selectedPos);
+                            }
+                        }
+                        matchedWords = baseList;
+                    }
+
+                    // Apply word limit if configured
+                    if (wordLimit > 0 && matchedWords.length > wordLimit) {
+                        matchedWords = matchedWords.slice(0, wordLimit);
+                    }
+
+                    setVocabularies(matchedWords);
                     setCurrentIndex(0);
                     setIsFlipped(false);
                     setSelectedOption(null);
@@ -189,7 +246,7 @@ const VocabPracticePage = () => {
         return () => {
             isCancelled = true;
         };
-    }, [selectedPos, selectedDate, todayOnly, wordLimit, stats?.totalWords]);
+    }, [selectedPos, activeTargetDate, todayOnly, wordLimit, stats?.totalWords]);
 
     const currentWord = vocabularies[currentIndex];
 
@@ -404,6 +461,11 @@ const VocabPracticePage = () => {
                         onSelectDate={(date: any) => {
                             setSelectedDate(date);
                             if (date) setTodayOnly(false);
+                        }}
+                        onMonthChange={(monthStr) => {
+                            fetchMyVocabularyStats(monthStr).then((data) => {
+                                if (data) setStats(data);
+                            });
                         }}
                         wordCounts={calendarWordCounts}
                         buttonClassName="h-10 px-4 rounded-xl text-xs font-semibold"

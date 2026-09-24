@@ -181,8 +181,21 @@ export async function fetchMyVocabularies(
     }
 
     // 7. Date filter
-    if (options.selectedDate) {
-      queryParams.append("date", options.selectedDate);
+    const effectiveDate =
+      options.selectedDate ||
+      (options.todayOnly
+        ? (() => {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+          })()
+        : undefined);
+
+    if (effectiveDate) {
+      queryParams.append("date", effectiveDate);
+      queryParams.append("selectedDate", effectiveDate);
+    }
+    if (options.todayOnly) {
+      queryParams.append("todayOnly", "true");
     }
 
     // 8. Sorting
@@ -231,13 +244,37 @@ export async function fetchMyVocabularies(
             ? data
             : [];
 
-      const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
+      let formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
         ...item,
         id: item.id || item._id,
         vocabularyStatus: item.vocabularyStatus || "LEARNING",
         isFavorite: item.isFavorite ?? item.isFavourate ?? false,
         word: normalizeVocabularyItem(item.word || item),
       }));
+
+      // If effectiveDate was requested and backend returned unfiltered items, filter client-side
+      if (effectiveDate) {
+        const matchesDate = (item: MyVocabularyItem) => {
+          const ds = item.createdAt || item.updatedAt;
+          if (!ds) return false;
+          if (ds.startsWith(effectiveDate)) return true;
+          const d = new Date(ds);
+          if (isNaN(d.getTime())) return false;
+          const ly = d.getFullYear();
+          const lm = String(d.getMonth() + 1).padStart(2, "0");
+          const ld = String(d.getDate()).padStart(2, "0");
+          if (`${ly}-${lm}-${ld}` === effectiveDate) return true;
+          const uy = d.getUTCFullYear();
+          const um = String(d.getUTCMonth() + 1).padStart(2, "0");
+          const ud = String(d.getUTCDate()).padStart(2, "0");
+          return `${uy}-${um}-${ud}` === effectiveDate;
+        };
+
+        const hasForeignDates = formatted.some((item) => !matchesDate(item));
+        if (hasForeignDates) {
+          formatted = formatted.filter(matchesDate);
+        }
+      }
 
       let meta: IMeta | null = null;
       if (data.meta && typeof data.meta.total === "number") {
