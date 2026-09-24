@@ -20,17 +20,19 @@ import {
     Filter,
     ChevronDown,
     Tag,
+    Layers,
 } from "lucide-react";
-import { MyVocabularyItem, PartOfSpeech } from "@/types";
+import { MyVocabularyItem, PartOfSpeech, VocabularyStats } from "@/types";
 import { fetchMyVocabularies, getDateWordCounts, updateMyVocabulary } from "@/lib/api";
 import { VocabularyDatePicker } from "@/features/vocabulary/vocab-vault/components/VocabularyDatePicker";
-import { ALL_POS_OPTIONS, POS_COLORS } from "@/features/vocabulary";
+import { ALL_POS_OPTIONS, POS_COLORS, fetchMyVocabularyStats } from "@/features/vocabulary";
 
 type PracticeMode = "flashcards" | "quiz";
 
 const VocabPracticePage = () => {
     const [vocabularies, setVocabularies] = useState<MyVocabularyItem[]>([]);
     const [allVaultWords, setAllVaultWords] = useState<MyVocabularyItem[]>([]);
+    const [stats, setStats] = useState<VocabularyStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [mode, setMode] = useState<PracticeMode>("flashcards");
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -41,10 +43,13 @@ const VocabPracticePage = () => {
     const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">("ALL");
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [todayOnly, setTodayOnly] = useState<boolean>(false);
+    const [wordLimit, setWordLimit] = useState<number>(20);
     const [isPosDropdownOpen, setIsPosDropdownOpen] = useState(false);
+    const [isLimitDropdownOpen, setIsLimitDropdownOpen] = useState(false);
     const posDropdownRef = useRef<HTMLDivElement>(null);
+    const limitDropdownRef = useRef<HTMLDivElement>(null);
 
-    // Close POS dropdown on outside click
+    // Close dropdowns on outside click
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (
@@ -53,10 +58,39 @@ const VocabPracticePage = () => {
             ) {
                 setIsPosDropdownOpen(false);
             }
+            if (
+                limitDropdownRef.current &&
+                !limitDropdownRef.current.contains(event.target as Node)
+            ) {
+                setIsLimitDropdownOpen(false);
+            }
         }
 
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Load vocabulary stats on mount
+    useEffect(() => {
+        let isCancelled = false;
+
+        async function loadStats() {
+            try {
+                const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+                const statsData = await fetchMyVocabularyStats(currentMonth);
+                if (!isCancelled && statsData) {
+                    setStats(statsData);
+                }
+            } catch (err) {
+                console.warn("Could not load vocabulary stats:", err);
+            }
+        }
+
+        loadStats();
+
+        return () => {
+            isCancelled = true;
+        };
     }, []);
 
     // Quiz state
@@ -67,12 +101,24 @@ const VocabPracticePage = () => {
 
     // Map of YYYY-MM-DD -> word count for calendar indicators
     const calendarWordCounts = useMemo(() => {
+        if (stats?.dateWordCounts && Object.keys(stats.dateWordCounts).length > 0) {
+            return stats.dateWordCounts;
+        }
         return getDateWordCounts(allVaultWords);
-    }, [allVaultWords]);
+    }, [stats, allVaultWords]);
 
-    // Counts of words per Part of Speech
+    // Total words count for "All Types" from stats
+    const totalStatsCount = typeof stats?.totalWords === "number" ? stats.totalWords : allVaultWords.length;
+
+    // Counts of words per Part of Speech from stats with fallback
     const posCounts = useMemo(() => {
         const counts: Partial<Record<PartOfSpeech, number>> = {};
+        if (stats?.partOfSpeeches && Object.keys(stats.partOfSpeeches).length > 0) {
+            Object.entries(stats.partOfSpeeches).forEach(([key, val]) => {
+                counts[key as PartOfSpeech] = val;
+            });
+            return counts;
+        }
         allVaultWords.forEach((item) => {
             const pos = item.word?.partOfSpeech as PartOfSpeech;
             if (pos) {
@@ -80,10 +126,13 @@ const VocabPracticePage = () => {
             }
         });
         return counts;
-    }, [allVaultWords]);
+    }, [stats, allVaultWords]);
 
-    // Today's words count
+    // Today's words count from stats with fallback
     const todayCount = useMemo(() => {
+        if (typeof stats?.todaysVocab === "number") {
+            return stats.todaysVocab;
+        }
         const today = new Date();
         return allVaultWords.filter((v) => {
             const d = v.createdAt || v.updatedAt;
@@ -95,21 +144,22 @@ const VocabPracticePage = () => {
                 date.getDate() === today.getDate()
             );
         }).length;
-    }, [allVaultWords]);
+    }, [stats, allVaultWords]);
 
-    // Fetch words based on filters
+    // Fetch words based on filters & selected word limit
     useEffect(() => {
         let isCancelled = false;
 
         async function loadFilteredWords() {
             setIsLoading(true);
             try {
+                const fetchLimit = wordLimit === 0 ? Math.max(stats?.totalWords || 500, 100) : wordLimit;
                 const [filteredRes, totalVaultRes] = await Promise.all([
                     fetchMyVocabularies({
                         partOfSpeech: selectedPos !== "ALL" ? selectedPos : undefined,
                         selectedDate: selectedDate || undefined,
                         todayOnly,
-                        limit: 100,
+                        limit: fetchLimit,
                     }),
                     allVaultWords.length === 0 ? fetchMyVocabularies({ limit: 100 }) : Promise.resolve(allVaultWords),
                 ]);
@@ -139,7 +189,7 @@ const VocabPracticePage = () => {
         return () => {
             isCancelled = true;
         };
-    }, [selectedPos, selectedDate, todayOnly]);
+    }, [selectedPos, selectedDate, todayOnly, wordLimit, stats?.totalWords]);
 
     const currentWord = vocabularies[currentIndex];
 
@@ -245,9 +295,10 @@ const VocabPracticePage = () => {
         setSelectedPos("ALL");
         setSelectedDate(null);
         setTodayOnly(false);
+        setWordLimit(20);
     };
 
-    const hasActiveFilters = selectedPos !== "ALL" || selectedDate !== null || todayOnly;
+    const hasActiveFilters = selectedPos !== "ALL" || selectedDate !== null || todayOnly || wordLimit !== 20;
 
     return (
         <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6 animate-in fade-in duration-300">
@@ -391,7 +442,7 @@ const VocabPracticePage = () => {
                                     }`}
                             >
                                 {selectedPos === "ALL"
-                                    ? allVaultWords.length
+                                    ? totalStatsCount
                                     : posCounts[selectedPos] || 0}
                             </span>
 
@@ -421,7 +472,7 @@ const VocabPracticePage = () => {
                                         <span>All Types</span>
                                     </span>
                                     <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
-                                        {allVaultWords.length}
+                                        {totalStatsCount}
                                     </span>
                                 </button>
 
@@ -465,6 +516,77 @@ const VocabPracticePage = () => {
                         )}
                     </div>
 
+                    {/* Words to Load / Session Size Dropdown */}
+                    <div ref={limitDropdownRef} className="relative inline-block">
+                        <button
+                            type="button"
+                            onClick={() => setIsLimitDropdownOpen((prev) => !prev)}
+                            className={`h-10 px-4 rounded-xl text-xs font-semibold border inline-flex items-center gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
+                                    ? "bg-indigo-50/90 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 font-bold shadow-2xs"
+                                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600/50"
+                                }`}
+                            title="Select how many words to load for practice"
+                        >
+                            <div className="p-1 rounded-lg transition-colors text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80">
+                                <Layers className="w-3.5 h-3.5" />
+                            </div>
+
+                            <span>
+                                {wordLimit === 0 ? "All Words" : `${wordLimit} Words`}
+                            </span>
+
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                {vocabularies.length}
+                            </span>
+
+                            <ChevronDown
+                                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isLimitDropdownOpen ? "rotate-180" : ""
+                                    }`}
+                            />
+                        </button>
+
+                        {/* Dropdown Popover */}
+                        {isLimitDropdownOpen && (
+                            <div className="absolute left-0 mt-2 z-50 w-52 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+                                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                    Words to Load
+                                </div>
+                                <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                                <div className="space-y-0.5">
+                                    {[
+                                        { value: 10, label: "10 Words" },
+                                        { value: 20, label: "20 Words (Default)" },
+                                        { value: 30, label: "30 Words" },
+                                        { value: 50, label: "50 Words" },
+                                        { value: 100, label: "100 Words" },
+                                        { value: 0, label: "All Words" },
+                                    ].map((option) => {
+                                        const isSelected = wordLimit === option.value;
+                                        return (
+                                            <button
+                                                key={option.value}
+                                                type="button"
+                                                onClick={() => {
+                                                    setWordLimit(option.value);
+                                                    setIsLimitDropdownOpen(false);
+                                                }}
+                                                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isSelected
+                                                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                                                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                                    }`}
+                                            >
+                                                <span>{option.label}</span>
+                                                {isSelected && (
+                                                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Clear Filters button */}
                     {hasActiveFilters && (
                         <button
@@ -499,9 +621,15 @@ const VocabPracticePage = () => {
                                     {POS_COLORS[selectedPos]?.label || selectedPos}
                                 </span>
                             )}
+                            {wordLimit !== 20 && (
+                                <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white font-medium text-[11px] flex items-center gap-1">
+                                    <Layers className="w-3 h-3" />
+                                    {wordLimit === 0 ? "All Words" : `${wordLimit} Words`}
+                                </span>
+                            )}
                         </div>
                         <span className="font-semibold font-mono shrink-0">
-                            {vocabularies.length} {vocabularies.length === 1 ? "word" : "words"} found
+                            {vocabularies.length} {vocabularies.length === 1 ? "word" : "words"} loaded
                         </span>
                     </div>
                 )}
