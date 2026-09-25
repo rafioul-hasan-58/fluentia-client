@@ -62,7 +62,7 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
         </div>
 
         {/* Date Filters & Controls */}
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2.5 sm:flex-wrap">
           {/* All Dates Preset */}
           <button
             type="button"
@@ -70,7 +70,7 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
               setSelectedDate(null);
               setTodayOnly(false);
             }}
-            className={`h-10 px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center border transition-all cursor-pointer ${
+            className={`h-10 w-full sm:w-auto px-3 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center border transition-all cursor-pointer ${
               !selectedDate && !todayOnly
                 ? "bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-300 shadow-2xs font-bold"
                 : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300"
@@ -87,17 +87,17 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
               setTodayOnly(nextVal);
               if (nextVal) setSelectedDate(null);
             }}
-            className={`h-10 px-4 rounded-xl text-xs font-semibold inline-flex items-center gap-2 border transition-all cursor-pointer ${
+            className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer ${
               todayOnly
                 ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent shadow-xs font-bold"
                 : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300"
             }`}
           >
-            <Clock className="w-3.5 h-3.5" />
-            <span>Today&apos;s Stories</span>
+            <Clock className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Today&apos;s Stories</span>
             {todayCount > 0 && (
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
                   todayOnly
                     ? "bg-white/25 text-white"
                     : "bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400"
@@ -117,7 +117,8 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
             }}
             wordCounts={storyDateCounts}
             itemLabel="story"
-            buttonClassName="h-10 px-4 rounded-xl text-xs font-semibold"
+            className="w-full sm:w-auto"
+            buttonClassName="h-10 w-full sm:w-auto px-3 sm:px-4 rounded-xl text-xs font-semibold justify-center"
           />
 
           {/* Sort Order Toggle Button */}
@@ -125,7 +126,7 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
             type="button"
             onClick={onToggleSortOrder}
             disabled={isLoading}
-            className={`h-10 px-3.5 rounded-xl text-xs font-semibold inline-flex items-center gap-2 border transition-all cursor-pointer shadow-2xs group ${
+            className={`h-10 w-full sm:w-auto px-2.5 sm:px-3.5 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer shadow-2xs group ${
               sortOrder === "asc"
                 ? "bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-300 font-bold"
                 : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 hover:text-slate-900 dark:hover:text-slate-200"
@@ -133,46 +134,57 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
             title={`Sort Order: ${sortOrder === "desc" ? "Newest First (desc)" : "Oldest First (asc)"} — Click to switch`}
           >
             <ArrowUpDown
-              className={`w-3.5 h-3.5 text-amber-500 transition-transform duration-200 ${
+              className={`w-3.5 h-3.5 text-amber-500 shrink-0 transition-transform duration-200 ${
                 sortOrder === "asc" ? "rotate-180" : ""
               }`}
             />
-            <span>{sortOrder === "desc" ? "Newest First" : "Oldest First"}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+            <span className="truncate">{sortOrder === "desc" ? "Newest First" : "Oldest First"}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/20">
               {sortOrder}
             </span>
           </button>
 
           {/* Stories Count Badge */}
-          <div className="h-10 px-3.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-amber-500" />
-            <span>
+          <div className="h-10 w-full sm:w-auto px-3 sm:px-3.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2">
+            <Layers className="w-4 h-4 text-amber-500 shrink-0" />
+            <span className="truncate">
               {totalFiltered} {totalFiltered === 1 ? "Story" : "Stories"}
             </span>
           </div>
 
-          {/* Refresh Button */}
-          <button
-            onClick={onRefresh}
-            disabled={isLoading}
-            className="h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            title="Refresh stories"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-amber-500" : ""}`} />
-          </button>
-
-          {/* Reset Filters Button */}
-          {(selectedDate || todayOnly || searchQuery) && (
+          {/* Actions Column (Refresh + Reset Filters) */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+            {/* Refresh Button */}
             <button
-              type="button"
-              onClick={onResetFilters}
-              className="h-10 inline-flex items-center gap-1.5 px-3.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/50 transition-colors cursor-pointer"
-              title="Reset filters"
+              onClick={onRefresh}
+              disabled={isLoading}
+              className={`h-10 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer ${
+                selectedDate || todayOnly || searchQuery
+                  ? "w-10 sm:w-10 shrink-0"
+                  : "w-full sm:w-10"
+              }`}
+              title="Refresh stories"
             >
-              <X className="w-3.5 h-3.5" />
-              <span>Reset Filters</span>
+              <RefreshCw className={`w-4 h-4 shrink-0 ${isLoading ? "animate-spin text-amber-500" : ""}`} />
+              {!(selectedDate || todayOnly || searchQuery) && (
+                <span className="sm:hidden text-xs font-semibold">Refresh</span>
+              )}
             </button>
-          )}
+
+            {/* Reset Filters Button */}
+            {(selectedDate || todayOnly || searchQuery) && (
+              <button
+                type="button"
+                onClick={onResetFilters}
+                className="h-10 flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 sm:px-3.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/50 transition-colors cursor-pointer"
+                title="Reset filters"
+              >
+                <X className="w-3.5 h-3.5 shrink-0" />
+                <span>Reset</span>
+                <span className="hidden sm:inline">Filters</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
