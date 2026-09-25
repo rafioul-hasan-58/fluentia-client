@@ -159,20 +159,20 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
               onClick={onRefresh}
               disabled={isLoading}
               className={`h-10 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer ${
-                selectedDate || todayOnly || searchQuery
+                selectedDate || searchQuery
                   ? "w-10 sm:w-10 shrink-0"
                   : "w-full sm:w-10"
               }`}
               title="Refresh stories"
             >
               <RefreshCw className={`w-4 h-4 shrink-0 ${isLoading ? "animate-spin text-amber-500" : ""}`} />
-              {!(selectedDate || todayOnly || searchQuery) && (
+              {!(selectedDate || searchQuery) && (
                 <span className="sm:hidden text-xs font-semibold">Refresh</span>
               )}
             </button>
 
-            {/* Reset Filters Button */}
-            {(selectedDate || todayOnly || searchQuery) && (
+            {/* Reset Filters Button (only for calendar date or search query) */}
+            {(selectedDate || searchQuery) && (
               <button
                 type="button"
                 onClick={onResetFilters}
@@ -188,31 +188,23 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
         </div>
       </div>
 
-      {/* Active Date Filter Notice Banner */}
-      {(selectedDate || todayOnly) && (
+      {/* Active Date Filter Notice Banner - only for specific custom date from calendar */}
+      {selectedDate && (
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 backdrop-blur-md animate-in fade-in duration-150">
           <div className="flex items-center gap-2">
             <div className="p-1 rounded-lg bg-amber-500 text-white shadow-sm">
               <Calendar className="w-3.5 h-3.5" />
             </div>
             <span>
-              {todayOnly ? (
-                <>
-                  Showing stories generated <strong>today</strong>
-                </>
-              ) : (
-                <>
-                  Filtering stories created on{" "}
-                  <strong className="font-bold text-slate-900 dark:text-white">
-                    {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </strong>
-                </>
-              )}{" "}
+              Filtering stories created on{" "}
+              <strong className="font-bold text-slate-900 dark:text-white">
+                {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </strong>{" "}
               ({totalFiltered} {totalFiltered === 1 ? "story" : "stories"} found)
             </span>
           </div>
@@ -220,7 +212,6 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
             type="button"
             onClick={() => {
               setSelectedDate(null);
-              setTodayOnly(false);
             }}
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 font-bold border border-rose-200/60 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer shadow-sm text-xs"
           >
