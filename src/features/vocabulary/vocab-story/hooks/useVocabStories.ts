@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   VocabStoryItem,
   MyVocabularyItem,
@@ -21,6 +21,7 @@ export function useVocabStories() {
   // Date Filter States
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [todayOnly, setTodayOnly] = useState<boolean>(false);
+  const [cachedDateCounts, setCachedDateCounts] = useState<Record<string, number>>({});
 
   // Fullscreen / Detailed View Modal State
   const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
@@ -53,23 +54,54 @@ export function useVocabStories() {
     setIsMounted(true);
   }, []);
 
-  // Fetch stories on load
-  const loadStories = async () => {
+  // Fetch stories on load or when filters change
+  const loadStories = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchVocabStoriesApi({ limit: 100 });
+      const effectiveDate = selectedDate
+        ? selectedDate
+        : todayOnly
+        ? (() => {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+          })()
+        : undefined;
+
+      const data = await fetchVocabStoriesApi({
+        date: effectiveDate,
+        limit: 100,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      });
+
       setStories(data.items || []);
+
+      // If unfiltered by date, cache date counts for the calendar picker
+      if (!effectiveDate) {
+        const counts: Record<string, number> = {};
+        (data.items || []).forEach((story) => {
+          if (!story.createdAt) return;
+          const d = new Date(story.createdAt);
+          if (isNaN(d.getTime())) return;
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          const key = `${y}-${m}-${day}`;
+          counts[key] = (counts[key] || 0) + 1;
+        });
+        setCachedDateCounts(counts);
+      }
     } catch (err: any) {
       setError(err.message || "Failed to load vocabulary stories.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedDate, todayOnly]);
 
   useEffect(() => {
     loadStories();
-  }, []);
+  }, [loadStories]);
 
   // Load vault words when opening generate modal
   const loadVaultWords = async () => {
@@ -92,6 +124,9 @@ export function useVocabStories() {
 
   // Map of YYYY-MM-DD -> story count for calendar indicators
   const storyDateCounts = useMemo(() => {
+    if (Object.keys(cachedDateCounts).length > 0) {
+      return cachedDateCounts;
+    }
     const counts: Record<string, number> = {};
     stories.forEach((story) => {
       if (!story.createdAt) return;
@@ -104,11 +139,15 @@ export function useVocabStories() {
       counts[key] = (counts[key] || 0) + 1;
     });
     return counts;
-  }, [stories]);
+  }, [stories, cachedDateCounts]);
 
   // Today's stories count
   const todayCount = useMemo(() => {
     const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    if (cachedDateCounts[todayKey] !== undefined) {
+      return cachedDateCounts[todayKey];
+    }
     return stories.filter((story) => {
       if (!story.createdAt) return false;
       const d = new Date(story.createdAt);
@@ -118,7 +157,7 @@ export function useVocabStories() {
         d.getDate() === today.getDate()
       );
     }).length;
-  }, [stories]);
+  }, [stories, cachedDateCounts]);
 
   // Filtered stories
   const filteredStories = useMemo(() => {
