@@ -23,6 +23,14 @@ export function useVocabStories() {
   const [todayOnly, setTodayOnly] = useState<boolean>(false);
   const [cachedDateCounts, setCachedDateCounts] = useState<Record<string, number>>({});
 
+  // Sort States (directly forwarded to backend API)
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortBy, setSortBy] = useState<string>("createdAt");
+
+  const toggleSortOrder = useCallback(() => {
+    setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"));
+  }, []);
+
   // Fullscreen / Detailed View Modal State
   const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
   const [viewTab, setViewTab] = useState<"bangla" | "english" | "split">("bangla");
@@ -97,7 +105,7 @@ export function useVocabStories() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedDate, todayOnly]);
+  }, [selectedDate, todayOnly, sortBy, sortOrder]);
 
   useEffect(() => {
     loadStories();
@@ -366,7 +374,7 @@ export function useVocabStories() {
     isMounted,
     loadStories,
 
-    // Filters
+    // Filters & Sorting
     searchQuery,
     setSearchQuery,
     selectedDate,
@@ -375,6 +383,11 @@ export function useVocabStories() {
     setTodayOnly,
     storyDateCounts,
     todayCount,
+    sortOrder,
+    setSortOrder,
+    sortBy,
+    setSortBy,
+    toggleSortOrder,
 
     // Active Story / Reader Modal
     activeStoryId,

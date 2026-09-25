@@ -26,7 +26,7 @@ const VocabStoryPage = () => {
     error,
     loadStories,
 
-    // Filters
+    // Filters & Sorting
     searchQuery,
     setSearchQuery,
     selectedDate,
@@ -35,6 +35,9 @@ const VocabStoryPage = () => {
     setTodayOnly,
     storyDateCounts,
     todayCount,
+    sortOrder,
+    setSortOrder,
+    toggleSortOrder,
 
     // Active Story / Reader Modal
     activeStory,
@@ -86,12 +89,13 @@ const VocabStoryPage = () => {
     [stories]
   );
 
-  const isFiltered = Boolean(selectedDate || todayOnly || searchQuery);
+  const isFiltered = Boolean(selectedDate || todayOnly || searchQuery || sortOrder !== "desc");
 
   const handleResetFilters = () => {
     setSelectedDate(null);
     setTodayOnly(false);
     setSearchQuery("");
+    setSortOrder("desc");
   };
 
   const handleNavigateToCreate = () => {
@@ -115,6 +119,8 @@ const VocabStoryPage = () => {
         setSelectedDate={setSelectedDate}
         todayOnly={todayOnly}
         setTodayOnly={setTodayOnly}
+        sortOrder={sortOrder}
+        onToggleSortOrder={toggleSortOrder}
         storyDateCounts={storyDateCounts}
         todayCount={todayCount}
         totalFiltered={filteredStories.length}
