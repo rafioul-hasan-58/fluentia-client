@@ -89,13 +89,12 @@ const VocabStoryPage = () => {
     [stories]
   );
 
-  const isFiltered = Boolean(selectedDate || todayOnly || searchQuery || sortOrder !== "desc");
+  const isFiltered = Boolean(selectedDate || todayOnly || searchQuery);
 
   const handleResetFilters = () => {
     setSelectedDate(null);
     setTodayOnly(false);
     setSearchQuery("");
-    setSortOrder("desc");
   };
 
   const handleNavigateToCreate = () => {

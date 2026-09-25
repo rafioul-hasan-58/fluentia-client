@@ -162,7 +162,7 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
           </button>
 
           {/* Reset Filters Button */}
-          {(selectedDate || todayOnly || searchQuery || sortOrder !== "desc") && (
+          {(selectedDate || todayOnly || searchQuery) && (
             <button
               type="button"
               onClick={onResetFilters}
