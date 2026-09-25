@@ -166,61 +166,42 @@ const VocabPracticePage = () => {
         return 0;
     }, [stats, allVaultWords]);
 
-    // Fetch words based on filters & selected word limit
+    // Load initial vault words fallback for calendar/part of speech counts
+    useEffect(() => {
+        let isCancelled = false;
+        async function loadVaultFallback() {
+            try {
+                const res = await fetchMyVocabularies({ limit: 100 });
+                if (!isCancelled && res.data && res.data.length > 0) {
+                    setAllVaultWords(res.data);
+                }
+            } catch (err) {
+                console.warn("Could not load vault fallback words:", err);
+            }
+        }
+        loadVaultFallback();
+        return () => {
+            isCancelled = true;
+        };
+    }, []);
+
+    // Fetch words directly based on filters & selected word limit via backend
     useEffect(() => {
         let isCancelled = false;
 
         async function loadFilteredWords() {
             setIsLoading(true);
             try {
-                const fetchLimit = wordLimit === 0 ? Math.max(stats?.totalWords || 500, 100) : wordLimit;
-                // If date filter is active, fetch a larger candidate pool (up to 1000) so historical words are found
-                const queryLimit = activeTargetDate ? 1000 : fetchLimit;
+                const fetchLimit = wordLimit === 0 ? 100 : Math.min(wordLimit, 100);
 
-                const [filteredRes, totalVaultRes] = await Promise.all([
-                    fetchMyVocabularies({
-                        partOfSpeech: selectedPos !== "ALL" ? selectedPos : undefined,
-                        selectedDate: activeTargetDate || undefined,
-                        todayOnly,
-                        limit: queryLimit,
-                    }),
-                    allVaultWords.length === 0 ? fetchMyVocabularies({ limit: 1000 }) : Promise.resolve({ data: allVaultWords, meta: null }),
-                ]);
+                const res = await fetchMyVocabularies({
+                    partOfSpeech: selectedPos !== "ALL" ? selectedPos : undefined,
+                    date: activeTargetDate || undefined,
+                    limit: fetchLimit,
+                });
 
                 if (!isCancelled) {
-                    const pool = totalVaultRes && Array.isArray(totalVaultRes.data) && totalVaultRes.data.length > 0
-                        ? totalVaultRes.data
-                        : allVaultWords;
-
-                    if (allVaultWords.length === 0 && pool.length > 0) {
-                        setAllVaultWords(pool);
-                    }
-
-                    let matchedWords: MyVocabularyItem[] = [];
-
-                    if (activeTargetDate) {
-                        // Combine candidates from backend response and vault pool
-                        const combinedMap = new Map<string, MyVocabularyItem>();
-                        (filteredRes.data || []).forEach((w) => combinedMap.set(w.id, w));
-                        pool.forEach((w) => combinedMap.set(w.id, w));
-
-                        matchedWords = Array.from(combinedMap.values()).filter((w) => isWordFromDate(w, activeTargetDate));
-
-                        if (selectedPos !== "ALL") {
-                            matchedWords = matchedWords.filter((w) => w.word?.partOfSpeech === selectedPos);
-                        }
-                    } else {
-                        let baseList = filteredRes.data || [];
-                        if (selectedPos !== "ALL") {
-                            baseList = baseList.filter((w) => w.word?.partOfSpeech === selectedPos);
-                            if (baseList.length === 0 && pool.length > 0) {
-                                baseList = pool.filter((w) => w.word?.partOfSpeech === selectedPos);
-                            }
-                        }
-                        matchedWords = baseList;
-                    }
-
-                    // Apply word limit if configured
+                    let matchedWords = res.data || [];
                     if (wordLimit > 0 && matchedWords.length > wordLimit) {
                         matchedWords = matchedWords.slice(0, wordLimit);
                     }
@@ -246,7 +227,7 @@ const VocabPracticePage = () => {
         return () => {
             isCancelled = true;
         };
-    }, [selectedPos, activeTargetDate, todayOnly, wordLimit, stats?.totalWords]);
+    }, [selectedPos, activeTargetDate, wordLimit]);
 
     const currentWord = vocabularies[currentIndex];
 

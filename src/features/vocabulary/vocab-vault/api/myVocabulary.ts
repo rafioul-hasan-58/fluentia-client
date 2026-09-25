@@ -138,12 +138,12 @@ export async function fetchMyVocabularies(
   const token = getAuthToken();
 
   const page = options.page || 1;
-  const limit = options.limit || 12;
+  const limit = Math.min(Math.max(1, options.limit || 12), 100);
 
   try {
     const queryParams = new URLSearchParams();
 
-    // 1. Pagination parameters (defaults to 12 matching UI)
+    // 1. Pagination parameters (defaults to 12, max 100 per backend DTO)
     queryParams.append("page", String(page));
     queryParams.append("limit", String(limit));
 
@@ -167,7 +167,7 @@ export async function fetchMyVocabularies(
       queryParams.append("englishLevel", options.englishLevel);
     }
 
-    // 6. Favorites (send both isFavorite and isFavourate for backend schema compatibility)
+    // 6. Favorites (whitelisted param isFavorite)
     const favVal =
       options.isFavorite !== undefined
         ? String(options.isFavorite)
@@ -177,11 +177,11 @@ export async function fetchMyVocabularies(
 
     if (favVal !== undefined) {
       queryParams.append("isFavorite", favVal);
-      queryParams.append("isFavourate", favVal);
     }
 
-    // 7. Date filter
+    // 7. Date filter - direct backend filter via GET /my-vocabularies/find-all?date=YYYY-MM-DD
     const effectiveDate =
+      options.date ||
       options.selectedDate ||
       (options.todayOnly
         ? (() => {
@@ -192,10 +192,6 @@ export async function fetchMyVocabularies(
 
     if (effectiveDate) {
       queryParams.append("date", effectiveDate);
-      queryParams.append("selectedDate", effectiveDate);
-    }
-    if (options.todayOnly) {
-      queryParams.append("todayOnly", "true");
     }
 
     // 8. Sorting
@@ -211,8 +207,10 @@ export async function fetchMyVocabularies(
     } else if (options.sortBy === "recent") {
       sortField = "createdAt";
       sortDirection = sortDirection || "desc";
-    } else if (options.sortBy) {
+    } else if (options.sortBy && options.sortBy !== "asc" && options.sortBy !== "desc") {
       sortField = options.sortBy;
+    } else if (options.sortBy === "asc" || options.sortBy === "desc") {
+      sortDirection = options.sortBy;
     }
 
     if (sortField) {
@@ -244,37 +242,13 @@ export async function fetchMyVocabularies(
             ? data
             : [];
 
-      let formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
+      const formatted: MyVocabularyItem[] = rawList.map((item: any) => ({
         ...item,
         id: item.id || item._id,
         vocabularyStatus: item.vocabularyStatus || "LEARNING",
         isFavorite: item.isFavorite ?? item.isFavourate ?? false,
         word: normalizeVocabularyItem(item.word || item),
       }));
-
-      // If effectiveDate was requested and backend returned unfiltered items, filter client-side
-      if (effectiveDate) {
-        const matchesDate = (item: MyVocabularyItem) => {
-          const ds = item.createdAt || item.updatedAt;
-          if (!ds) return false;
-          if (ds.startsWith(effectiveDate)) return true;
-          const d = new Date(ds);
-          if (isNaN(d.getTime())) return false;
-          const ly = d.getFullYear();
-          const lm = String(d.getMonth() + 1).padStart(2, "0");
-          const ld = String(d.getDate()).padStart(2, "0");
-          if (`${ly}-${lm}-${ld}` === effectiveDate) return true;
-          const uy = d.getUTCFullYear();
-          const um = String(d.getUTCMonth() + 1).padStart(2, "0");
-          const ud = String(d.getUTCDate()).padStart(2, "0");
-          return `${uy}-${um}-${ud}` === effectiveDate;
-        };
-
-        const hasForeignDates = formatted.some((item) => !matchesDate(item));
-        if (hasForeignDates) {
-          formatted = formatted.filter(matchesDate);
-        }
-      }
 
       let meta: IMeta | null = null;
       if (data.meta && typeof data.meta.total === "number") {

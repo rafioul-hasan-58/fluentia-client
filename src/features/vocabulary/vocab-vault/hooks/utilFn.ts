@@ -561,7 +561,7 @@ function computeFilterKey(
     `lvl:${options.englishLevel || "ALL"}`,
     `sort:${options.sortBy || "recent"}`,
     `fav:${options.favoritesOnly ?? options.isFavorite ?? false}`,
-    `d:${options.selectedDate || ""}`,
+    `d:${options.date || options.selectedDate || ""}`,
     `today:${options.todayOnly || false}`,
   ];
   return parts.join("&");

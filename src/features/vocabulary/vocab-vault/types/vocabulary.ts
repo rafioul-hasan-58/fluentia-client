@@ -136,6 +136,7 @@ export interface VocabularyFilterOptions {
   favoritesOnly?: boolean;
   todayOnly?: boolean;
   selectedDate?: string | null;
+  date?: string | null;
   limit?: number;
   page?: number;
 }
