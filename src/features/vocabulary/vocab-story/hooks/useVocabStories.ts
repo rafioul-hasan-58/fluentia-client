@@ -79,8 +79,8 @@ export function useVocabStories() {
       const data = await fetchVocabStoriesApi({
         date: effectiveDate,
         limit: 100,
-        sortBy: "createdAt",
-        sortOrder: "desc",
+        sortBy,
+        sortOrder,
       });
 
       setStories(data.items || []);
@@ -210,8 +210,17 @@ export function useVocabStories() {
       );
     }
 
+    // Sort order guarantee
+    if (sortBy === "createdAt") {
+      result = [...result].sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+      });
+    }
+
     return result;
-  }, [stories, todayOnly, selectedDate, searchQuery]);
+  }, [stories, todayOnly, selectedDate, searchQuery, sortBy, sortOrder]);
 
   // Active detailed story object and index
   const activeStory = useMemo(() => {
