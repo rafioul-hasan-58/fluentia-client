@@ -58,53 +58,53 @@ export const VocabStoryFullscreenModal: React.FC<VocabStoryFullscreenModalProps>
   return createPortal(
     <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100/95 dark:bg-[#0c0a17]/95 backdrop-blur-md text-slate-900 dark:text-white flex flex-col overflow-hidden animate-in fade-in duration-200">
       {/* Top Navigation & Controls Bar */}
-      <div className="shrink-0 w-full px-4 sm:px-8 py-3 bg-white/90 dark:bg-[#131024]/90 border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 sm:gap-4 z-30 shadow-xs">
+      <div className="shrink-0 w-full px-3 sm:px-8 py-2.5 sm:py-3 bg-white/90 dark:bg-[#131024]/90 border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-2 sm:gap-4 z-30 shadow-xs flex-nowrap">
         {/* Left: Breadcrumbs / Back & Story Counter */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={onClose}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700/60"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700/60 shrink-0"
           >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden xs:inline">Back</span>
+            <ChevronLeft className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">Back</span>
           </button>
 
-          <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+          <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 hidden sm:block shrink-0" />
 
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-semibold text-slate-600 dark:text-slate-400">
+          <div className="flex items-center gap-2 text-xs shrink-0 whitespace-nowrap">
+            <span className="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
               Story <span className="font-bold text-amber-600 dark:text-amber-400">#{activeStoryIndex + 1}</span> of {totalStories}
             </span>
           </div>
         </div>
 
         {/* Center: Story Navigation Controls */}
-        <div className="flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-800/60 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60">
+        <div className="flex items-center flex-nowrap shrink-0 gap-1 sm:gap-1.5 bg-slate-100/80 dark:bg-slate-800/60 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 whitespace-nowrap select-none">
           <button
             onClick={() => onNavigateStory(-1)}
             title="Previous Story (← Arrow key)"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center justify-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer shadow-2xs shrink-0 whitespace-nowrap"
           >
-            <ChevronLeft className="w-3.5 h-3.5" />
+            <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
             <span className="hidden sm:inline">Prev</span>
           </button>
 
-          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 px-1.5 font-mono">
-            {activeStoryIndex + 1} / {totalStories}
+          <span className="text-xs font-bold text-slate-600 dark:text-slate-400 px-1.5 sm:px-2 font-mono whitespace-nowrap shrink-0 select-none min-w-[3rem] text-center">
+            {activeStoryIndex + 1}&nbsp;/&nbsp;{totalStories}
           </span>
 
           <button
             onClick={() => onNavigateStory(1)}
             title="Next Story (→ Arrow key)"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center justify-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer shadow-2xs shrink-0 whitespace-nowrap"
           >
             <span className="hidden sm:inline">Next</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
           </button>
         </div>
 
         {/* Right: Copy All, Delete & Close */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={() =>
               onCopy(
@@ -113,17 +113,17 @@ export const VocabStoryFullscreenModal: React.FC<VocabStoryFullscreenModalProps>
                 "all"
               )
             }
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-semibold transition-colors cursor-pointer border border-amber-500/30"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-semibold transition-colors cursor-pointer border border-amber-500/30 shrink-0 whitespace-nowrap"
             title="Copy full story content"
           >
             {copiedState?.id === activeStory.id && copiedState?.type === "all" ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                 <span className="hidden sm:inline">Copied All!</span>
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5" />
+                <Copy className="w-3.5 h-3.5 shrink-0" />
                 <span className="hidden sm:inline">Copy All</span>
               </>
             )}
@@ -132,17 +132,17 @@ export const VocabStoryFullscreenModal: React.FC<VocabStoryFullscreenModalProps>
           <button
             onClick={() => onDelete(activeStory)}
             title="Delete story"
-            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer border border-transparent hover:border-rose-500/20"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer border border-transparent hover:border-rose-500/20 shrink-0"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4 shrink-0" />
           </button>
 
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+            className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700 shrink-0"
             title="Close Reader (Esc)"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 shrink-0" />
           </button>
         </div>
       </div>
