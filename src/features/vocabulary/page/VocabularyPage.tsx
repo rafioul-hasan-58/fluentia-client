@@ -560,6 +560,10 @@ const VocabularyPage = () => {
         setTodayOnly={setTodayOnly}
         setSelectedDate={setSelectedDate}
         setIsModalOpen={setIsModalOpen}
+        isStorySelectMode={isStorySelectMode}
+        setIsStorySelectMode={setIsStorySelectMode}
+        selectedStoryItems={selectedStoryItems}
+        setSelectedStoryItems={setSelectedStoryItems}
       />
 
       {/* 2. Search, Filter & Controls */}

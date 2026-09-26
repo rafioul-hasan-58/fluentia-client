@@ -58,10 +58,10 @@ export interface VocabularyFilterBarProps {
   setViewMode: (mode: "grid" | "table") => void;
   loadVocabularies: () => void;
   isLoading: boolean;
-  isStorySelectMode: boolean;
-  setIsStorySelectMode: (val: boolean | ((prev: boolean) => boolean)) => void;
-  selectedStoryItems: MyVocabularyItem[];
-  setSelectedStoryItems: (items: MyVocabularyItem[]) => void;
+  isStorySelectMode?: boolean;
+  setIsStorySelectMode?: (val: boolean | ((prev: boolean) => boolean)) => void;
+  selectedStoryItems?: MyVocabularyItem[];
+  setSelectedStoryItems?: (items: MyVocabularyItem[]) => void;
   stats: {
     total: number;
     todayCount: number;
@@ -228,26 +228,6 @@ const VocabularyFilterBar = ({
           className="w-full sm:w-auto"
           buttonClassName="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold justify-center sm:justify-start"
         />
-        {/* create story button */}
-        <button
-          type="button"
-          onClick={() => {
-            setIsStorySelectMode(!isStorySelectMode);
-            if (isStorySelectMode) setSelectedStoryItems([]);
-          }}
-          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${isStorySelectMode
-            ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-500 shadow-md shadow-orange-500/20"
-            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400"
-            }`}
-          title="Toggle Story Selection Mode"
-        >
-          <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="truncate sm:overflow-visible">
-            {isStorySelectMode
-              ? `Story Mode (${selectedStoryItems.length})`
-              : "Create Story"}
-          </span>
-        </button>
 
         {/* Part of Speech Filter Dropdown */}
         <div ref={posDropdownRef} className="relative w-full sm:w-auto sm:inline-block">

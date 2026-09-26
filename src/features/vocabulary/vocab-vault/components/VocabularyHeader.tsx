@@ -1,5 +1,6 @@
 import React from "react";
 import { BookOpen, Clock, Plus, Sparkles, Star, TrendingUp } from "lucide-react";
+import { MyVocabularyItem } from "../types/vocabulary";
 
 interface VocabularyHeaderProps {
   stats: {
@@ -12,6 +13,10 @@ interface VocabularyHeaderProps {
   setTodayOnly: (val: boolean | ((prev: boolean) => boolean)) => void;
   setSelectedDate: (date: string | null) => void;
   setIsModalOpen: (open: boolean) => void;
+  isStorySelectMode?: boolean;
+  setIsStorySelectMode?: (val: boolean | ((prev: boolean) => boolean)) => void;
+  selectedStoryItems?: MyVocabularyItem[];
+  setSelectedStoryItems?: (items: MyVocabularyItem[]) => void;
 }
 
 const VocabularyHeader = ({
@@ -20,6 +25,10 @@ const VocabularyHeader = ({
   setTodayOnly,
   setSelectedDate,
   setIsModalOpen,
+  isStorySelectMode = false,
+  setIsStorySelectMode,
+  selectedStoryItems = [],
+  setSelectedStoryItems,
 }: VocabularyHeaderProps) => {
   return (
     <div>
@@ -42,15 +51,38 @@ const VocabularyHeader = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-2.5 shrink-0">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40 dark:shadow-[0_0_20px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-95 text-center cursor-pointer"
+              className="w-full sm:w-auto lg:w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:via-primary-dark hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40 dark:shadow-[0_0_20px_rgba(124,58,237,0.5)] hover:scale-[1.02] active:scale-95 text-center cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Add Vocabulary</span>
               <Sparkles className="w-4 h-4 text-amber-300 animate-spin-slow" />
             </button>
+
+            {setIsStorySelectMode && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsStorySelectMode(!isStorySelectMode);
+                  if (isStorySelectMode && setSelectedStoryItems) setSelectedStoryItems([]);
+                }}
+                className={`w-full sm:w-auto lg:w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95 text-center ${
+                  isStorySelectMode
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-500 shadow-md shadow-orange-500/30"
+                    : "bg-white/80 dark:bg-slate-900/80 hover:bg-amber-50/60 dark:hover:bg-amber-950/20 border-slate-200/90 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:border-amber-400 dark:hover:border-amber-500/50 hover:text-amber-700 dark:hover:text-amber-300"
+                }`}
+                title="Toggle Story Selection Mode"
+              >
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>
+                  {isStorySelectMode
+                    ? `Story Mode (${selectedStoryItems.length})`
+                    : "Create Story"}
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
