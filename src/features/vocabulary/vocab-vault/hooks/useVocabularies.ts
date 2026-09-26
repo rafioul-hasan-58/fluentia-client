@@ -21,6 +21,7 @@ export function useVocabularies() {
   const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
+  const [selectedMastery, setSelectedMastery] = useState<string>("ALL");
   const [selectedSort, setSelectedSort] = useState<"asc" | "desc">("desc");
   const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false);
   const [todayOnly, setTodayOnly] = useState<boolean>(false);
@@ -56,6 +57,7 @@ export function useVocabularies() {
     selectedPos,
     selectedStatus,
     selectedLevel,
+    selectedMastery,
     selectedSort,
     favoritesOnly,
     todayOnly,
@@ -103,6 +105,8 @@ export function useVocabularies() {
           partOfSpeech: selectedPos,
           status: selectedStatus !== "ALL" ? (selectedStatus as any) : undefined,
           englishLevel: selectedLevel !== "ALL" ? selectedLevel : undefined,
+          masteryLevel:
+            selectedMastery !== "ALL" ? selectedMastery : undefined,
           sortBy: selectedSort,
           favoritesOnly,
           todayOnly,
@@ -141,6 +145,7 @@ export function useVocabularies() {
     selectedPos,
     selectedStatus,
     selectedLevel,
+    selectedMastery,
     selectedSort,
     favoritesOnly,
     todayOnly,
@@ -297,6 +302,7 @@ export function useVocabularies() {
       selectedPos,
       selectedStatus,
       selectedLevel,
+      selectedMastery,
       selectedSort,
       favoritesOnly,
       todayOnly,
@@ -307,6 +313,7 @@ export function useVocabularies() {
       setSelectedPos,
       setSelectedStatus,
       setSelectedLevel,
+      setSelectedMastery,
       setSelectedSort,
       setFavoritesOnly,
       setTodayOnly,

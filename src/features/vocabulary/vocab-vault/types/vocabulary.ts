@@ -131,6 +131,7 @@ export interface VocabularyFilterOptions {
   status?: VocabularyStatus | "ALL" | string;
   isFavorite?: boolean;
   englishLevel?: string;
+  masteryLevel?: number | string;
   sortBy?: "recent" | "alphabetical" | "mastery" | string;
   sortOrder?: "asc" | "desc";
   favoritesOnly?: boolean;

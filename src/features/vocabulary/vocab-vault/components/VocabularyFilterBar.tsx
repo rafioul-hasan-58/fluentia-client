@@ -354,23 +354,28 @@ const VocabularyFilterBar = ({
           )}
         </div>
 
-        {/* Sort Select */}
-        <div className="relative w-full sm:w-auto">
-          <div className="pointer-events-none absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-            <ArrowUpDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </div>
-          <select
-            value={selectedSort}
-            onChange={(e) => setSelectedSort(e.target.value as any)}
-            className="w-full sm:w-auto h-12 sm:h-auto pl-8 sm:pl-9 pr-7 sm:pr-8 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer appearance-none"
-          >
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
-          </select>
-          <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
-            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </div>
-        </div>
+        {/* Sort Order Toggle Button */}
+        <button
+          type="button"
+          onClick={() => setSelectedSort(selectedSort === "desc" ? "asc" : "desc")}
+          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none shadow-xs ${
+            selectedSort === "asc"
+              ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-purple-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
+          }`}
+          title={`Sort Order: ${selectedSort === "desc" ? "Newest First" : "Oldest First"} — Click to switch`}
+        >
+          <ArrowUpDown
+            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 ${
+              selectedSort === "asc"
+                ? "text-purple-600 dark:text-purple-400 rotate-180"
+                : "text-slate-400"
+            }`}
+          />
+          <span className="truncate sm:overflow-visible">
+            {selectedSort === "desc" ? "Newest First" : "Oldest First"}
+          </span>
+        </button>
 
         {/* Status Filter Dropdown */}
         <div ref={statusDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
