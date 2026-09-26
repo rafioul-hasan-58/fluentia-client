@@ -167,6 +167,15 @@ export async function fetchMyVocabularies(
       queryParams.append("englishLevel", options.englishLevel);
     }
 
+    // 5.5 Mastery level filter
+    if (
+      options.masteryLevel !== undefined &&
+      options.masteryLevel !== null &&
+      String(options.masteryLevel) !== "ALL"
+    ) {
+      queryParams.append("masteryLevel", String(options.masteryLevel));
+    }
+
     // 6. Favorites (whitelisted param isFavorite)
     const favVal =
       options.isFavorite !== undefined

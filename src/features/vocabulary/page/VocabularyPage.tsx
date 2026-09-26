@@ -59,6 +59,7 @@ const VocabularyPage = () => {
     selectedPos,
     selectedStatus,
     selectedLevel,
+    selectedMastery,
     selectedSort,
     favoritesOnly,
     todayOnly,
@@ -70,6 +71,7 @@ const VocabularyPage = () => {
     setSelectedPos,
     setSelectedStatus,
     setSelectedLevel,
+    setSelectedMastery,
     setSelectedSort,
     setFavoritesOnly,
     setTodayOnly,
@@ -80,7 +82,6 @@ const VocabularyPage = () => {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [playingWord, setPlayingWord] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState<boolean>(false);
-  const [selectedMastery, setSelectedMastery] = useState<string>("ALL");
 
   // Fullscreen Single Vocab View State
   const [fullscreenVocabId, setFullscreenVocabId] = useState<string | null>(null);
