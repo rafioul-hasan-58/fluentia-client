@@ -59,23 +59,11 @@ export const VocabStoryFullscreenModal: React.FC<VocabStoryFullscreenModalProps>
     <div className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-100/95 dark:bg-[#0c0a17]/95 backdrop-blur-md text-slate-900 dark:text-white flex flex-col overflow-hidden animate-in fade-in duration-200">
       {/* Top Navigation & Controls Bar */}
       <div className="shrink-0 w-full px-3 sm:px-8 py-2.5 sm:py-3 bg-white/90 dark:bg-[#131024]/90 border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-2 sm:gap-4 z-30 shadow-xs flex-nowrap">
-        {/* Left: Breadcrumbs / Back & Story Counter */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <button
-            onClick={onClose}
-            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700/60 shrink-0"
-          >
-            <ChevronLeft className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">Back</span>
-          </button>
-
-          <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 hidden sm:block shrink-0" />
-
-          <div className="flex items-center gap-2 text-xs shrink-0 whitespace-nowrap">
-            <span className="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
-              Story <span className="font-bold text-amber-600 dark:text-amber-400">#{activeStoryIndex + 1}</span> of {totalStories}
-            </span>
-          </div>
+        {/* inset-inline-start: Story Counter */}
+        <div className="flex items-center gap-2 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+          <span className="font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+            Story <span className="font-bold text-amber-600 dark:text-amber-400">#{activeStoryIndex + 1}</span> of {totalStories}
+          </span>
         </div>
 
         {/* Center: Story Navigation Controls */}
@@ -103,7 +91,7 @@ export const VocabStoryFullscreenModal: React.FC<VocabStoryFullscreenModalProps>
           </button>
         </div>
 
-        {/* Right: Copy All, Delete & Close */}
+        {/* inset-inline-end: Copy All, Delete & Close */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={() =>
@@ -324,7 +312,7 @@ export const VocabStoryFullscreenModal: React.FC<VocabStoryFullscreenModalProps>
         {/* 3. Side-by-Side Dual Column View */}
         {viewTab === "split" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left: Bangla-English */}
+            {/* inset-inline-start: Bangla-English */}
             <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#141226] border border-amber-500/25 space-y-5 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
@@ -346,7 +334,7 @@ export const VocabStoryFullscreenModal: React.FC<VocabStoryFullscreenModalProps>
               </div>
             </div>
 
-            {/* Right: Full English */}
+            {/* inset-inline-end: Full English */}
             <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#141226] border border-indigo-500/25 space-y-5 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
