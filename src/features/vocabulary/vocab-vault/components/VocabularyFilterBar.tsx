@@ -35,6 +35,14 @@ export const ALL_LEVEL_OPTIONS = [
   { id: "C2", label: "C2 Level", dotColor: "bg-amber-400" },
 ];
 
+export const ALL_MASTERY_OPTIONS = [
+  { id: "1", label: "1 Star", stars: 1 },
+  { id: "2", label: "2 Stars", stars: 2 },
+  { id: "3", label: "3 Stars", stars: 3 },
+  { id: "4", label: "4 Stars", stars: 4 },
+  { id: "5", label: "5 Stars", stars: 5 },
+];
+
 export interface VocabularyFilterBarProps {
   searchQuery: string;
   setSearchQuery: (val: string) => void;
@@ -44,6 +52,8 @@ export interface VocabularyFilterBarProps {
   setSelectedStatus: (val: string) => void;
   selectedLevel: string;
   setSelectedLevel: (val: string) => void;
+  selectedMastery?: string;
+  setSelectedMastery?: (val: string) => void;
   selectedSort: "asc" | "desc";
   setSelectedSort: (val: "asc" | "desc") => void;
   favoritesOnly: boolean;
@@ -82,6 +92,8 @@ const VocabularyFilterBar = ({
   setSelectedStatus,
   selectedLevel,
   setSelectedLevel,
+  selectedMastery,
+  setSelectedMastery,
   selectedSort,
   setSelectedSort,
   favoritesOnly,
@@ -103,13 +115,19 @@ const VocabularyFilterBar = ({
   stats,
   totalFoundCount,
 }: VocabularyFilterBarProps) => {
+  const [internalMastery, setInternalMastery] = useState<string>("ALL");
+  const activeMastery = selectedMastery !== undefined ? selectedMastery : internalMastery;
+  const changeMastery = setSelectedMastery || setInternalMastery;
+
   const [isPosDropdownOpen, setIsPosDropdownOpen] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
+  const [isMasteryDropdownOpen, setIsMasteryDropdownOpen] = useState(false);
 
   const posDropdownRef = useRef<HTMLDivElement>(null);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
   const levelDropdownRef = useRef<HTMLDivElement>(null);
+  const masteryDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -132,6 +150,12 @@ const VocabularyFilterBar = ({
         !levelDropdownRef.current.contains(target)
       ) {
         setIsLevelDropdownOpen(false);
+      }
+      if (
+        masteryDropdownRef.current &&
+        !masteryDropdownRef.current.contains(target)
+      ) {
+        setIsMasteryDropdownOpen(false);
       }
     }
 
@@ -237,6 +261,7 @@ const VocabularyFilterBar = ({
               setIsPosDropdownOpen((prev) => !prev);
               setIsStatusDropdownOpen(false);
               setIsLevelDropdownOpen(false);
+              setIsMasteryDropdownOpen(false);
             }}
             className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${selectedPos !== "ALL"
               ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
@@ -355,6 +380,7 @@ const VocabularyFilterBar = ({
               setIsStatusDropdownOpen((prev) => !prev);
               setIsPosDropdownOpen(false);
               setIsLevelDropdownOpen(false);
+              setIsMasteryDropdownOpen(false);
             }}
             className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${selectedStatus !== "ALL"
               ? "bg-gradient-to-r from-emerald-600/15 via-teal-600/15 to-emerald-600/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-sm shadow-emerald-500/10 ring-2 ring-emerald-500/20 font-bold"
@@ -451,6 +477,7 @@ const VocabularyFilterBar = ({
               setIsLevelDropdownOpen((prev) => !prev);
               setIsPosDropdownOpen(false);
               setIsStatusDropdownOpen(false);
+              setIsMasteryDropdownOpen(false);
             }}
             className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${selectedLevel !== "ALL"
               ? "bg-gradient-to-r from-blue-600/15 via-indigo-600/15 to-cyan-600/15 border-blue-500/40 text-blue-700 dark:text-blue-300 shadow-sm shadow-blue-500/10 ring-2 ring-blue-500/20 font-bold"
@@ -541,6 +568,123 @@ const VocabularyFilterBar = ({
                       </span>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
                         {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Mastery Filter Dropdown */}
+        <div ref={masteryDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
+          <button
+            type="button"
+            onClick={() => {
+              setIsMasteryDropdownOpen((prev) => !prev);
+              setIsPosDropdownOpen(false);
+              setIsStatusDropdownOpen(false);
+              setIsLevelDropdownOpen(false);
+            }}
+            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${
+              activeMastery !== "ALL"
+                ? "bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300 shadow-sm shadow-amber-500/10 ring-2 ring-amber-500/20 font-bold"
+                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400 dark:hover:border-amber-500/50"
+            }`}
+            title="Filter vocabulary by mastery star level"
+          >
+            <Star
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${
+                activeMastery !== "ALL"
+                  ? "text-amber-500 fill-amber-500"
+                  : "text-slate-400"
+              }`}
+            />
+
+            <span className="truncate sm:overflow-visible">
+              {activeMastery === "ALL" ? (
+                "All Mastery"
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="font-mono">{activeMastery}</span>
+                  <span className="text-amber-500">★</span>
+                  <span>Mastery</span>
+                </span>
+              )}
+            </span>
+
+            <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <ChevronDown
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                  isMasteryDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* Mastery Dropdown Popover */}
+          {isMasteryDropdownOpen && (
+            <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 z-50 w-56 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+              {/* All Mastery option */}
+              <button
+                type="button"
+                onClick={() => {
+                  changeMastery("ALL");
+                  setIsMasteryDropdownOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                  activeMastery === "ALL"
+                    ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span>All Mastery</span>
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  {stats.total}
+                </span>
+              </button>
+
+              <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+
+              {/* Star options 1-5 */}
+              <div className="space-y-0.5">
+                {ALL_MASTERY_OPTIONS.map((item) => {
+                  const isSelected = activeMastery === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        changeMastery(item.id);
+                        setIsMasteryDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                        isSelected
+                          ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold"
+                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <span className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              className={`w-3.5 h-3.5 ${
+                                s <= item.stars
+                                  ? "text-amber-400 fill-amber-400"
+                                  : "text-slate-200 dark:text-slate-700"
+                              }`}
+                            />
+                          ))}
+                        </span>
+                        <span className="font-medium text-slate-700 dark:text-slate-300">
+                          {item.label}
+                        </span>
                       </span>
                     </button>
                   );
