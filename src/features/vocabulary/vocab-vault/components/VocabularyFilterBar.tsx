@@ -252,6 +252,26 @@ const VocabularyFilterBar = ({
           className="w-full sm:w-auto"
           buttonClassName="w-full sm:w-auto h-12 sm:h-auto px-3 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold justify-center sm:justify-start"
         />
+        {/* Sort Order Toggle Button */}
+        <button
+          type="button"
+          onClick={() => setSelectedSort(selectedSort === "desc" ? "asc" : "desc")}
+          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none shadow-xs ${selectedSort === "asc"
+              ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-purple-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
+            }`}
+          title={`Sort Order: ${selectedSort === "desc" ? "Newest First" : "Oldest First"} — Click to switch`}
+        >
+          <ArrowUpDown
+            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 ${selectedSort === "asc"
+                ? "text-purple-600 dark:text-purple-400 rotate-180"
+                : "text-slate-400"
+              }`}
+          />
+          <span className="truncate sm:overflow-visible">
+            {selectedSort === "desc" ? "Newest First" : "Oldest First"}
+          </span>
+        </button>
 
         {/* Part of Speech Filter Dropdown */}
         <div ref={posDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
@@ -353,29 +373,6 @@ const VocabularyFilterBar = ({
             </div>
           )}
         </div>
-
-        {/* Sort Order Toggle Button */}
-        <button
-          type="button"
-          onClick={() => setSelectedSort(selectedSort === "desc" ? "asc" : "desc")}
-          className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none shadow-xs ${
-            selectedSort === "asc"
-              ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-purple-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
-              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
-          }`}
-          title={`Sort Order: ${selectedSort === "desc" ? "Newest First" : "Oldest First"} — Click to switch`}
-        >
-          <ArrowUpDown
-            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-200 ${
-              selectedSort === "asc"
-                ? "text-purple-600 dark:text-purple-400 rotate-180"
-                : "text-slate-400"
-            }`}
-          />
-          <span className="truncate sm:overflow-visible">
-            {selectedSort === "desc" ? "Newest First" : "Oldest First"}
-          </span>
-        </button>
 
         {/* Status Filter Dropdown */}
         <div ref={statusDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
@@ -592,19 +589,17 @@ const VocabularyFilterBar = ({
               setIsStatusDropdownOpen(false);
               setIsLevelDropdownOpen(false);
             }}
-            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${
-              activeMastery !== "ALL"
+            className={`w-full sm:w-auto h-12 sm:h-auto inline-flex items-center gap-2 pl-3 sm:pl-3.5 pr-7 sm:pr-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer select-none relative ${activeMastery !== "ALL"
                 ? "bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300 shadow-sm shadow-amber-500/10 ring-2 ring-amber-500/20 font-bold"
                 : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-amber-400 dark:hover:border-amber-500/50"
-            }`}
+              }`}
             title="Filter vocabulary by mastery star level"
           >
             <Star
-              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${
-                activeMastery !== "ALL"
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${activeMastery !== "ALL"
                   ? "text-amber-500 fill-amber-500"
                   : "text-slate-400"
-              }`}
+                }`}
             />
 
             <span className="truncate sm:overflow-visible">
@@ -621,9 +616,8 @@ const VocabularyFilterBar = ({
 
             <div className="pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-slate-400">
               <ChevronDown
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${
-                  isMasteryDropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${isMasteryDropdownOpen ? "rotate-180" : ""
+                  }`}
               />
             </div>
           </button>
@@ -638,11 +632,10 @@ const VocabularyFilterBar = ({
                   changeMastery("ALL");
                   setIsMasteryDropdownOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                  activeMastery === "ALL"
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${activeMastery === "ALL"
                     ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
+                  }`}
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-slate-400" />
@@ -668,22 +661,20 @@ const VocabularyFilterBar = ({
                         changeMastery(item.id);
                         setIsMasteryDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                        isSelected
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isSelected
                           ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold"
                           : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                      }`}
+                        }`}
                     >
                       <span className="flex items-center gap-2.5">
                         <span className="flex items-center gap-0.5">
                           {[1, 2, 3, 4, 5].map((s) => (
                             <Star
                               key={s}
-                              className={`w-3.5 h-3.5 ${
-                                s <= item.stars
+                              className={`w-3.5 h-3.5 ${s <= item.stars
                                   ? "text-amber-400 fill-amber-400"
                                   : "text-slate-200 dark:text-slate-700"
-                              }`}
+                                }`}
                             />
                           ))}
                         </span>
