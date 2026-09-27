@@ -21,6 +21,7 @@ import {
     ChevronDown,
     Tag,
     Layers,
+    RefreshCw,
 } from "lucide-react";
 import { MyVocabularyItem, PartOfSpeech, VocabularyStats } from "@/types";
 import { fetchMyVocabularies, getDateWordCounts, updateMyVocabulary } from "@/lib/api";
@@ -336,6 +337,47 @@ const VocabPracticePage = () => {
         setWordLimit(20);
     };
 
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+            const fetchLimit = wordLimit === 0 ? 100 : Math.min(wordLimit, 100);
+
+            const [statsData, wordsRes, vaultRes] = await Promise.all([
+                fetchMyVocabularyStats(currentMonth).catch(() => null),
+                fetchMyVocabularies({
+                    partOfSpeech: selectedPos !== "ALL" ? selectedPos : undefined,
+                    date: activeTargetDate || undefined,
+                    limit: fetchLimit,
+                }).catch(() => null),
+                fetchMyVocabularies({ limit: 100 }).catch(() => null),
+            ]);
+
+            if (statsData) setStats(statsData);
+            if (vaultRes?.data && vaultRes.data.length > 0) {
+                setAllVaultWords(vaultRes.data);
+            }
+            if (wordsRes?.data) {
+                let matchedWords = wordsRes.data;
+                if (wordLimit > 0 && matchedWords.length > wordLimit) {
+                    matchedWords = matchedWords.slice(0, wordLimit);
+                }
+                setVocabularies(matchedWords);
+                setCurrentIndex(0);
+                setIsFlipped(false);
+                setSelectedOption(null);
+                setQuizFeedback(null);
+                setQuizScore({ correct: 0, total: 0 });
+            }
+        } catch (err) {
+            console.warn("Could not refresh practice vocabulary:", err);
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
     const hasActiveFilters = selectedPos !== "ALL" || selectedDate !== null || todayOnly || wordLimit !== 20;
 
     return (
@@ -386,22 +428,37 @@ const VocabPracticePage = () => {
             </div>
 
             {/* Filter Bar: Date Filter + Part of Speech Carousel */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                {/* Row 1: Date Filters & Quick Presets */}
-                <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mr-1">
-                        <Filter className="w-3.5 h-3.5" />
+            <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5 sm:space-y-4">
+                {/* Header: Label & Reset Filters */}
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <Filter className="w-3.5 h-3.5 text-indigo-500" />
                         <span>Filter By:</span>
                     </span>
 
-                    {/* All Dates Preset */}
+                    {/* Clear Filters button */}
+                    {hasActiveFilters && (
+                        <button
+                            type="button"
+                            onClick={handleResetFilters}
+                            className="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/50 transition-colors cursor-pointer"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Reset Filters</span>
+                        </button>
+                    )}
+                </div>
+
+                {/* Filter Controls: 2 items per row on mobile (grid-cols-2), flex on desktop */}
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5">
+                    {/* Row 1, Col 1: All Dates Preset */}
                     <button
                         type="button"
                         onClick={() => {
                             setSelectedDate(null);
                             setTodayOnly(false);
                         }}
-                        className={`h-10 px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center border transition-all cursor-pointer ${!selectedDate && !todayOnly
+                        className={`h-10 w-full sm:w-auto px-3 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center border transition-all cursor-pointer select-none ${!selectedDate && !todayOnly
                                 ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
                                 : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
                             }`}
@@ -409,7 +466,7 @@ const VocabPracticePage = () => {
                         All Dates
                     </button>
 
-                    {/* Today's Words Toggle */}
+                    {/* Row 1, Col 2: Today's Words Toggle */}
                     <button
                         type="button"
                         onClick={() => {
@@ -417,16 +474,16 @@ const VocabPracticePage = () => {
                             setTodayOnly(nextVal);
                             if (nextVal) setSelectedDate(null);
                         }}
-                        className={`h-10 px-4 rounded-xl text-xs font-semibold inline-flex items-center gap-2 border transition-all cursor-pointer ${todayOnly
+                        className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${todayOnly
                                 ? "bg-indigo-600 text-white border-indigo-600 shadow-xs font-bold"
                                 : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
                             }`}
                     >
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>Today&apos;s Words</span>
+                        <Clock className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Today&apos;s Words</span>
                         {todayCount > 0 && (
                             <span
-                                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${todayOnly
+                                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${todayOnly
                                         ? "bg-white/25 text-white"
                                         : "bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
                                     }`}
@@ -436,7 +493,7 @@ const VocabPracticePage = () => {
                         )}
                     </button>
 
-                    {/* Interactive Date Picker with Word Counts */}
+                    {/* Row 2, Col 1: Interactive Date Picker with Word Counts */}
                     <VocabularyDatePicker
                         selectedDate={selectedDate}
                         onSelectDate={(date: any) => {
@@ -449,55 +506,61 @@ const VocabPracticePage = () => {
                             });
                         }}
                         wordCounts={calendarWordCounts}
-                        buttonClassName="h-10 px-4 rounded-xl text-xs font-semibold"
+                        className="w-full sm:w-auto"
+                        buttonClassName="h-10 w-full sm:w-auto px-3 sm:px-4 rounded-xl text-xs font-semibold justify-center sm:justify-start"
                     />
 
-                    {/* Part of Speech Filter Dropdown */}
-                    <div ref={posDropdownRef} className="relative inline-block">
+                    {/* Row 2, Col 2: Part of Speech Filter Dropdown */}
+                    <div ref={posDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
                         <button
                             type="button"
-                            onClick={() => setIsPosDropdownOpen((prev) => !prev)}
-                            className={`h-10 px-4 rounded-xl text-xs font-semibold border inline-flex items-center gap-2 transition-all cursor-pointer select-none ${selectedPos !== "ALL"
+                            onClick={() => {
+                                setIsPosDropdownOpen((prev) => !prev);
+                                setIsLimitDropdownOpen(false);
+                            }}
+                            className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${selectedPos !== "ALL"
                                     ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
                                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
                                 }`}
                             title="Filter by part of speech"
                         >
-                            <div
-                                className={`p-1 rounded-lg transition-colors ${selectedPos !== "ALL"
-                                        ? "bg-purple-600 text-white shadow-sm"
-                                        : "text-slate-400"
-                                    }`}
-                            >
-                                <Tag className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                                <div
+                                    className={`p-1 rounded-lg shrink-0 transition-colors ${selectedPos !== "ALL"
+                                            ? "bg-purple-600 text-white shadow-sm"
+                                            : "text-slate-400"
+                                        }`}
+                                >
+                                    <Tag className="w-3.5 h-3.5" />
+                                </div>
+
+                                <span className="truncate">
+                                    {selectedPos === "ALL"
+                                        ? "All Types"
+                                        : POS_COLORS[selectedPos]?.label || selectedPos}
+                                </span>
+
+                                <span
+                                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${selectedPos !== "ALL"
+                                            ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
+                                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                                        }`}
+                                >
+                                    {selectedPos === "ALL"
+                                        ? totalStatsCount
+                                        : posCounts[selectedPos] || 0}
+                                </span>
                             </div>
 
-                            <span>
-                                {selectedPos === "ALL"
-                                    ? "All Types"
-                                    : POS_COLORS[selectedPos]?.label || selectedPos}
-                            </span>
-
-                            <span
-                                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${selectedPos !== "ALL"
-                                        ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
-                                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                                    }`}
-                            >
-                                {selectedPos === "ALL"
-                                    ? totalStatsCount
-                                    : posCounts[selectedPos] || 0}
-                            </span>
-
                             <ChevronDown
-                                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isPosDropdownOpen ? "rotate-180" : ""
+                                className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${isPosDropdownOpen ? "rotate-180" : ""
                                     }`}
                             />
                         </button>
 
                         {/* Dropdown Popover */}
                         {isPosDropdownOpen && (
-                            <div className="absolute left-0 mt-2 z-50 w-56 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+                            <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 z-50 w-56 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
                                 {/* All Types option */}
                                 <button
                                     type="button"
@@ -559,38 +622,43 @@ const VocabPracticePage = () => {
                         )}
                     </div>
 
-                    {/* Words to Load / Session Size Dropdown */}
-                    <div ref={limitDropdownRef} className="relative inline-block">
+                    {/* Row 3, Col 1: Words to Load / Session Size Dropdown */}
+                    <div ref={limitDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
                         <button
                             type="button"
-                            onClick={() => setIsLimitDropdownOpen((prev) => !prev)}
-                            className={`h-10 px-4 rounded-xl text-xs font-semibold border inline-flex items-center gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
+                            onClick={() => {
+                                setIsLimitDropdownOpen((prev) => !prev);
+                                setIsPosDropdownOpen(false);
+                            }}
+                            className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
                                     ? "bg-indigo-50/90 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 font-bold shadow-2xs"
                                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600/50"
                                 }`}
                             title="Select how many words to load for practice"
                         >
-                            <div className="p-1 rounded-lg transition-colors text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80">
-                                <Layers className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                                <div className="p-1 rounded-lg shrink-0 transition-colors text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80">
+                                    <Layers className="w-3.5 h-3.5" />
+                                </div>
+
+                                <span className="truncate">
+                                    {wordLimit === 0 ? "All Words" : `${wordLimit} Words`}
+                                </span>
+
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shrink-0">
+                                    {vocabularies.length}
+                                </span>
                             </div>
 
-                            <span>
-                                {wordLimit === 0 ? "All Words" : `${wordLimit} Words`}
-                            </span>
-
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                {vocabularies.length}
-                            </span>
-
                             <ChevronDown
-                                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isLimitDropdownOpen ? "rotate-180" : ""
+                                className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${isLimitDropdownOpen ? "rotate-180" : ""
                                     }`}
                             />
                         </button>
 
                         {/* Dropdown Popover */}
                         {isLimitDropdownOpen && (
-                            <div className="absolute left-0 mt-2 z-50 w-52 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
+                            <div className="absolute left-0 mt-2 z-50 w-52 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
                                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                                     Words to Load
                                 </div>
@@ -630,17 +698,23 @@ const VocabPracticePage = () => {
                         )}
                     </div>
 
-                    {/* Clear Filters button */}
-                    {hasActiveFilters && (
-                        <button
-                            type="button"
-                            onClick={handleResetFilters}
-                            className="h-10 inline-flex items-center gap-1.5 px-3.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/50 transition-colors ml-auto cursor-pointer"
-                        >
-                            <X className="w-3.5 h-3.5" />
-                            <span>Reset Filters</span>
-                        </button>
-                    )}
+                    {/* Row 3, Col 2: Sync / Refresh Button */}
+                    <button
+                        type="button"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing || isLoading}
+                        className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${
+                            isRefreshing
+                                ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
+                                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
+                        }`}
+                        title="Sync and refresh vocabulary words"
+                    >
+                        <div className={`p-1 rounded-lg shrink-0 transition-colors ${isRefreshing ? "bg-indigo-600 text-white shadow-sm" : "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80"}`}>
+                            <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isRefreshing ? "animate-spin" : ""}`} />
+                        </div>
+                        <span className="truncate">{isRefreshing ? "Syncing..." : "Sync Words"}</span>
+                    </button>
                 </div>
 
                 {/* Active Filter Summary Bar */}
