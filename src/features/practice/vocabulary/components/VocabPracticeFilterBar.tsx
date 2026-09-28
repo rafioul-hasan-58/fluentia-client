@@ -108,8 +108,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                 )}
             </div>
 
-            {/* Filter Controls: 2 items per row on mobile (grid-cols-2), flex on desktop */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5">
+            {/* Filter Controls: 2 items per row on mobile (grid-cols-2), single flex line on desktop */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap lg:flex-nowrap items-center gap-2 lg:gap-2">
                 {/* Row 1, Col 1: All Dates Preset */}
                 <button
                     type="button"
@@ -117,7 +117,7 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                         onSelectDate(null);
                         onToggleTodayOnly(false);
                     }}
-                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${!selectedDate && !todayOnly
+                    className={`h-10 w-full sm:w-auto px-2.5 lg:px-3 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 border transition-all cursor-pointer select-none shrink-0 ${!selectedDate && !todayOnly
                         ? "bg-purple-50 dark:bg-purple-950/60 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 shadow-2xs font-bold"
                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-300 dark:hover:border-purple-600/50"
                         }`}
@@ -141,7 +141,7 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                         onToggleTodayOnly(nextVal);
                         if (nextVal) onSelectDate(null);
                     }}
-                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${todayOnly
+                    className={`h-10 w-full sm:w-auto px-2.5 lg:px-3 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 border transition-all cursor-pointer select-none shrink-0 ${todayOnly
                         ? "bg-purple-600 text-white border-purple-600 shadow-xs font-bold"
                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-300 dark:hover:border-purple-600/50"
                         }`}
@@ -176,25 +176,25 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                     }}
                     onMonthChange={onMonthChange}
                     wordCounts={calendarWordCounts}
-                    className="w-full sm:w-auto"
-                    buttonClassName="h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold justify-start gap-1.5 sm:gap-2"
+                    className="w-full sm:w-auto shrink-0"
+                    buttonClassName="h-10 w-full sm:w-auto px-2.5 lg:px-3 rounded-xl text-xs font-semibold justify-start gap-1.5 shrink-0"
                 />
 
                 {/* Row 2, Col 2: Part of Speech Filter Dropdown */}
-                <div ref={posDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
+                <div ref={posDropdownRef} className="relative w-full sm:w-auto sm:inline-block shrink-0">
                     <button
                         type="button"
                         onClick={() => {
                             setIsPosDropdownOpen((prev) => !prev);
                             setIsLimitDropdownOpen(false);
                         }}
-                        className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${selectedPos !== "ALL"
+                        className={`h-10 w-full sm:w-auto px-2.5 lg:px-3 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 transition-all cursor-pointer select-none shrink-0 ${selectedPos !== "ALL"
                             ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
                             : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
                             }`}
                         title="Filter by part of speech"
                     >
-                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
                             <div
                                 className={`p-1 rounded-lg shrink-0 transition-colors ${selectedPos !== "ALL"
                                     ? "bg-purple-600 text-white shadow-sm"
@@ -293,20 +293,20 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                 </div>
 
                 {/* Row 3, Col 1: Words to Load / Session Size Dropdown */}
-                <div ref={limitDropdownRef} className="relative w-full sm:w-auto sm:inline-block">
+                <div ref={limitDropdownRef} className="relative w-full sm:w-auto sm:inline-block shrink-0">
                     <button
                         type="button"
                         onClick={() => {
                             setIsLimitDropdownOpen((prev) => !prev);
                             setIsPosDropdownOpen(false);
                         }}
-                        className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
+                        className={`h-10 w-full sm:w-auto px-2.5 lg:px-3 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 transition-all cursor-pointer select-none shrink-0 ${wordLimit !== 20
                             ? "bg-purple-50/90 dark:bg-purple-950/60 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 font-bold shadow-2xs"
                             : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-300 dark:hover:border-purple-600/50"
                             }`}
                         title="Select how many words to load for practice"
                     >
-                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0">
                             <div className={`p-1 rounded-lg shrink-0 transition-colors ${wordLimit !== 20 ? "bg-purple-600 text-white shadow-xs" : "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/80"}`}>
                                 <Layers className="w-3.5 h-3.5" />
                             </div>
@@ -370,7 +370,7 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                     type="button"
                     onClick={onRefresh}
                     disabled={isRefreshing || isLoading}
-                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${isRefreshing
+                    className={`h-10 w-full sm:w-auto px-2.5 lg:px-3 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 border transition-all cursor-pointer select-none shrink-0 ${isRefreshing
                         ? "bg-purple-50 dark:bg-purple-950/60 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 shadow-2xs font-bold"
                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50 hover:text-purple-600 dark:hover:text-purple-400"
                         }`}
