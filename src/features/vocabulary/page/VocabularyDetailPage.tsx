@@ -656,7 +656,7 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
                   return (
                     <Link
                       key={i}
-                      href={`/dashboard/user/vocabulary/details/${encodeURIComponent(synWord)}`}
+                      href={`/dashboard/user/vocabulary/${encodeURIComponent(synWord)}`}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/80 text-xs font-semibold transition-all hover:scale-105"
                     >
                       <span>{synWord}</span>
@@ -685,7 +685,7 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
                   return (
                     <Link
                       key={i}
-                      href={`/dashboard/user/vocabulary/details/${encodeURIComponent(antWord)}`}
+                      href={`/dashboard/user/vocabulary/${encodeURIComponent(antWord)}`}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-800 dark:text-rose-200 border border-rose-200/80 dark:border-rose-800/80 text-xs font-semibold transition-all hover:scale-105"
                     >
                       <span>{antWord}</span>

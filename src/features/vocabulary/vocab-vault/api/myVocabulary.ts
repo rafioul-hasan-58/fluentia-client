@@ -582,32 +582,36 @@ export async function fetchMyVocabularyByWord(
   const token = getAuthToken();
 
   try {
+    const headers: Record<string, string> = {
+      Accept: "*/*",
+    };
     if (token) {
-      const res = await fetch(
-        `${baseUrl}/my-vocabularies/word/${encodeURIComponent(cleanWord)}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      headers["Authorization"] = `Bearer ${token}`;
+    }
 
-      if (res.ok) {
-        const json = await res.json();
-        const data = json.data || json;
-        if (data && (data.word || data.meaning)) {
-          const rawWord = data.word || data;
-          const fullWord = normalizeVocabularyItem(rawWord);
-          const item: MyVocabularyItem = {
-            ...data,
-            id: data.id || `my-vocab-${Date.now()}`,
-            word: fullWord,
-            mySentences: Array.isArray(data.mySentences) ? data.mySentences : [],
-            notes: data.notes || null,
-          };
-          return item;
-        }
+    const res = await fetch(
+      `${baseUrl}/my-vocabularies/word/${encodeURIComponent(cleanWord)}`,
+      { headers }
+    );
+
+    if (res.ok) {
+      const json = await res.json();
+      const data = json.data || json;
+      if (data && (data.word || data.meaning)) {
+        const rawWord =
+          data.word && typeof data.word === "object" ? data.word : data;
+        const fullWord = normalizeVocabularyItem(rawWord);
+        const item: MyVocabularyItem = {
+          ...data,
+          id: data.id || data._id || `my-vocab-${Date.now()}`,
+          isFavorite: data.isFavorite ?? data.isFavourate ?? false,
+          vocabularyStatus: data.vocabularyStatus || "LEARNING",
+          masteryLevel: data.masteryLevel ?? 1,
+          word: fullWord,
+          mySentences: Array.isArray(data.mySentences) ? data.mySentences : [],
+          notes: data.notes || null,
+        };
+        return item;
       }
     }
 
