@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
     Clock,
     Calendar,
+    CalendarDays,
     X,
     Filter,
     ChevronDown,
@@ -116,12 +117,20 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                         onSelectDate(null);
                         onToggleTodayOnly(false);
                     }}
-                    className={`h-10 w-full sm:w-auto px-3 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center border transition-all cursor-pointer select-none ${!selectedDate && !todayOnly
+                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${!selectedDate && !todayOnly
                         ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
-                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600/50"
                         }`}
                 >
-                    All Dates
+                    <div
+                        className={`p-1 rounded-lg shrink-0 transition-colors ${!selectedDate && !todayOnly
+                            ? "bg-indigo-600 text-white shadow-xs"
+                            : "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80"
+                            }`}
+                    >
+                        <CalendarDays className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="truncate">All Dates</span>
                 </button>
 
                 {/* Row 1, Col 2: Today's Words Toggle */}
@@ -132,12 +141,19 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                         onToggleTodayOnly(nextVal);
                         if (nextVal) onSelectDate(null);
                     }}
-                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${todayOnly
+                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${todayOnly
                         ? "bg-indigo-600 text-white border-indigo-600 shadow-xs font-bold"
-                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600/50"
                         }`}
                 >
-                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                    <div
+                        className={`p-1 rounded-lg shrink-0 transition-colors ${todayOnly
+                            ? "bg-white/20 text-white"
+                            : "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80"
+                            }`}
+                    >
+                        <Clock className="w-3.5 h-3.5" />
+                    </div>
                     <span className="truncate">Today&apos;s Words</span>
                     {todayCount > 0 && (
                         <span
@@ -161,7 +177,7 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                     onMonthChange={onMonthChange}
                     wordCounts={calendarWordCounts}
                     className="w-full sm:w-auto"
-                    buttonClassName="h-10 w-full sm:w-auto px-3 sm:px-4 rounded-xl text-xs font-semibold justify-center sm:justify-start"
+                    buttonClassName="h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold justify-start gap-1.5 sm:gap-2"
                 />
 
                 {/* Row 2, Col 2: Part of Speech Filter Dropdown */}
@@ -182,7 +198,7 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                             <div
                                 className={`p-1 rounded-lg shrink-0 transition-colors ${selectedPos !== "ALL"
                                     ? "bg-purple-600 text-white shadow-sm"
-                                    : "text-slate-400"
+                                    : "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80"
                                     }`}
                             >
                                 <Tag className="w-3.5 h-3.5" />
@@ -284,13 +300,13 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                             setIsLimitDropdownOpen((prev) => !prev);
                             setIsPosDropdownOpen(false);
                         }}
-                        className={`h-10 w-full sm:w-auto px-2 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1 sm:gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
+                        className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
                             ? "bg-indigo-50/90 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 font-bold shadow-2xs"
                             : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600/50"
                             }`}
                         title="Select how many words to load for practice"
                     >
-                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                             <div className="p-1 rounded-lg shrink-0 transition-colors text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80">
                                 <Layers className="w-3.5 h-3.5" />
                             </div>
@@ -354,7 +370,7 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                     type="button"
                     onClick={onRefresh}
                     disabled={isRefreshing || isLoading}
-                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${isRefreshing
+                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-start gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${isRefreshing
                         ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
                         }`}

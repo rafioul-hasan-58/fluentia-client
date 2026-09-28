@@ -279,16 +279,16 @@ export function VocabularyDatePicker({
           }
         >
           <div
-            className={`p-1 rounded-lg transition-colors ${
+            className={`p-1 rounded-lg shrink-0 transition-colors ${
               selectedDate
                 ? "bg-purple-600 text-white shadow-sm"
-                : "text-slate-400 group-hover:text-purple-500"
+                : "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80"
             }`}
           >
             <CalendarIcon className="w-3.5 h-3.5" />
           </div>
 
-          <span>{formattedLabel}</span>
+          <span className="truncate">{formattedLabel}</span>
 
           {selectedDate && (
             <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-purple-500/20 text-purple-700 dark:text-purple-300">
