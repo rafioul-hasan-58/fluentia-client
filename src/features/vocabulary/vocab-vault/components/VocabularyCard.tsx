@@ -1,5 +1,6 @@
 import React from "react";
-import { Check, Edit3, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
+import Link from "next/link";
+import { Check, Edit3, ExternalLink, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
 import { POS_COLORS } from "../constants/vocabularyConstants";
 import { getVerbForms, MyVocabularyItem } from "@/types";
 
@@ -41,7 +42,7 @@ export default function VocabularyCard({
       className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border transition-all duration-300 overflow-hidden hover:-translate-y-0.5 ${
         isStorySelectMode && isSelectedForStory
           ? "ring-2 ring-amber-500 border-amber-500 shadow-md shadow-amber-500/20 bg-amber-500/[0.03]"
-          : "border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-indigo-500/40 dark:hover:border-indigo-500/40"
+          : "border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-purple-500/40 dark:hover:border-purple-500/40"
       } ${isStorySelectMode ? "cursor-pointer" : ""}`}
     >
       {/* Top Accent Strip by Part of Speech */}
@@ -55,7 +56,7 @@ export default function VocabularyCard({
             ? "from-purple-500 to-pink-500"
             : item.word.partOfSpeech === "ADVERB"
             ? "from-amber-500 to-orange-500"
-            : "from-indigo-500 to-purple-500"
+            : "from-purple-500 to-indigo-500"
         }`}
       />
 
@@ -85,20 +86,28 @@ export default function VocabularyCard({
                 </button>
               )}
 
-              <button
-                onClick={(e) => {
-                  if (isStorySelectMode) {
+              {isStorySelectMode ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
                     e.stopPropagation();
                     handleToggleStoryWord(item);
-                  } else {
-                    setFullscreenVocabId(item.id);
-                  }
-                }}
-                className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left cursor-pointer capitalize truncate"
-                title={`View ${item.word.word} full details`}
-              >
-                {item.word.word}
-              </button>
+                  }}
+                  className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-left cursor-pointer capitalize truncate"
+                  title={`Select ${item.word.word}`}
+                >
+                  {item.word.word}
+                </button>
+              ) : (
+                <Link
+                  href={`/dashboard/user/vocabulary/details/${encodeURIComponent(item.word.word)}`}
+                  className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-left cursor-pointer capitalize truncate"
+                  title={`View details for ${item.word.word}`}
+                >
+                  {item.word.word}
+                </Link>
+              )}
+
 
               <button
                 onClick={() => playPronunciation(item.word.word)}
@@ -240,15 +249,23 @@ export default function VocabularyCard({
           ))}
         </div>
 
-        {/* Details -> Full Screen Button */}
-        <button
-          onClick={() => setFullscreenVocabId(item.id)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200/80 dark:border-indigo-800/80 transition-all hover:scale-[1.02] cursor-pointer"
-          title="View full screen details"
-        >
-          <Maximize2 className="w-3 h-3" />
-          <span>Details</span>
-        </button>
+        {/* Details Link to Dynamic Page & Quick Preview */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setFullscreenVocabId(item.id)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-colors cursor-pointer"
+            title="Quick preview modal"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+          </button>
+          <Link
+            href={`/dashboard/user/vocabulary/details/${encodeURIComponent(item.word.word)}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 text-xs font-semibold border border-purple-200/80 dark:border-purple-800/80 transition-all hover:scale-[1.02] cursor-pointer"
+            title={`View full dynamic page for ${item.word.word}`}
+          >
+            <span>Details</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

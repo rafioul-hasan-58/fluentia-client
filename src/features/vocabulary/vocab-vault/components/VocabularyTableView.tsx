@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Check, Edit3, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
 import { POS_COLORS } from "../constants/vocabularyConstants";
 import { getWordRelationText, MyVocabularyItem } from "@/types";
@@ -87,19 +88,26 @@ export default function VocabularyTableView({
                             {/* Word & Pronunciation */}
                             <td className="py-3 px-4 sm:px-6 whitespace-nowrap">
                               <div className="flex items-center gap-2">
-                                <button
-                                  onClick={(e) => {
-                                    if (isStorySelectMode) {
+                                {isStorySelectMode ? (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
                                       e.stopPropagation();
                                       handleToggleStoryWord(item);
-                                    } else {
-                                      setFullscreenVocabId(item.id);
-                                    }
-                                  }}
-                                  className="font-bold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer capitalize text-sm"
-                                >
-                                  {item.word.word}
-                                </button>
+                                    }}
+                                    className="font-bold text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer capitalize text-sm"
+                                  >
+                                    {item.word.word}
+                                  </button>
+                                ) : (
+                                  <Link
+                                    href={`/dashboard/user/vocabulary/details/${encodeURIComponent(item.word.word)}`}
+                                    className="font-bold text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer capitalize text-sm"
+                                    title={`View details for ${item.word.word}`}
+                                  >
+                                    {item.word.word}
+                                  </Link>
+                                )}
                                 <button
                                   onClick={() => playPronunciation(item.word.word)}
                                   title="Listen pronunciation"
@@ -224,14 +232,21 @@ export default function VocabularyTableView({
                                   <span className="hidden xl:inline">Update</span>
                                 </button>
 
-                                <button
-                                  onClick={() => setFullscreenVocabId(item.id)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 transition-colors cursor-pointer"
-                                  title="Open full details"
-                                >
-                                  <Maximize2 className="w-3 h-3" />
-                                  <span className="hidden xl:inline">Details</span>
-                                </button>
+                                 <button
+                                   onClick={() => setFullscreenVocabId(item.id)}
+                                   className="p-1.5 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-colors cursor-pointer"
+                                   title="Quick preview modal"
+                                 >
+                                   <Maximize2 className="w-3.5 h-3.5" />
+                                 </button>
+
+                                 <Link
+                                   href={`/dashboard/user/vocabulary/details/${encodeURIComponent(item.word.word)}`}
+                                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80 transition-colors cursor-pointer"
+                                   title={`View full dynamic page for ${item.word.word}`}
+                                 >
+                                   <span>Details</span>
+                                 </Link>
 
                                 <button
                                   onClick={() => setItemToDelete(item)}

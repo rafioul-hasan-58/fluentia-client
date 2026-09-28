@@ -567,3 +567,84 @@ export async function fetchMyVocabularyDetails(
 
   return item;
 }
+
+/**
+ * Fetches personal vocabulary item by word string (dynamic & unique).
+ * Primary endpoint: GET /api/v1/my-vocabularies/word/:word
+ */
+export async function fetchMyVocabularyByWord(
+  wordName: string
+): Promise<MyVocabularyItem | null> {
+  const cleanWord = (wordName || "").trim();
+  if (!cleanWord) return null;
+
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
+
+  try {
+    if (token) {
+      const res = await fetch(
+        `${baseUrl}/my-vocabularies/word/${encodeURIComponent(cleanWord)}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data || json;
+        if (data && (data.word || data.meaning)) {
+          const rawWord = data.word || data;
+          const fullWord = normalizeVocabularyItem(rawWord);
+          const item: MyVocabularyItem = {
+            ...data,
+            id: data.id || `my-vocab-${Date.now()}`,
+            word: fullWord,
+            mySentences: Array.isArray(data.mySentences) ? data.mySentences : [],
+            notes: data.notes || null,
+          };
+          return item;
+        }
+      }
+    }
+
+    // Check local storage vault as fallback or offline cache
+    const vault = getLocalVault();
+    const localMatch = vault.find(
+      (v) => v.word?.word?.toLowerCase() === cleanWord.toLowerCase()
+    );
+    if (localMatch) {
+      return localMatch;
+    }
+
+    // If not found in user vault, fallback to dictionary lookup / generation
+    const generated = await generateVocabularyApi(cleanWord);
+    if (generated && generated.word) {
+      return {
+        id: `untracked-${cleanWord}`,
+        wordId: generated.id || `word-${cleanWord}`,
+        userId: "guest",
+        word: generated,
+        mySentences: [],
+        notes: null,
+        vocabularyStatus: "LEARNING",
+        masteryLevel: 0,
+        isFavorite: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+  } catch (err) {
+    console.warn(`[fetchMyVocabularyByWord] Error retrieving '${cleanWord}':`, err);
+    const vault = getLocalVault();
+    const localMatch = vault.find(
+      (v) => v.word?.word?.toLowerCase() === cleanWord.toLowerCase()
+    );
+    if (localMatch) return localMatch;
+  }
+
+  return null;
+}
