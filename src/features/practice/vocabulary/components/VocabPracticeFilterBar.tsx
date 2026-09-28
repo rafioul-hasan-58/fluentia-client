@@ -117,8 +117,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                         onToggleTodayOnly(false);
                     }}
                     className={`h-10 w-full sm:w-auto px-3 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center border transition-all cursor-pointer select-none ${!selectedDate && !todayOnly
-                            ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
-                            : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
+                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
                         }`}
                 >
                     All Dates
@@ -133,8 +133,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                         if (nextVal) onSelectDate(null);
                     }}
                     className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${todayOnly
-                            ? "bg-indigo-600 text-white border-indigo-600 shadow-xs font-bold"
-                            : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-xs font-bold"
+                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
                         }`}
                 >
                     <Clock className="w-3.5 h-3.5 shrink-0" />
@@ -142,8 +142,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                     {todayCount > 0 && (
                         <span
                             className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${todayOnly
-                                    ? "bg-white/25 text-white"
-                                    : "bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
+                                ? "bg-white/25 text-white"
+                                : "bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
                                 }`}
                         >
                             {todayCount}
@@ -173,16 +173,16 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                             setIsLimitDropdownOpen(false);
                         }}
                         className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${selectedPos !== "ALL"
-                                ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
-                                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
+                            ? "bg-gradient-to-r from-purple-600/15 via-indigo-600/15 to-pink-600/15 border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-sm shadow-purple-500/10 ring-2 ring-purple-500/20 font-bold"
+                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50"
                             }`}
                         title="Filter by part of speech"
                     >
                         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                             <div
                                 className={`p-1 rounded-lg shrink-0 transition-colors ${selectedPos !== "ALL"
-                                        ? "bg-purple-600 text-white shadow-sm"
-                                        : "text-slate-400"
+                                    ? "bg-purple-600 text-white shadow-sm"
+                                    : "text-slate-400"
                                     }`}
                             >
                                 <Tag className="w-3.5 h-3.5" />
@@ -196,8 +196,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
 
                             <span
                                 className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${selectedPos !== "ALL"
-                                        ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
-                                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                                    ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                                     }`}
                             >
                                 {selectedPos === "ALL"
@@ -223,8 +223,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                                     setIsPosDropdownOpen(false);
                                 }}
                                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${selectedPos === "ALL"
-                                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
-                                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                                     }`}
                             >
                                 <span className="flex items-center gap-2">
@@ -254,8 +254,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                                                 setIsPosDropdownOpen(false);
                                             }}
                                             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isSelected
-                                                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
-                                                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                                ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                                                 } ${count === 0 ? "opacity-50" : ""}`}
                                         >
                                             <span className="flex items-center gap-2">
@@ -285,8 +285,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                             setIsPosDropdownOpen(false);
                         }}
                         className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
-                                ? "bg-indigo-50/90 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 font-bold shadow-2xs"
-                                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600/50"
+                            ? "bg-indigo-50/90 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 font-bold shadow-2xs"
+                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600/50"
                             }`}
                         title="Select how many words to load for practice"
                     >
@@ -296,10 +296,11 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                             </div>
 
                             <span className="truncate">
-                                {wordLimit === 0 ? "All Words" : `${wordLimit} Words`}
+                                {/* {wordLimit === 0 ? "All Words" : `${wordLimit} Words`} */}
+                                Loaded
                             </span>
 
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shrink-0">
+                            <span className="hidden sm:block text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shrink-0">
                                 {loadedWordsCount}
                             </span>
                         </div>
@@ -313,9 +314,6 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                     {/* Dropdown Popover */}
                     {isLimitDropdownOpen && (
                         <div className="absolute left-0 mt-2 z-50 w-52 max-w-[90vw] p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/15 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
-                            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                                Words to Load
-                            </div>
                             <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
                             <div className="space-y-0.5">
                                 {[
@@ -336,8 +334,8 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                                                 setIsLimitDropdownOpen(false);
                                             }}
                                             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isSelected
-                                                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
-                                                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                                ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold"
+                                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                                                 }`}
                                         >
                                             <span>{option.label}</span>
@@ -357,11 +355,10 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                     type="button"
                     onClick={onRefresh}
                     disabled={isRefreshing || isLoading}
-                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${
-                        isRefreshing
-                            ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
-                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
-                    }`}
+                    className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border transition-all cursor-pointer select-none ${isRefreshing
+                        ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold"
+                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
+                        }`}
                     title="Sync and refresh vocabulary words"
                 >
                     <div className={`p-1 rounded-lg shrink-0 transition-colors ${isRefreshing ? "bg-indigo-600 text-white shadow-sm" : "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80"}`}>
