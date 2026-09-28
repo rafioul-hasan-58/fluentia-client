@@ -282,7 +282,7 @@ export function VocabularyDatePicker({
             className={`p-1 rounded-lg shrink-0 transition-colors ${
               selectedDate
                 ? "bg-purple-600 text-white shadow-sm"
-                : "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80"
+                : "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/80 group-hover:bg-purple-100/80 dark:group-hover:bg-purple-900/40"
             }`}
           >
             <CalendarIcon className="w-3.5 h-3.5" />
