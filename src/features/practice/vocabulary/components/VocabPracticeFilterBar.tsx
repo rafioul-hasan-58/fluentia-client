@@ -141,7 +141,7 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                     <span className="truncate">Today&apos;s Words</span>
                     {todayCount > 0 && (
                         <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${todayOnly
+                            className={`hidden sm:block text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${todayOnly
                                 ? "bg-white/25 text-white"
                                 : "bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
                                 }`}
@@ -195,7 +195,7 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                             </span>
 
                             <span
-                                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${selectedPos !== "ALL"
+                                className={`hidden sm:block text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${selectedPos !== "ALL"
                                     ? "bg-purple-500/20 text-purple-700 dark:text-purple-300"
                                     : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                                     }`}
@@ -284,23 +284,22 @@ export const VocabPracticeFilterBar: React.FC<VocabPracticeFilterBarProps> = ({
                             setIsLimitDropdownOpen((prev) => !prev);
                             setIsPosDropdownOpen(false);
                         }}
-                        className={`h-10 w-full sm:w-auto px-2.5 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
+                        className={`h-10 w-full sm:w-auto px-2 sm:px-4 rounded-xl text-xs font-semibold border inline-flex items-center justify-between sm:justify-start gap-1 sm:gap-2 transition-all cursor-pointer select-none ${wordLimit !== 20
                             ? "bg-indigo-50/90 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 font-bold shadow-2xs"
                             : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600/50"
                             }`}
                         title="Select how many words to load for practice"
                     >
-                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                             <div className="p-1 rounded-lg shrink-0 transition-colors text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80">
                                 <Layers className="w-3.5 h-3.5" />
                             </div>
 
-                            <span className="truncate">
-                                {/* {wordLimit === 0 ? "All Words" : `${wordLimit} Words`} */}
+                            <span className="whitespace-nowrap shrink-0">
                                 Loaded
                             </span>
 
-                            <span className="hidden sm:block text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shrink-0">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shrink-0 whitespace-nowrap">
                                 {loadedWordsCount}
                             </span>
                         </div>
