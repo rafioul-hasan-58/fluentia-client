@@ -6,5 +6,7 @@ interface PageProps {
 
 export default async function WordDetailsLegacyRedirectPage({ params }: PageProps) {
   const { word } = await params;
-  redirect(`/dashboard/user/vocabulary/${encodeURIComponent(word)}`);
+  const decoded = decodeURIComponent(word || "").trim().toLowerCase();
+  redirect(`/dashboard/user/vocabulary/${encodeURIComponent(decoded)}`);
 }
+

@@ -575,7 +575,7 @@ export async function fetchMyVocabularyDetails(
 export async function fetchMyVocabularyByWord(
   wordName: string
 ): Promise<MyVocabularyItem | null> {
-  const cleanWord = (wordName || "").trim();
+  const cleanWord = (wordName || "").trim().toLowerCase();
   if (!cleanWord) return null;
 
   const baseUrl = getApiBaseUrl();
