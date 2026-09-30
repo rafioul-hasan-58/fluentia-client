@@ -582,6 +582,35 @@ export async function fetchMyVocabularyByWord(
   const token = getAuthToken();
 
   try {
+    // 1. First, search in user's saved vault via GET /my-vocabularies/find-all?search=cleanWord
+    if (token) {
+      try {
+        const searchRes = await fetchMyVocabularies({ search: cleanWord, limit: 50 });
+        if (searchRes && Array.isArray(searchRes.data) && searchRes.data.length > 0) {
+          const matched = searchRes.data.find(
+            (v: MyVocabularyItem) => (v.word?.word || "").trim().toLowerCase() === cleanWord
+          );
+          if (matched) {
+            const enriched = await fetchMyVocabularyDetails(matched);
+            return enriched;
+          }
+        }
+      } catch (searchErr) {
+        console.warn("[fetchMyVocabularyByWord] Error searching user vault:", searchErr);
+      }
+    }
+
+    // 2. Check local storage vault as fallback or offline cache
+    const vault = getLocalVault();
+    const localMatch = vault.find(
+      (v) => (v.word?.word || "").trim().toLowerCase() === cleanWord
+    );
+    if (localMatch) {
+      const enriched = await fetchMyVocabularyDetails(localMatch);
+      return enriched;
+    }
+
+    // 3. Try direct endpoint if backend supports it
     const headers: Record<string, string> = {
       Accept: "*/*",
     };
@@ -611,41 +640,34 @@ export async function fetchMyVocabularyByWord(
           mySentences: Array.isArray(data.mySentences) ? data.mySentences : [],
           notes: data.notes || null,
         };
-        return item;
+        const enriched = await fetchMyVocabularyDetails(item);
+        return enriched;
       }
     }
 
-    // Check local storage vault as fallback or offline cache
-    const vault = getLocalVault();
-    const localMatch = vault.find(
-      (v) => v.word?.word?.toLowerCase() === cleanWord.toLowerCase()
-    );
-    if (localMatch) {
-      return localMatch;
-    }
-
-    // If not found in user vault, fallback to dictionary lookup / generation
+    // 4. Fallback to dictionary lookup / generation
     const generated = await generateVocabularyApi(cleanWord);
     if (generated && generated.word) {
-      return {
-        id: `untracked-${cleanWord}`,
+      const newItem: MyVocabularyItem = {
+        id: `my-vocab-${cleanWord}`,
         wordId: generated.id || `word-${cleanWord}`,
-        userId: "guest",
+        userId: "user",
         word: generated,
         mySentences: [],
         notes: null,
         vocabularyStatus: "LEARNING",
-        masteryLevel: 0,
+        masteryLevel: 1,
         isFavorite: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+      return newItem;
     }
   } catch (err) {
     console.warn(`[fetchMyVocabularyByWord] Error retrieving '${cleanWord}':`, err);
     const vault = getLocalVault();
     const localMatch = vault.find(
-      (v) => v.word?.word?.toLowerCase() === cleanWord.toLowerCase()
+      (v) => (v.word?.word || "").trim().toLowerCase() === cleanWord
     );
     if (localMatch) return localMatch;
   }
