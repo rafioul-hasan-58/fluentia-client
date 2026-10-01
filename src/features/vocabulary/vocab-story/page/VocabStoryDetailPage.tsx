@@ -115,8 +115,8 @@ export function VocabStoryDetailPage({ storyId }: VocabStoryDetailPageProps) {
 
   return (
     <div className="-mx-3 -mt-3 sm:mx-0 sm:mt-0 w-[calc(100%+1.5rem)] sm:w-full min-h-[90vh] bg-transparent text-slate-900 dark:text-white flex flex-col animate-in fade-in duration-200">
-      {/* 1. Top Header Bar (Connected like in Vocab Vault: Exit, Carousel, Actions) */}
-      <div className="shrink-0 w-full px-2.5 sm:px-6 py-2 sm:py-2.5 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-1 z-30 sticky top-16 backdrop-blur-md">
+      {/* 1. Top Header Bar (Mobile Mode Only: Exit, Carousel, Actions) */}
+      <div className="lg:hidden shrink-0 w-full px-2.5 sm:px-6 py-2 sm:py-2.5 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-1 z-30 sticky top-16 backdrop-blur-md">
         {/* Exit to Stories */}
         <div className="flex items-center gap-1.5 shrink-0">
           <button
@@ -210,6 +210,92 @@ export function VocabStoryDetailPage({ storyId }: VocabStoryDetailPageProps) {
 
       {/* Main Content Area */}
       <div className="flex-1 w-full max-w-5xl mx-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-20">
+        {/* Desktop Breadcrumb Navigation & Controls */}
+        <div className="hidden lg:flex items-center justify-between pb-1 select-none">
+          <Link
+            href="/dashboard/user/vocabulary/stories"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition-colors cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Back to Stories</span>
+          </Link>
+
+          {allStories.length > 1 && (
+            <div className="flex items-center gap-1 bg-amber-500/10 dark:bg-amber-500/15 p-1 rounded-xl border border-amber-500/25">
+              <button
+                type="button"
+                onClick={() => navigateCarousel(-1)}
+                disabled={currentIndex <= 0}
+                title="Previous Story (← Arrow key)"
+                className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg hover:bg-amber-500/20 text-amber-800 dark:text-amber-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Prev</span>
+              </button>
+
+              <span className="text-xs font-bold text-amber-900 dark:text-amber-200 px-2 font-mono whitespace-nowrap min-w-[3.5rem] text-center">
+                {displayIndex}&nbsp;/&nbsp;{totalStories}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => navigateCarousel(1)}
+                disabled={currentIndex === -1 || currentIndex >= allStories.length - 1}
+                title="Next Story (→ Arrow key)"
+                className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg hover:bg-amber-500/20 text-amber-800 dark:text-amber-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span>Next</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Desktop Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                handleCopy(
+                  story.id,
+                  `Title: ${story.title || "Vocabulary Story"}\n\n=== 🇧🇩 Bangla-English Mixed ===\n${story.storyBangla}\n\n=== 🇬🇧 Full English ===\n${story.storyEnglish}`,
+                  "all"
+                )
+              }
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-semibold transition-colors cursor-pointer border border-amber-500/30"
+              title="Copy full story content"
+            >
+              {copiedState?.id === story.id && copiedState?.type === "all" ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Copied All!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy All</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleOpenEditTitle(story)}
+              title="Edit story title"
+              className="p-1.5 sm:p-2 rounded-xl bg-slate-100 hover:bg-amber-50 dark:bg-slate-800 dark:hover:bg-amber-950/40 text-slate-600 hover:text-amber-600 dark:text-slate-300 dark:hover:text-amber-400 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStoryToDelete(story)}
+              title="Delete story"
+              className="p-1.5 sm:p-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer border border-rose-200/80 dark:border-rose-900/60"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
 
       {/* 2. Editorial Header Card */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-[#141226] border border-slate-200/90 dark:border-white/10 p-4 sm:p-7 lg:p-8 shadow-xs space-y-4 sm:space-y-5">
