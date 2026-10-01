@@ -84,10 +84,14 @@ export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
             <Link
               href={storyUrl}
               onClick={() => onViewDetails?.(story.id)}
-              className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors line-clamp-1 capitalize block"
-              title={displayTitle}
+              className="group/title block"
             >
-              {displayTitle}
+              <h3
+                className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white group-hover/title:text-amber-600 dark:group-hover/title:text-amber-400 transition-colors line-clamp-1 capitalize"
+                title={displayTitle}
+              >
+                {displayTitle}
+              </h3>
             </Link>
           </div>
 
@@ -95,9 +99,11 @@ export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
           <Link
             href={storyUrl}
             onClick={() => onViewDetails?.(story.id)}
-            className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3 block hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+            className="block"
           >
-            {previewText}
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+              {previewText}
+            </p>
           </Link>
 
           {/* Target Words Pill Tags (First 3 + more) */}
