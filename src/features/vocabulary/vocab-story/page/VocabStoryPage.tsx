@@ -14,7 +14,7 @@ import {
   EditStoryTitleModal,
   GenerateNewStoryModal,
   renderHighlightedStory,
-} from "../vocab-story";
+} from "..";
 
 const VocabStoryPage = () => {
   const router = useRouter();
@@ -233,4 +233,5 @@ const VocabStoryPage = () => {
   );
 };
 
+export { VocabStoryPage };
 export default VocabStoryPage;

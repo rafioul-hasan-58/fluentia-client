@@ -44,19 +44,19 @@ import {
 import {
   POS_COLORS,
   highlightPhrase,
-} from "../vocab-vault/constants/vocabularyConstants";
+} from "../constants/vocabularyConstants";
 import {
   fetchMyVocabularyByWord,
   updateMyVocabulary,
   fetchMyVocabularyDetails,
   fetchMyVocabularies,
   deleteMyVocabulary,
-} from "../vocab-vault/api/myVocabulary";
-import { getLocalVault } from "../vocab-vault/hooks/utilFn";
+} from "../api/myVocabulary";
+import { getLocalVault } from "../hooks/utilFn";
 import {
   DeleteVocabularyModal,
   EditVocabularyModal,
-} from "../vocab-vault/components/modals";
+} from "../components/modals";
 
 interface VocabularyDetailPageProps {
   word: string;

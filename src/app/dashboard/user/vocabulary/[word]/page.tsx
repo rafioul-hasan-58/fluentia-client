@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { VocabularyDetailPage } from "@/features/vocabulary/page";
+import { VocabularyDetailPage } from "@/features/vocabulary/vocab-vault/page/VocabularyDetailPage";
 
 interface PageProps {
   params: Promise<{ word: string }>;

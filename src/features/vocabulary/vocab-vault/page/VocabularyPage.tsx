@@ -7,12 +7,12 @@ import {
   Plus,
   RefreshCw,
 } from "lucide-react";
-import { useLegacyCalendarCounts, useVocabularies } from "../vocab-vault/hooks";
-import { VocabularyCard, VocabularyFilterBar, VocabularyHeader, VocabularyPagination, VocabularyStoryBanner, VocabularyTableView } from "../vocab-vault/components";
-import { AddVocabularyModal, DeleteVocabularyModal, EditVocabularyModal, StoryContextModal, VocabularyFullscreenModal } from "../vocab-vault/components/modals";
+import { useLegacyCalendarCounts, useVocabularies } from "../hooks";
+import { VocabularyCard, VocabularyFilterBar, VocabularyHeader, VocabularyPagination, VocabularyStoryBanner, VocabularyTableView } from "../components";
+import { AddVocabularyModal, DeleteVocabularyModal, EditVocabularyModal, StoryContextModal, VocabularyFullscreenModal } from "../components/modals";
 import { MyVocabularyItem } from "@/types";
-import { addSingleVocabulary, fetchMyVocabularyDetails, updateMyVocabulary } from "../vocab-vault";
-import { generateVocabStoryApi } from "../vocab-story";
+import { addSingleVocabulary, fetchMyVocabularyDetails, updateMyVocabulary } from "..";
+import { generateVocabStoryApi } from "../../vocab-story";
 
 
 
@@ -850,4 +850,5 @@ const VocabularyPage = () => {
   );
 }
 
+export { VocabularyPage };
 export default VocabularyPage;

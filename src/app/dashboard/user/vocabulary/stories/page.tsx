@@ -1,4 +1,4 @@
-import { VocabStoryPage } from "@/features/vocabulary/page";
+import { VocabStoryPage } from "@/features/vocabulary/vocab-story/page/VocabStoryPage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
