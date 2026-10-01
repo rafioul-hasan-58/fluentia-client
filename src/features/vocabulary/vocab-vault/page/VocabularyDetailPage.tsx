@@ -575,95 +575,105 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
           </div>
 
           <div className="p-3.5 sm:p-6 lg:p-7 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5 sm:space-y-5">
-            {/* inset-block-start: Word, Level, POS, Audio Button */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span
-                  className={`px-2.5 py-0.5 rounded-lg text-xs font-semibold border ${POS_COLORS[wordData.partOfSpeech]?.bg || "bg-indigo-500/10"
-                    } ${POS_COLORS[wordData.partOfSpeech]?.text || "text-indigo-600 dark:text-indigo-400"
-                    } ${POS_COLORS[wordData.partOfSpeech]?.border || "border-indigo-500/30"
-                    }`}
-                >
-                  {POS_COLORS[wordData.partOfSpeech]?.label || wordData.partOfSpeech}
-                </span>
-
-                {(wordData.englishLevel || wordData.cefrLevel) && (
-                  <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
-                    CEFR {wordData.englishLevel || wordData.cefrLevel}
+            {/* inset-block-start: Word, Level, POS, Audio Button & Actions */}
+            <div className="space-y-3.5">
+              {/* Row 1: Badges on left, Desktop Actions on right */}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className={`px-2.5 py-0.5 rounded-lg text-xs font-semibold border ${POS_COLORS[wordData.partOfSpeech]?.bg || "bg-indigo-500/10"
+                      } ${POS_COLORS[wordData.partOfSpeech]?.text || "text-indigo-600 dark:text-indigo-400"
+                      } ${POS_COLORS[wordData.partOfSpeech]?.border || "border-indigo-500/30"
+                      }`}
+                  >
+                    {POS_COLORS[wordData.partOfSpeech]?.label || wordData.partOfSpeech}
                   </span>
-                )}
 
-                {wordData.ipa && (
-                  <span className="text-sm font-mono text-slate-400 dark:text-slate-500">
-                    {wordData.ipa}
-                  </span>
-                )}
-              </div>
+                  {(wordData.englishLevel || wordData.cefrLevel) && (
+                    <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                      CEFR {wordData.englishLevel || wordData.cefrLevel}
+                    </span>
+                  )}
 
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-                <div className="space-y-1 min-w-0 flex-1">
-                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white tracking-tight capitalize break-words">
-                      {wordData.word}
-                    </h1>
-                    {wordData.banglaPronunciation && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-xl text-xs sm:text-sm font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/70 shadow-2xs">
-                        <span className="text-[10px] sm:text-xs font-normal opacity-75">উচ্চারণ:</span>
-                        <span>{wordData.banglaPronunciation}</span>
-                      </span>
-                    )}
-                  </div>
+                  {wordData.ipa && (
+                    <span className="text-sm font-mono text-slate-400 dark:text-slate-500">
+                      {wordData.ipa}
+                    </span>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2 self-start shrink-0 flex-wrap">
-                  {/* Natural Pronounce Button */}
+                {/* Desktop Actions: Edit, Delete, Favorite */}
+                <div className="hidden lg:flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
-                    onClick={() => playPronunciation(wordData.word)}
-                    className={`inline-flex items-center justify-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer border shrink-0 ${isPlayingAudio
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-                      : "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
-                      }`}
-                    title="Pronounce"
+                    onClick={() => handleOpenEditModal(item)}
+                    className="p-2 rounded-xl bg-indigo-50/80 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-800/60 transition-colors cursor-pointer"
+                    title="Update Vocabulary"
                   >
-                    <Volume2
-                      className={`w-4 h-4 ${isPlayingAudio ? "animate-pulse" : ""}`}
-                    />
-                    <span>{isPlayingAudio ? "Playing..." : "Pronounce"}</span>
+                    <Edit3 className="w-3.5 h-3.5 text-indigo-500" />
                   </button>
-
-                  {/* Desktop Actions: Edit, Delete, Favorite */}
-                  <div className="hidden lg:flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEditModal(item)}
-                      className="p-2 rounded-xl bg-indigo-50/80 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-800/60 transition-colors cursor-pointer"
-                      title="Update Vocabulary"
-                    >
-                      <Edit3 className="w-3.5 h-3.5 text-indigo-500" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setItemToDelete(item)}
-                      className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-500 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800/60 transition-colors cursor-pointer"
-                      title="Delete Vocabulary"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-rose-500" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleToggleFavorite}
-                      title={item.isFavorite ? "Remove from favorites" : "Add to favorites"}
-                      className={`p-2 rounded-xl border transition-colors cursor-pointer ${
-                        item.isFavorite
-                          ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-slate-200 dark:border-slate-700"
-                      }`}
-                    >
-                      <Star className={`w-3.5 h-3.5 ${item.isFavorite ? "fill-amber-400 text-amber-400" : ""}`} />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setItemToDelete(item)}
+                    className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-500 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800/60 transition-colors cursor-pointer"
+                    title="Delete Vocabulary"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleToggleFavorite}
+                    title={item.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                    className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+                      item.isFavorite
+                        ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-slate-200 dark:border-slate-700"
+                    }`}
+                  >
+                    <Star className={`w-3.5 h-3.5 ${item.isFavorite ? "fill-amber-400 text-amber-400" : ""}`} />
+                  </button>
                 </div>
+              </div>
+
+              {/* Row 2: Full Width Word Title */}
+              <div className="w-full min-w-0">
+                <h1
+                  className={`font-bold text-slate-900 dark:text-white tracking-tight capitalize break-normal hyphens-auto leading-tight ${
+                    wordData.word.length > 16
+                      ? "text-xl sm:text-2xl lg:text-3xl"
+                      : wordData.word.length > 11
+                      ? "text-2xl sm:text-3xl lg:text-4xl"
+                      : "text-3xl sm:text-4xl lg:text-5xl"
+                  }`}
+                >
+                  {wordData.word}
+                </h1>
+              </div>
+
+              {/* Row 3: Pronounce Audio Button & Bangla Pronunciation */}
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                {/* Natural Pronounce Button */}
+                <button
+                  type="button"
+                  onClick={() => playPronunciation(wordData.word)}
+                  className={`inline-flex items-center justify-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer border shrink-0 ${isPlayingAudio
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                    : "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                    }`}
+                  title="Pronounce"
+                >
+                  <Volume2
+                    className={`w-4 h-4 ${isPlayingAudio ? "animate-pulse" : ""}`}
+                  />
+                  <span>{isPlayingAudio ? "Playing..." : "Pronounce"}</span>
+                </button>
+
+                {wordData.banglaPronunciation && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-50/70 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/70 shadow-2xs">
+                    <span className="text-[10px] sm:text-xs font-normal opacity-70">উচ্চারণ:</span>
+                    <span className="font-bold">{wordData.banglaPronunciation}</span>
+                  </span>
+                )}
               </div>
             </div>
 

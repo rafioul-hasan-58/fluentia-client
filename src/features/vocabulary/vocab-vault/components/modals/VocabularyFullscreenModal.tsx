@@ -233,22 +233,23 @@ export default function VocabularyFullscreenModal({
                       )}
                     </div>
 
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight capitalize">
-                            {activeFullscreenVocab.word.word}
-                          </h1>
-                          {activeFullscreenVocab.word.banglaPronunciation && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-sm sm:text-base font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/70 shadow-xs">
-                              <span className="text-xs font-normal opacity-75">উচ্চারণ:</span>
-                              <span>{activeFullscreenVocab.word.banglaPronunciation}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                    {/* Full Width Word Title */}
+                    <div className="w-full min-w-0">
+                      <h1
+                        className={`font-bold text-slate-900 dark:text-white tracking-tight capitalize break-normal hyphens-auto leading-tight ${
+                          activeFullscreenVocab.word.word.length > 16
+                            ? "text-xl sm:text-2xl lg:text-3xl"
+                            : activeFullscreenVocab.word.word.length > 11
+                            ? "text-2xl sm:text-3xl lg:text-4xl"
+                            : "text-3xl sm:text-4xl"
+                        }`}
+                      >
+                        {activeFullscreenVocab.word.word}
+                      </h1>
+                    </div>
 
-                      {/* Natural Pronounce Button */}
+                    {/* Pronounce & Bangla Pronunciation */}
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                       <button
                         onClick={() => playPronunciation(activeFullscreenVocab.word.word)}
                         className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer border shrink-0 ${playingWord === activeFullscreenVocab.word.word
@@ -265,6 +266,13 @@ export default function VocabularyFullscreenModal({
                           {playingWord === activeFullscreenVocab.word.word ? "Playing..." : "Pronounce"}
                         </span>
                       </button>
+
+                      {activeFullscreenVocab.word.banglaPronunciation && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-50/70 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/70 shadow-xs">
+                          <span className="text-[10px] sm:text-xs font-normal opacity-75">উচ্চারণ:</span>
+                          <span className="font-bold">{activeFullscreenVocab.word.banglaPronunciation}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
 
