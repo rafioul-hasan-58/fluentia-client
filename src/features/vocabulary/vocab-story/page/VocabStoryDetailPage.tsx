@@ -135,7 +135,7 @@ export function VocabStoryDetailPage({ storyId }: VocabStoryDetailPageProps) {
           <button
             type="button"
             onClick={() => navigateCarousel(-1)}
-            disabled={currentIndex <= 0}
+            disabled={displayIndex <= 1}
             title="Previous Story (← Arrow key)"
             className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
@@ -150,7 +150,7 @@ export function VocabStoryDetailPage({ storyId }: VocabStoryDetailPageProps) {
           <button
             type="button"
             onClick={() => navigateCarousel(1)}
-            disabled={currentIndex === -1 || currentIndex >= allStories.length - 1}
+            disabled={displayIndex >= totalStories}
             title="Next Story (→ Arrow key)"
             className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
@@ -225,7 +225,7 @@ export function VocabStoryDetailPage({ storyId }: VocabStoryDetailPageProps) {
               <button
                 type="button"
                 onClick={() => navigateCarousel(-1)}
-                disabled={currentIndex <= 0}
+                disabled={displayIndex <= 1}
                 title="Previous Story (← Arrow key)"
                 className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg hover:bg-amber-500/20 text-amber-800 dark:text-amber-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -240,7 +240,7 @@ export function VocabStoryDetailPage({ storyId }: VocabStoryDetailPageProps) {
               <button
                 type="button"
                 onClick={() => navigateCarousel(1)}
-                disabled={currentIndex === -1 || currentIndex >= allStories.length - 1}
+                disabled={displayIndex >= totalStories}
                 title="Next Story (→ Arrow key)"
                 className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg hover:bg-amber-500/20 text-amber-800 dark:text-amber-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >

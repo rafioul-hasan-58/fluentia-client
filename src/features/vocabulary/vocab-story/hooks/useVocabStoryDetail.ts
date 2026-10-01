@@ -61,12 +61,23 @@ export function useVocabStoryDetail(storyId: string) {
     loadStory();
   }, [loadStory]);
 
+  const [totalStoriesCount, setTotalStoriesCount] = useState<number>(0);
+
   // Fetch all stories for carousel traversal
   useEffect(() => {
     fetchVocabStoriesApi({ limit: 100 })
       .then((res) => {
         if (res && res.items && res.items.length > 0) {
           setAllStories(res.items);
+          const realTotal =
+            typeof res.total === "number"
+              ? res.total
+              : typeof res.meta?.total === "number"
+                ? res.meta.total
+                : res.items.length;
+          if (realTotal > 0) {
+            setTotalStoriesCount(realTotal);
+          }
         }
       })
       .catch((err) => {
@@ -78,7 +89,7 @@ export function useVocabStoryDetail(storyId: string) {
     return allStories.findIndex((s) => s.id === storyId);
   }, [allStories, storyId]);
 
-  const totalStories = allStories.length > 0 ? allStories.length : 1;
+  const totalStories = totalStoriesCount > 0 ? totalStoriesCount : (allStories.length > 0 ? allStories.length : 1);
   const displayIndex = currentIndex !== -1 ? currentIndex + 1 : 1;
 
   const navigateCarousel = useCallback(

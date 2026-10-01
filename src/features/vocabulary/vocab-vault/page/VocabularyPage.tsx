@@ -724,6 +724,8 @@ const VocabularyPage = () => {
                     setItemToDelete={setItemToDelete}
                     handleSetMastery={handleSetMastery}
                     setFullscreenVocabId={setFullscreenVocabId}
+                    currentPage={currentPage}
+                    pageSize={pageSize}
                   />
                 ))}
               </div>
@@ -740,6 +742,8 @@ const VocabularyPage = () => {
                 setItemToDelete={setItemToDelete}
                 handleSetMastery={handleSetMastery}
                 setFullscreenVocabId={setFullscreenVocabId}
+                currentPage={currentPage}
+                pageSize={pageSize}
               />
             )}
 
