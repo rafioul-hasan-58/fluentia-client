@@ -4,3 +4,5 @@ export { default as VocabularyFilterBar } from "./VocabularyFilterBar";
 export { default as VocabularyPagination } from "./VocabularyPagination";
 export { default as VocabularyTableView } from "./VocabularyTableView";
 export { default as VocabularyStoryBanner } from "./VocabularyStoryBanner";
+export * from "./detail";
+
