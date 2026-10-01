@@ -164,7 +164,9 @@ const VocabStoryPage = () => {
               index={index}
               onOpenEditTitle={handleOpenEditTitle}
               onDelete={setStoryToDelete}
-              onViewDetails={setActiveStoryId}
+              onViewDetails={(id) =>
+                router.push(`/dashboard/user/vocabulary/story-details/${id}`)
+              }
             />
           ))}
         </div>

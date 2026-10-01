@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Calendar, Pencil, Trash2, Eye, ArrowRight } from "lucide-react";
 import { VocabStoryItem } from "@/features/vocabulary/vocab-vault/types/vocabulary";
 
@@ -9,7 +10,7 @@ interface VocabStoryCardProps {
   index: number;
   onOpenEditTitle: (story: VocabStoryItem) => void;
   onDelete: (story: VocabStoryItem) => void;
-  onViewDetails: (storyId: string) => void;
+  onViewDetails?: (storyId: string) => void;
 }
 
 export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
@@ -22,6 +23,7 @@ export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
   const displayTitle = story.title || "Vocabulary Story";
   const wordCount = story.usedVocabulary?.length || 0;
   const previewText = story.storyBangla || story.storyEnglish;
+  const storyUrl = `/dashboard/user/vocabulary/story-details/${story.id}`;
 
   return (
     <div className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#141226] border border-slate-200/90 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.12)] hover:border-amber-500/40 dark:hover:border-amber-500/40 transition-all duration-300 overflow-hidden hover:-translate-y-0.5">
@@ -31,7 +33,7 @@ export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
       {/* Main Card Content */}
       <div className="p-4 sm:p-5 space-y-3.5 flex-1 flex flex-col justify-between">
         <div className="space-y-3">
-          {/* Top: Badges & Quick Action */}
+          {/* inset-block-start: Badges & Quick Action */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold text-[10px] border border-amber-500/20">
@@ -52,6 +54,7 @@ export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
             {/* Actions: Edit & Delete */}
             <div className="flex items-center gap-1">
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onOpenEditTitle(story);
@@ -63,6 +66,7 @@ export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
               </button>
 
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(story);
@@ -77,22 +81,24 @@ export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
 
           {/* AI Generated Story Title */}
           <div>
-            <h3
-              onClick={() => onViewDetails(story.id)}
-              className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors cursor-pointer line-clamp-1 capitalize"
+            <Link
+              href={storyUrl}
+              onClick={() => onViewDetails?.(story.id)}
+              className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors line-clamp-1 capitalize block"
               title={displayTitle}
             >
               {displayTitle}
-            </h3>
+            </Link>
           </div>
 
           {/* Story Preview Excerpt */}
-          <p
-            onClick={() => onViewDetails(story.id)}
-            className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3 cursor-pointer"
+          <Link
+            href={storyUrl}
+            onClick={() => onViewDetails?.(story.id)}
+            className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3 block hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
           >
             {previewText}
-          </p>
+          </Link>
 
           {/* Target Words Pill Tags (First 3 + more) */}
           <div className="space-y-1.5 pt-1">
@@ -117,16 +123,17 @@ export const VocabStoryCard: React.FC<VocabStoryCardProps> = ({
           </div>
         </div>
 
-        {/* Card bottom: View Details Action */}
+        {/* Card inset-block-end: View Details Action */}
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-          <button
-            onClick={() => onViewDetails(story.id)}
+          <Link
+            href={storyUrl}
+            onClick={() => onViewDetails?.(story.id)}
             className="w-full py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 dark:hover:text-white text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-800 hover:border-amber-500 cursor-pointer group/btn"
           >
             <Eye className="w-3.5 h-3.5 text-amber-500 group-hover/btn:text-white transition-colors" />
             <span>View Details</span>
             <ArrowRight className="w-3 h-3 ml-auto opacity-0 group-hover/btn:opacity-100 -translate-x-1 group-hover/btn:translate-x-0 transition-all" />
-          </button>
+          </Link>
         </div>
       </div>
     </div>
