@@ -9,9 +9,22 @@ import {
 
 interface SynonymsAntonymsCardProps {
   wordData: VocabularyItem;
+  activePage?: number;
+  pageSize?: number;
 }
 
-export function SynonymsAntonymsCard({ wordData }: SynonymsAntonymsCardProps) {
+export function SynonymsAntonymsCard({
+  wordData,
+  activePage,
+  pageSize,
+}: SynonymsAntonymsCardProps) {
+  const pageQuery =
+    activePage && activePage > 1
+      ? `?page=${activePage}${pageSize && pageSize !== 12 ? `&limit=${pageSize}` : ""}`
+      : pageSize && pageSize !== 12
+      ? `?limit=${pageSize}`
+      : "";
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4">
       {/* Synonyms */}
@@ -30,7 +43,7 @@ export function SynonymsAntonymsCard({ wordData }: SynonymsAntonymsCardProps) {
                   key={idx}
                   href={`/dashboard/user/vocabulary/${encodeURIComponent(
                     synText.toLowerCase()
-                  )}`}
+                  )}${pageQuery}`}
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 hover:scale-105 transition-transform"
                 >
                   <span>{synText}</span>
@@ -64,7 +77,7 @@ export function SynonymsAntonymsCard({ wordData }: SynonymsAntonymsCardProps) {
                   key={idx}
                   href={`/dashboard/user/vocabulary/${encodeURIComponent(
                     antText.toLowerCase()
-                  )}`}
+                  )}${pageQuery}`}
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80 hover:scale-105 transition-transform"
                 >
                   <span>{antText}</span>

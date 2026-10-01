@@ -16,7 +16,15 @@ import { generateVocabStoryApi } from "../../vocab-story";
 
 
 
-const VocabularyPage = () => {
+export interface VocabularyPageProps {
+  initialPage?: number;
+  initialLimit?: number;
+}
+
+export const VocabularyPage = ({
+  initialPage,
+  initialLimit,
+}: VocabularyPageProps = {}) => {
   const {
     vocabularies,
     meta,
@@ -43,7 +51,7 @@ const VocabularyPage = () => {
     savingNoteId,
     newSentenceInputs,
     setNewSentenceInputs,
-  } = useVocabularies();
+  } = useVocabularies({ initialPage, initialLimit });
 
   const { calendarWordCounts, fetchMonthCounts, reloadCalendarCounts } = useLegacyCalendarCounts();
 
@@ -542,12 +550,12 @@ const VocabularyPage = () => {
   const totalCount = meta?.total ?? vocabularies.length;
   const totalPages = meta?.totalPages ?? Math.max(1, Math.ceil(totalCount / pageSize));
 
-  // Keep currentPage valid when totalPages changes
+  // Keep currentPage valid when totalPages changes (only when meta has loaded)
   useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
+    if (!isLoading && meta && meta.totalPages > 0 && currentPage > meta.totalPages) {
+      setCurrentPage(meta.totalPages);
     }
-  }, [totalPages, currentPage, setCurrentPage]);
+  }, [isLoading, meta, currentPage, setCurrentPage]);
 
   const startRecord = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endRecord =
@@ -854,5 +862,4 @@ const VocabularyPage = () => {
   );
 }
 
-export { VocabularyPage };
 export default VocabularyPage;

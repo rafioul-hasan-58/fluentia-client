@@ -12,21 +12,50 @@ import {
 } from "../api/myVocabulary";
 import { getLocalVault } from "./utilFn";
 
-export function useVocabularyDetail(word: string) {
+export interface UseVocabularyDetailOptions {
+  initialPage?: number;
+  initialLimit?: number;
+}
+
+export function useVocabularyDetail(word: string, options?: UseVocabularyDetailOptions) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams?.get("page");
   const limitParam = searchParams?.get("limit");
 
   const pageSize = useMemo(() => {
+    if (options?.initialLimit && options.initialLimit > 0) {
+      return options.initialLimit;
+    }
     const parsed = limitParam ? parseInt(limitParam, 10) : 12;
     return isNaN(parsed) || parsed <= 0 ? 12 : parsed;
-  }, [limitParam]);
+  }, [options?.initialLimit, limitParam]);
 
   const initialPage = useMemo(() => {
-    const parsed = pageParam ? parseInt(pageParam, 10) : 1;
-    return isNaN(parsed) || parsed <= 0 ? 1 : parsed;
-  }, [pageParam]);
+    if (options?.initialPage && options.initialPage > 0) {
+      return options.initialPage;
+    }
+    if (pageParam) {
+      const parsed = parseInt(pageParam, 10);
+      if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const winPage = urlParams.get("page");
+        if (winPage) {
+          const parsed = parseInt(winPage, 10);
+          if (!isNaN(parsed) && parsed > 0) return parsed;
+        }
+        const saved = sessionStorage.getItem("fluentia_vocab_page");
+        if (saved) {
+          const parsed = parseInt(saved, 10);
+          if (!isNaN(parsed) && parsed > 0) return parsed;
+        }
+      } catch {}
+    }
+    return 1;
+  }, [options?.initialPage, pageParam]);
 
   const decodedWord = useMemo(
     () => decodeURIComponent(word || "").trim().toLowerCase(),
@@ -42,7 +71,8 @@ export function useVocabularyDetail(word: string) {
         currentPath !== lowerPath &&
         currentPath.startsWith("/dashboard/user/vocabulary/")
       ) {
-        router.replace(lowerPath);
+        const currentSearch = window.location.search;
+        router.replace(`${lowerPath}${currentSearch}`);
       }
     }
   }, [router]);
@@ -60,15 +90,26 @@ export function useVocabularyDetail(word: string) {
   const [isNavigatingPage, setIsNavigatingPage] = useState<boolean>(false);
   const isFetchingDiscoveryRef = useRef(false);
 
-  // Keep activePage in sync if query param changes
+  // Keep activePage in sync if query param or initialPage changes
   useEffect(() => {
     if (pageParam) {
       const parsed = parseInt(pageParam, 10);
       if (!isNaN(parsed) && parsed > 0 && parsed !== activePage) {
         setActivePage(parsed);
       }
+    } else if (initialPage > 1 && activePage === 1) {
+      setActivePage(initialPage);
     }
-  }, [pageParam, activePage]);
+  }, [pageParam, initialPage, activePage]);
+
+  // Persist activePage to sessionStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== "undefined" && activePage > 0) {
+      try {
+        sessionStorage.setItem("fluentia_vocab_page", String(activePage));
+      } catch {}
+    }
+  }, [activePage]);
 
   // Fetch a specific page and cache it
   const fetchPage = useCallback(
@@ -347,9 +388,34 @@ export function useVocabularyDetail(word: string) {
     ]
   );
 
+  const getEffectiveExitPage = useCallback(() => {
+    let targetPage = activePage || initialPage || 1;
+    if (typeof window !== "undefined" && targetPage <= 1) {
+      try {
+        const saved = sessionStorage.getItem("fluentia_vocab_page");
+        if (saved) {
+          const parsed = parseInt(saved, 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            targetPage = parsed;
+          }
+        }
+      } catch {}
+    }
+    return targetPage;
+  }, [activePage, initialPage]);
+
   const handleExit = useCallback(() => {
-    router.push("/dashboard/user/vocabulary");
-  }, [router]);
+    const targetPage = getEffectiveExitPage();
+    const params = new URLSearchParams();
+    if (targetPage > 1) {
+      params.set("page", String(targetPage));
+    }
+    if (pageSize && pageSize !== 12) {
+      params.set("limit", String(pageSize));
+    }
+    const qs = params.toString();
+    router.push(`/dashboard/user/vocabulary${qs ? `?${qs}` : ""}`);
+  }, [router, getEffectiveExitPage, pageSize]);
 
   // Keyboard shortcuts (Escape = exit to vault, Left/Right arrow = carousel)
   useEffect(() => {
@@ -383,7 +449,16 @@ export function useVocabularyDetail(word: string) {
     setIsDeleting(true);
     try {
       await deleteMyVocabulary(itemToDelete.id);
-      router.push("/dashboard/user/vocabulary");
+      const targetPage = getEffectiveExitPage();
+      const params = new URLSearchParams();
+      if (targetPage > 1) {
+        params.set("page", String(targetPage));
+      }
+      if (pageSize && pageSize !== 12) {
+        params.set("limit", String(pageSize));
+      }
+      const qs = params.toString();
+      router.push(`/dashboard/user/vocabulary${qs ? `?${qs}` : ""}`);
     } catch (err) {
       console.error("Error deleting vocabulary:", err);
     } finally {
@@ -667,6 +742,8 @@ export function useVocabularyDetail(word: string) {
     displayIndex,
     navigateCarousel,
     handleExit,
+    activePage,
+    pageSize,
     // Actions & Audio
     playPronunciation,
     handleToggleFavorite,
