@@ -165,26 +165,51 @@ export async function fetchVocabStoriesApi(
 }
 /**
  * Fetch Single Vocabulary Story by ID
- * Endpoint: GET /api/v1/vocab-stories/:id
+ * Endpoint: GET /api/v1/vocab-stories/details/:id
  */
 export async function fetchVocabStoryByIdApi(id: string): Promise<VocabStoryItem | null> {
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 
-  const res = await fetch(`${baseUrl}/vocab-stories/${id}`, {
+  let res = await fetch(`${baseUrl}/vocab-stories/details/${id}`, {
     method: "GET",
     headers: {
-      Accept: "application/json",
+      Accept: "*/*",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
+  // Fallback to :id if details endpoint returns 404
+  if (res.status === 404) {
+    res = await fetch(`${baseUrl}/vocab-stories/${id}`, {
+      method: "GET",
+      headers: {
+        Accept: "*/*",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+  }
+
   if (!res.ok) {
-    throw new Error("Failed to fetch story details");
+    const errData = await res.json().catch(() => null);
+    throw new Error(errData?.message || `Failed to fetch story details (${res.status})`);
   }
 
   const json = await res.json();
-  return json.data || json;
+  const raw = json.data || json;
+
+  return {
+    ...raw,
+    id: raw.id || raw._id || id,
+    title: raw.title || "Vocabulary Story",
+    userId: raw.userId || "",
+    storyEnglish: raw.storyEnglish || "",
+    storyBangla: raw.storyBangla || "",
+    usedVocabulary: Array.isArray(raw.usedVocabulary) ? raw.usedVocabulary : [],
+    keywordExplanations: raw.keywordExplanations || null,
+    createdAt: raw.createdAt || new Date().toISOString(),
+    updatedAt: raw.updatedAt || new Date().toISOString(),
+  };
 }
 
 /**
@@ -198,15 +223,27 @@ export async function updateVocabStoryTitleApi(
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 
-  const res = await fetch(`${baseUrl}/vocab-stories/${id}`, {
+  let res = await fetch(`${baseUrl}/vocab-stories/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
+      Accept: "*/*",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({ title }),
   });
+
+  if (res.status === 404) {
+    res = await fetch(`${baseUrl}/vocab-stories/update/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ title }),
+    });
+  }
 
   if (!res.ok) {
     const errData = await res.json().catch(() => null);
@@ -214,8 +251,21 @@ export async function updateVocabStoryTitleApi(
   }
 
   const json = await res.json();
-  return json.data || json;
+  const raw = json.data || json;
+  return {
+    ...raw,
+    id: raw.id || raw._id || id,
+    title: raw.title || title,
+    userId: raw.userId || "",
+    storyEnglish: raw.storyEnglish || "",
+    storyBangla: raw.storyBangla || "",
+    usedVocabulary: Array.isArray(raw.usedVocabulary) ? raw.usedVocabulary : [],
+    keywordExplanations: raw.keywordExplanations || null,
+    createdAt: raw.createdAt || new Date().toISOString(),
+    updatedAt: raw.updatedAt || new Date().toISOString(),
+  };
 }
+
 /**
  * Delete Vocabulary Story
  * Endpoint: DELETE /api/v1/vocab-stories/:id
@@ -224,13 +274,23 @@ export async function deleteVocabStoryApi(id: string): Promise<boolean> {
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 
-  const res = await fetch(`${baseUrl}/vocab-stories/${id}`, {
+  let res = await fetch(`${baseUrl}/vocab-stories/${id}`, {
     method: "DELETE",
     headers: {
-      Accept: "application/json",
+      Accept: "*/*",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
+
+  if (res.status === 404) {
+    res = await fetch(`${baseUrl}/vocab-stories/delete/${id}`, {
+      method: "DELETE",
+      headers: {
+        Accept: "*/*",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+  }
 
   if (!res.ok) {
     throw new Error("Failed to delete vocabulary story");

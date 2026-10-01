@@ -333,13 +333,19 @@ export const SEED_VOCABULARY: MyVocabularyItem[] = [
 
 const LOCAL_STORAGE_KEY = "fluentia_user_vocabularies_vault";
 
-// Helper to retrieve stored token from localStorage
+// Helper to retrieve stored token from localStorage or cookie
 export const getAuthToken = (): string | null => {
     if (typeof window === "undefined") return null;
+    let cookieToken: string | null = null;
+    try {
+      const match = document.cookie.match(/(?:^|;\s*)(?:fluentia_auth_token|token|accessToken)=([^;]*)/);
+      if (match) cookieToken = decodeURIComponent(match[1]);
+    } catch {}
     return (
         localStorage.getItem("fluentia_auth_token") ||
         localStorage.getItem("token") ||
         localStorage.getItem("accessToken") ||
+        cookieToken ||
         null
     );
 };
