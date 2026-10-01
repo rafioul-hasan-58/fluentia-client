@@ -110,7 +110,7 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
         {/* Left Column (Hero Card, Audio, Meaning, Word Family, Mastery) */}
         <div className="lg:col-span-5 space-y-3 sm:space-y-5">
           {/* Desktop Back Link */}
-          <div className="hidden lg:flex items-center justify-between pb-1">
+          {/* <div className="hidden lg:flex items-center justify-between pb-1">
             <Link
               href="/dashboard/user/vocabulary"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 transition-colors"
@@ -118,7 +118,7 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
               <ChevronLeft className="w-4 h-4" />
               <span>Back to Vocabulary Vault</span>
             </Link>
-          </div>
+          </div> */}
 
           <WordHeroCard
             item={item}
