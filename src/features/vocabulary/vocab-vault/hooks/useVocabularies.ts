@@ -2,18 +2,37 @@
 
 import { IMeta, MyVocabularyItem, PartOfSpeech, VocabularyStats, VocabularyStatus } from "@/types";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { deleteMyVocabulary, fetchMyVocabularies, fetchMyVocabularyStats, updateMyVocabulary } from "../api";
 
 export function useVocabularies() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   // Vocabulary data (single page at a time)
   const [vocabularies, setVocabularies] = useState<MyVocabularyItem[]>([]);
   const [meta, setMeta] = useState<IMeta | null>(null);
   const [stats, setStats] = useState<VocabularyStats | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Pagination state (default: 12 per screen, matching Question Bank)
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  // Pagination state derived from URL
+  const currentPage = Number(searchParams?.get("page")) || 1;
   const [pageSize, setPageSize] = useState<number>(12);
+
+  const setCurrentPage = useCallback(
+    (pageOrUpdater: number | ((prev: number) => number)) => {
+      const newPage =
+        typeof pageOrUpdater === "function"
+          ? pageOrUpdater(currentPage)
+          : pageOrUpdater;
+
+      const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
+      params.set("page", String(newPage));
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [currentPage, pathname, router, searchParams]
+  );
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -49,9 +68,56 @@ export function useVocabularies() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // 2. Reset currentPage to 1 whenever any filter changes
+  const isMountedRef = useRef(false);
+  const prevFiltersRef = useRef({
+    debouncedSearchQuery,
+    selectedPos,
+    selectedStatus,
+    selectedLevel,
+    selectedMastery,
+    selectedSort,
+    favoritesOnly,
+    todayOnly,
+    selectedDate,
+    pageSize,
+  });
+
+  // 2. Reset currentPage to 1 whenever any filter changes (skip initial mount)
   useEffect(() => {
-    setCurrentPage(1);
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      return;
+    }
+
+    const prev = prevFiltersRef.current;
+    const hasFilterChanged =
+      prev.debouncedSearchQuery !== debouncedSearchQuery ||
+      prev.selectedPos !== selectedPos ||
+      prev.selectedStatus !== selectedStatus ||
+      prev.selectedLevel !== selectedLevel ||
+      prev.selectedMastery !== selectedMastery ||
+      prev.selectedSort !== selectedSort ||
+      prev.favoritesOnly !== favoritesOnly ||
+      prev.todayOnly !== todayOnly ||
+      prev.selectedDate !== selectedDate ||
+      prev.pageSize !== pageSize;
+
+    prevFiltersRef.current = {
+      debouncedSearchQuery,
+      selectedPos,
+      selectedStatus,
+      selectedLevel,
+      selectedMastery,
+      selectedSort,
+      favoritesOnly,
+      todayOnly,
+      selectedDate,
+      pageSize,
+    };
+
+    if (hasFilterChanged && currentPage !== 1) {
+      setCurrentPage(1);
+    }
   }, [
     debouncedSearchQuery,
     selectedPos,
@@ -63,6 +129,8 @@ export function useVocabularies() {
     todayOnly,
     selectedDate,
     pageSize,
+    currentPage,
+    setCurrentPage,
   ]);
 
   // 3. Fetch vocabulary stats from dedicated endpoint GET /my-vocabularies/stats?month=YYYY-MM
