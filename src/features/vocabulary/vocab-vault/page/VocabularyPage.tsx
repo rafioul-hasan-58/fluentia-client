@@ -714,6 +714,7 @@ const VocabularyPage = () => {
                   <VocabularyCard
                     key={item.id}
                     item={item}
+                    currentPage={currentPage}
                     isStorySelectMode={isStorySelectMode}
                     isSelectedForStory={selectedStoryItems.some((s) => s.id === item.id)}
                     handleToggleStoryWord={handleToggleStoryWord}
@@ -730,6 +731,7 @@ const VocabularyPage = () => {
             ) : (
               <VocabularyTableView
                 items={vocabularies}
+                currentPage={currentPage}
                 isStorySelectMode={isStorySelectMode}
                 selectedStoryItems={selectedStoryItems}
                 handleToggleStoryWord={handleToggleStoryWord}

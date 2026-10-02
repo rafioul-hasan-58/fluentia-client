@@ -6,6 +6,7 @@ import { getWordRelationText, MyVocabularyItem } from "@/types";
 
 export interface VocabularyTableViewProps {
   items: MyVocabularyItem[];
+  currentPage: number;
   isStorySelectMode: boolean;
   selectedStoryItems: MyVocabularyItem[];
   handleToggleStoryWord: (item: MyVocabularyItem) => void;
@@ -20,6 +21,7 @@ export interface VocabularyTableViewProps {
 
 export default function VocabularyTableView({
   items,
+  currentPage,
   isStorySelectMode,
   selectedStoryItems,
   handleToggleStoryWord,
@@ -101,7 +103,7 @@ export default function VocabularyTableView({
                                   </button>
                                 ) : (
                                   <Link
-                                    href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}`}
+                                    href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}?from=${currentPage}`}
                                     className="font-bold text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer capitalize text-sm"
                                     title={`View details for ${item.word.word}`}
                                   >
@@ -241,7 +243,7 @@ export default function VocabularyTableView({
                                  </button>
 
                                  <Link
-                                   href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}`}
+                                   href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}?from=${currentPage}`}
                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80 transition-colors cursor-pointer"
                                    title={`View full dynamic page for ${item.word.word}`}
                                  >
