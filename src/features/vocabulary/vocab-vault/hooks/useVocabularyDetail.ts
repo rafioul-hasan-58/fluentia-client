@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MyVocabularyItem, VocabularyStatus } from "@/types";
 import {
   fetchMyVocabularyByWord,
@@ -14,6 +14,7 @@ import { getLocalVault } from "./utilFn";
 
 export function useVocabularyDetail(word: string) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const decodedWord = useMemo(
     () => decodeURIComponent(word || "").trim().toLowerCase(),
     [word]
@@ -83,8 +84,13 @@ export function useVocabularyDetail(word: string) {
   );
 
   const handleExit = useCallback(() => {
-    router.push("/dashboard/user/vocabulary");
-  }, [router]);
+    const fromPage = searchParams?.get("from");
+    router.push(
+      fromPage
+        ? `/dashboard/user/vocabulary?page=${fromPage}`
+        : "/dashboard/user/vocabulary"
+    );
+  }, [router, searchParams]);
 
   // Keyboard shortcuts (Escape = exit to vault, Left/Right arrow = carousel)
   useEffect(() => {
