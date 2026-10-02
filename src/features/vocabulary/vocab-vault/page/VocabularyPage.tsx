@@ -16,15 +16,7 @@ import { generateVocabStoryApi } from "../../vocab-story";
 
 
 
-export interface VocabularyPageProps {
-  initialPage?: number;
-  initialLimit?: number;
-}
-
-export const VocabularyPage = ({
-  initialPage,
-  initialLimit,
-}: VocabularyPageProps = {}) => {
+const VocabularyPage = () => {
   const {
     vocabularies,
     meta,
@@ -51,7 +43,7 @@ export const VocabularyPage = ({
     savingNoteId,
     newSentenceInputs,
     setNewSentenceInputs,
-  } = useVocabularies({ initialPage, initialLimit });
+  } = useVocabularies();
 
   const { calendarWordCounts, fetchMonthCounts, reloadCalendarCounts } = useLegacyCalendarCounts();
 
@@ -550,12 +542,12 @@ export const VocabularyPage = ({
   const totalCount = meta?.total ?? vocabularies.length;
   const totalPages = meta?.totalPages ?? Math.max(1, Math.ceil(totalCount / pageSize));
 
-  // Keep currentPage valid when totalPages changes (only when meta has loaded)
+  // Keep currentPage valid when totalPages changes
   useEffect(() => {
-    if (!isLoading && meta && meta.totalPages > 0 && currentPage > meta.totalPages) {
-      setCurrentPage(meta.totalPages);
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
     }
-  }, [isLoading, meta, currentPage, setCurrentPage]);
+  }, [totalPages, currentPage, setCurrentPage]);
 
   const startRecord = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endRecord =
@@ -732,8 +724,6 @@ export const VocabularyPage = ({
                     setItemToDelete={setItemToDelete}
                     handleSetMastery={handleSetMastery}
                     setFullscreenVocabId={setFullscreenVocabId}
-                    currentPage={currentPage}
-                    pageSize={pageSize}
                   />
                 ))}
               </div>
@@ -750,8 +740,6 @@ export const VocabularyPage = ({
                 setItemToDelete={setItemToDelete}
                 handleSetMastery={handleSetMastery}
                 setFullscreenVocabId={setFullscreenVocabId}
-                currentPage={currentPage}
-                pageSize={pageSize}
               />
             )}
 
@@ -862,4 +850,5 @@ export const VocabularyPage = ({
   );
 }
 
+export { VocabularyPage };
 export default VocabularyPage;

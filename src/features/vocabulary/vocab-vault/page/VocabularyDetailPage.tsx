@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Minimize2 } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useVocabularyDetail } from "../hooks";
 import {
   DetailLoadingSkeleton,
@@ -23,15 +23,9 @@ import {
 
 interface VocabularyDetailPageProps {
   word: string;
-  initialPage?: number;
-  initialLimit?: number;
 }
 
-export function VocabularyDetailPage({
-  word,
-  initialPage,
-  initialLimit,
-}: VocabularyDetailPageProps) {
+export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
   const {
     item,
     wordData,
@@ -46,8 +40,6 @@ export function VocabularyDetailPage({
     displayIndex,
     navigateCarousel,
     handleExit,
-    activePage,
-    pageSize,
     // Actions & Audio
     playPronunciation,
     handleToggleFavorite,
@@ -87,26 +79,19 @@ export function VocabularyDetailPage({
     handleRemoveSentence,
     handleAddSentenceToEdit,
     handleSaveEdit,
-  } = useVocabularyDetail(word, { initialPage, initialLimit });
+  } = useVocabularyDetail(word);
 
   if (isLoading) {
     return <DetailLoadingSkeleton />;
   }
 
   if (!item || !wordData) {
-    return (
-      <DetailNotFound
-        decodedWord={decodedWord}
-        handleExit={handleExit}
-        returnPage={activePage}
-        returnLimit={pageSize}
-      />
-    );
+    return <DetailNotFound decodedWord={decodedWord} />;
   }
 
   return (
     <div className="-mx-3 -mt-3 -mb-3 sm:mx-0 sm:mt-0 sm:mb-0 w-[calc(100%+1.5rem)] sm:w-full min-h-[90vh] bg-slate-50/60 dark:bg-[#0b0c15] text-slate-900 dark:text-white flex flex-col animate-in fade-in duration-200">
-      {/* 1. Top Header Bar (Mobile Mode: Exit, Carousel, Actions) */}
+      {/* 1. Top Header Bar (Mobile Mode Only: Exit, Carousel, Actions) */}
       <DetailMobileHeader
         handleExit={handleExit}
         navigateCarousel={navigateCarousel}
@@ -120,63 +105,21 @@ export function VocabularyDetailPage({
         handleToggleFavorite={handleToggleFavorite}
       />
 
-      {/* Desktop Top Navigation Bar (Back Link, Carousel Navigation, Exit Button) */}
-      <div className="hidden lg:flex items-center justify-between w-full max-w-[1600px] mx-auto px-6 lg:px-8 pt-4 pb-1 select-none">
-        <button
-          type="button"
-          onClick={handleExit}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs"
-          title="Back to Vocabulary Vault (Esc)"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back to Vocabulary Vault</span>
-        </button>
-
-        {/* Center: Carousel Navigation */}
-        <div className="flex items-center gap-1.5 bg-purple-500/10 dark:bg-purple-500/15 p-1 rounded-xl border border-purple-500/25">
-          <button
-            type="button"
-            onClick={() => navigateCarousel(-1)}
-            disabled={displayIndex <= 1}
-            title="Previous Word (← Arrow key)"
-            className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-lg hover:bg-purple-500/20 text-purple-800 dark:text-purple-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <span>Prev</span>
-          </button>
-
-          <span className="text-xs font-bold text-purple-900 dark:text-purple-200 px-2 font-mono whitespace-nowrap min-w-[3.5rem] text-center">
-            {displayIndex}&nbsp;/&nbsp;{totalCount}
-          </span>
-
-          <button
-            type="button"
-            onClick={() => navigateCarousel(1)}
-            disabled={displayIndex >= totalCount}
-            title="Next Word (→ Arrow key)"
-            className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-lg hover:bg-purple-500/20 text-purple-800 dark:text-purple-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <span>Next</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Exit Button */}
-        <button
-          type="button"
-          onClick={handleExit}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs"
-          title="Exit to Vocabulary Vault (Esc)"
-        >
-          <Minimize2 className="w-3.5 h-3.5" />
-          <span>Exit</span>
-        </button>
-      </div>
-
       {/* 2. Main Content Area */}
       <div className="flex-1 w-full max-w-[1600px] mx-auto p-2 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6">
         {/* Left Column (Hero Card, Audio, Meaning, Word Family, Mastery) */}
         <div className="lg:col-span-5 space-y-3 sm:space-y-5">
+          {/* Desktop Back Link */}
+          {/* <div className="hidden lg:flex items-center justify-between pb-1">
+            <Link
+              href="/dashboard/user/vocabulary"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Vocabulary Vault</span>
+            </Link>
+          </div> */}
+
           <WordHeroCard
             item={item}
             isPlayingAudio={isPlayingAudio}
@@ -200,11 +143,7 @@ export function VocabularyDetailPage({
           />
 
           {/* Synonyms & Antonyms Grid */}
-          <SynonymsAntonymsCard
-            wordData={wordData}
-            activePage={activePage}
-            pageSize={pageSize}
-          />
+          <SynonymsAntonymsCard wordData={wordData} />
 
           {/* Contextual Examples */}
           <ContextualExamplesCard

@@ -1,54 +1,10 @@
 "use client";
 
 import { IMeta, MyVocabularyItem, PartOfSpeech, VocabularyStats, VocabularyStatus } from "@/types";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { deleteMyVocabulary, fetchMyVocabularies, fetchMyVocabularyStats, updateMyVocabulary } from "../api";
 
-export interface UseVocabulariesOptions {
-  initialPage?: number;
-  initialLimit?: number;
-}
-
-export function useVocabularies(options?: UseVocabulariesOptions) {
-  const searchParams = useSearchParams();
-  const pageParam = searchParams?.get("page");
-  const limitParam = searchParams?.get("limit");
-
-  const initialLimit = useMemo(() => {
-    if (options?.initialLimit && options.initialLimit > 0) {
-      return options.initialLimit;
-    }
-    const parsed = limitParam ? parseInt(limitParam, 10) : 12;
-    return isNaN(parsed) || parsed <= 0 ? 12 : parsed;
-  }, [options?.initialLimit, limitParam]);
-
-  const initialPage = useMemo(() => {
-    if (options?.initialPage && options.initialPage > 0) {
-      return options.initialPage;
-    }
-    if (pageParam) {
-      const parsed = parseInt(pageParam, 10);
-      if (!isNaN(parsed) && parsed > 0) return parsed;
-    }
-    if (typeof window !== "undefined") {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const winPage = urlParams.get("page");
-        if (winPage) {
-          const parsed = parseInt(winPage, 10);
-          if (!isNaN(parsed) && parsed > 0) return parsed;
-        }
-        const saved = sessionStorage.getItem("fluentia_vocab_page");
-        if (saved) {
-          const parsed = parseInt(saved, 10);
-          if (!isNaN(parsed) && parsed > 0) return parsed;
-        }
-      } catch {}
-    }
-    return 1;
-  }, [options?.initialPage, pageParam]);
-
+export function useVocabularies() {
   // Vocabulary data (single page at a time)
   const [vocabularies, setVocabularies] = useState<MyVocabularyItem[]>([]);
   const [meta, setMeta] = useState<IMeta | null>(null);
@@ -56,74 +12,8 @@ export function useVocabularies(options?: UseVocabulariesOptions) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Pagination state (default: 12 per screen, matching Question Bank)
-  const [currentPage, setCurrentPage] = useState<number>(initialPage);
-  const [pageSize, setPageSize] = useState<number>(initialLimit);
-
-  // Sync state if URL query params change (e.g. browser back/forward)
-  useEffect(() => {
-    if (pageParam) {
-      const parsed = parseInt(pageParam, 10);
-      if (!isNaN(parsed) && parsed > 0 && parsed !== currentPage) {
-        setCurrentPage(parsed);
-      }
-    } else if (initialPage > 1 && currentPage === 1) {
-      setCurrentPage(initialPage);
-    }
-  }, [pageParam, initialPage, currentPage]);
-
-  useEffect(() => {
-    if (limitParam) {
-      const parsed = parseInt(limitParam, 10);
-      if (!isNaN(parsed) && parsed > 0 && parsed !== pageSize) {
-        setPageSize(parsed);
-      }
-    }
-  }, [limitParam]);
-
-  // Persist current page to sessionStorage
-  useEffect(() => {
-    if (typeof window !== "undefined" && currentPage > 0) {
-      try {
-        sessionStorage.setItem("fluentia_vocab_page", String(currentPage));
-      } catch {}
-    }
-  }, [currentPage]);
-
-  // Sync browser URL search params when currentPage or pageSize changes
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      let changed = false;
-
-      if (currentPage > 1) {
-        if (url.searchParams.get("page") !== String(currentPage)) {
-          url.searchParams.set("page", String(currentPage));
-          changed = true;
-        }
-      } else {
-        if (url.searchParams.has("page")) {
-          url.searchParams.delete("page");
-          changed = true;
-        }
-      }
-
-      if (pageSize !== 12) {
-        if (url.searchParams.get("limit") !== String(pageSize)) {
-          url.searchParams.set("limit", String(pageSize));
-          changed = true;
-        }
-      } else {
-        if (url.searchParams.has("limit")) {
-          url.searchParams.delete("limit");
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        window.history.replaceState(null, "", url.toString());
-      }
-    }
-  }, [currentPage, pageSize]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(12);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -159,50 +49,9 @@ export function useVocabularies(options?: UseVocabulariesOptions) {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const prevFiltersRef = useRef({
-    debouncedSearchQuery,
-    selectedPos,
-    selectedStatus,
-    selectedLevel,
-    selectedMastery,
-    selectedSort,
-    favoritesOnly,
-    todayOnly,
-    selectedDate,
-    pageSize,
-  });
-
-  // 2. Reset currentPage to 1 only when filters actually change
+  // 2. Reset currentPage to 1 whenever any filter changes
   useEffect(() => {
-    const prev = prevFiltersRef.current;
-    const hasFilterChanged =
-      prev.debouncedSearchQuery !== debouncedSearchQuery ||
-      prev.selectedPos !== selectedPos ||
-      prev.selectedStatus !== selectedStatus ||
-      prev.selectedLevel !== selectedLevel ||
-      prev.selectedMastery !== selectedMastery ||
-      prev.selectedSort !== selectedSort ||
-      prev.favoritesOnly !== favoritesOnly ||
-      prev.todayOnly !== todayOnly ||
-      prev.selectedDate !== selectedDate ||
-      prev.pageSize !== pageSize;
-
-    prevFiltersRef.current = {
-      debouncedSearchQuery,
-      selectedPos,
-      selectedStatus,
-      selectedLevel,
-      selectedMastery,
-      selectedSort,
-      favoritesOnly,
-      todayOnly,
-      selectedDate,
-      pageSize,
-    };
-
-    if (hasFilterChanged) {
-      setCurrentPage(1);
-    }
+    setCurrentPage(1);
   }, [
     debouncedSearchQuery,
     selectedPos,

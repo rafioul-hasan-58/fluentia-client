@@ -29,36 +29,9 @@ export function DetailLoadingSkeleton() {
 
 interface DetailNotFoundProps {
   decodedWord: string;
-  handleExit?: () => void;
-  returnPage?: number;
-  returnLimit?: number;
 }
 
-export function DetailNotFound({
-  decodedWord,
-  handleExit,
-  returnPage = 1,
-  returnLimit = 12,
-}: DetailNotFoundProps) {
-  let effectivePage = returnPage;
-  if (typeof window !== "undefined" && effectivePage <= 1) {
-    try {
-      const saved = sessionStorage.getItem("fluentia_vocab_page");
-      if (saved) {
-        const parsed = parseInt(saved, 10);
-        if (!isNaN(parsed) && parsed > 0) effectivePage = parsed;
-      }
-    } catch {}
-  }
-
-  const returnHref = `/dashboard/user/vocabulary${
-    effectivePage > 1
-      ? `?page=${effectivePage}${returnLimit !== 12 ? `&limit=${returnLimit}` : ""}`
-      : returnLimit !== 12
-      ? `?limit=${returnLimit}`
-      : ""
-  }`;
-
+export function DetailNotFound({ decodedWord }: DetailNotFoundProps) {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full text-center space-y-6">
       <div className="w-16 h-16 rounded-3xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto shadow-xs">
@@ -77,24 +50,13 @@ export function DetailNotFound({
         </p>
       </div>
       <div className="flex items-center justify-center gap-3 flex-wrap">
-        {handleExit ? (
-          <button
-            type="button"
-            onClick={handleExit}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm transition-all shadow-xs cursor-pointer"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Back to Vocabulary Vault</span>
-          </button>
-        ) : (
-          <Link
-            href={returnHref}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm transition-all shadow-xs cursor-pointer"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Back to Vocabulary Vault</span>
-          </Link>
-        )}
+        <Link
+          href="/dashboard/user/vocabulary"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm transition-all shadow-xs"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Back to Vocabulary Vault</span>
+        </Link>
         <Link
           href="/dashboard/user/practice/vocab"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm transition-colors"

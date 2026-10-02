@@ -16,8 +16,6 @@ export interface VocabularyTableViewProps {
   setItemToDelete: (item: MyVocabularyItem) => void;
   handleSetMastery: (item: MyVocabularyItem, star: number) => void;
   setFullscreenVocabId: (id: string) => void;
-  currentPage?: number;
-  pageSize?: number;
 }
 
 export default function VocabularyTableView({
@@ -32,8 +30,6 @@ export default function VocabularyTableView({
   setItemToDelete,
   handleSetMastery,
   setFullscreenVocabId,
-  currentPage = 1,
-  pageSize = 12,
 }: VocabularyTableViewProps) {
   return (
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
@@ -105,7 +101,7 @@ export default function VocabularyTableView({
                                   </button>
                                 ) : (
                                   <Link
-                                    href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}?page=${currentPage}&limit=${pageSize}`}
+                                    href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}`}
                                     className="font-bold text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer capitalize text-sm"
                                     title={`View details for ${item.word.word}`}
                                   >
@@ -245,7 +241,7 @@ export default function VocabularyTableView({
                                  </button>
 
                                  <Link
-                                   href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}?page=${currentPage}&limit=${pageSize}`}
+                                   href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}`}
                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80 transition-colors cursor-pointer"
                                    title={`View full dynamic page for ${item.word.word}`}
                                  >

@@ -260,23 +260,23 @@ export async function fetchMyVocabularies(
       }));
 
       let meta: IMeta | null = null;
-      const parsedTotal =
-        typeof data.meta?.total === "number"
-          ? data.meta.total
-          : typeof data.data?.total === "number"
-            ? data.data.total
-            : typeof data.total === "number"
-              ? data.total
-              : undefined;
-
-      if (parsedTotal !== undefined) {
+      if (data.meta && typeof data.meta.total === "number") {
         meta = {
-          page: Number(data.meta?.page || data.data?.page || data.page) || page,
-          limit: Number(data.meta?.limit || data.data?.limit || data.limit) || limit,
-          total: parsedTotal,
+          page: Number(data.meta.page) || page,
+          limit: Number(data.meta.limit) || limit,
+          total: Number(data.meta.total) || 0,
           totalPages:
-            Number(data.meta?.totalPages || data.data?.totalPages || data.totalPages) ||
-            Math.max(1, Math.ceil(parsedTotal / limit)),
+            Number(data.meta.totalPages) ||
+            Math.max(1, Math.ceil((Number(data.meta.total) || 0) / limit)),
+        };
+      } else if (data.data && typeof data.data.total === "number") {
+        meta = {
+          page: Number(data.data.page) || page,
+          limit: Number(data.data.limit) || limit,
+          total: Number(data.data.total) || 0,
+          totalPages:
+            Number(data.data.totalPages) ||
+            Math.max(1, Math.ceil((Number(data.data.total) || 0) / limit)),
         };
       }
 
