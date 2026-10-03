@@ -544,10 +544,10 @@ const VocabularyPage = () => {
 
   // Keep currentPage valid when totalPages changes
   useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
+    if (meta && totalPages > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [totalPages, currentPage, setCurrentPage]);
+  }, [meta, totalPages, currentPage, setCurrentPage]);
 
   const startRecord = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endRecord =

@@ -74,13 +74,15 @@ export function useVocabularyDetail(word: string) {
         const nextItem = vaultList[newIndex];
         const nextWord = (nextItem.word?.word || "").trim().toLowerCase();
         if (nextWord) {
+          const fromPage = searchParams?.get("from");
+          const query = fromPage ? `?from=${fromPage}` : "";
           router.push(
-            `/dashboard/user/vocabulary/${encodeURIComponent(nextWord)}`
+            `/dashboard/user/vocabulary/${encodeURIComponent(nextWord)}${query}`
           );
         }
       }
     },
-    [vaultList, currentIndex, router]
+    [vaultList, currentIndex, router, searchParams]
   );
 
   const handleExit = useCallback(() => {
