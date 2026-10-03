@@ -2,6 +2,7 @@
 
 import { IMeta, MyVocabularyItem, PartOfSpeech, VocabularyStats, VocabularyStatus } from "@/types";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { deleteMyVocabulary, fetchMyVocabularies, fetchMyVocabularyStats, updateMyVocabulary } from "../api";
 
@@ -9,12 +10,9 @@ export function useVocabularies() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
 
-  // Vocabulary data (single page at a time)
-  const [vocabularies, setVocabularies] = useState<MyVocabularyItem[]>([]);
-  const [meta, setMeta] = useState<IMeta | null>(null);
   const [stats, setStats] = useState<VocabularyStats | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Pagination state derived from URL
   const currentPage = Number(searchParams?.get("page")) || 1;
@@ -57,8 +55,6 @@ export function useVocabularies() {
   // Inline sentence builder tracker
   const [newSentenceInputs, setNewSentenceInputs] = useState<Record<string, string>>({});
 
-  // Active AbortController for page requests
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   // 1. Debounce search query (300ms)
   useEffect(() => {
@@ -153,19 +149,33 @@ export function useVocabularies() {
     fetchStats();
   }, [fetchStats]);
 
-  // 4. Fetch server-side paginated list with AbortController
-  const fetchFilteredList = useCallback(async () => {
-    // Abort previous in-flight request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+  // 4. Declarative query key and useQuery for vocabulary list
+  const queryKey = [
+    "vocabularies",
+    {
+      page: currentPage,
+      limit: pageSize,
+      search: debouncedSearchQuery,
+      partOfSpeech: selectedPos,
+      status: selectedStatus,
+      englishLevel: selectedLevel,
+      masteryLevel: selectedMastery,
+      sortBy: selectedSort,
+      favoritesOnly,
+      todayOnly,
+      selectedDate,
+    },
+  ] as const;
 
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setIsLoading(true);
-    try {
-      const res = await fetchMyVocabularies(
+  const {
+    data,
+    isLoading,
+    isFetching,
+    refetch: refetchVocabularies,
+  } = useQuery({
+    queryKey,
+    queryFn: ({ signal }) =>
+      fetchMyVocabularies(
         {
           page: currentPage,
           limit: pageSize,
@@ -180,60 +190,57 @@ export function useVocabularies() {
           todayOnly,
           selectedDate,
         },
-        controller.signal
-      );
+        signal
+      ),
+    staleTime: 60 * 1000,
+  });
 
-      if (!controller.signal.aborted) {
-        setVocabularies(res.data);
-        setMeta(res.meta);
+  const vocabularies = data?.data ?? [];
+  const meta = data?.meta ?? null;
 
-        // Stage 6: If meta.total > 0 but page returned empty (out of bounds), auto-redirect
-        if (
-          res.meta &&
-          res.meta.total > 0 &&
-          res.data.length === 0 &&
-          currentPage > res.meta.totalPages
-        ) {
-          setCurrentPage(res.meta.totalPages);
-        }
-      }
-    } catch (err: any) {
-      if (err?.name !== "AbortError" && !controller.signal.aborted) {
-        console.error("Failed to load filtered vocabularies", err);
-      }
-    } finally {
-      if (!controller.signal.aborted) {
-        setIsLoading(false);
-      }
-    }
-  }, [
-    currentPage,
-    pageSize,
-    debouncedSearchQuery,
-    selectedPos,
-    selectedStatus,
-    selectedLevel,
-    selectedMastery,
-    selectedSort,
-    favoritesOnly,
-    todayOnly,
-    selectedDate,
-  ]);
-
-  // Refetch whenever currentPage or any filter dependencies change
+  // Stage 6: If meta.total > 0 but page returned empty (out of bounds), auto-redirect
   useEffect(() => {
-    fetchFilteredList();
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [fetchFilteredList]);
+    if (
+      meta &&
+      meta.total > 0 &&
+      vocabularies.length === 0 &&
+      currentPage > meta.totalPages
+    ) {
+      setCurrentPage(meta.totalPages);
+    }
+  }, [meta, vocabularies.length, currentPage, setCurrentPage]);
+
+  // Query-cache updater for optimistic mutations
+  const setVocabularies = useCallback(
+    (updater: MyVocabularyItem[] | ((prev: MyVocabularyItem[]) => MyVocabularyItem[])) => {
+      queryClient.setQueryData(queryKey, (old: any) => {
+        if (!old) return old;
+        const currentList = old.data || [];
+        const updatedList =
+          typeof updater === "function" ? updater(currentList) : updater;
+        return { ...old, data: updatedList };
+      });
+    },
+    [queryClient, queryKey]
+  );
+
+  const setMeta = useCallback(
+    (updater: IMeta | null | ((prev: IMeta | null) => IMeta | null)) => {
+      queryClient.setQueryData(queryKey, (old: any) => {
+        if (!old) return old;
+        const currentMeta = old.meta || null;
+        const updatedMeta =
+          typeof updater === "function" ? updater(currentMeta) : updater;
+        return { ...old, meta: updatedMeta };
+      });
+    },
+    [queryClient, queryKey]
+  );
 
   // Combined reload function (e.g. for refresh button or after adding word)
   const loadVocabularies = useCallback(async () => {
-    await Promise.all([fetchFilteredList(), fetchStats()]);
-  }, [fetchFilteredList, fetchStats]);
+    await Promise.all([refetchVocabularies(), fetchStats()]);
+  }, [refetchVocabularies, fetchStats]);
 
   // Mutation: Toggle favorite
   const handleToggleFavorite = async (item: MyVocabularyItem) => {
@@ -346,7 +353,7 @@ export function useVocabularies() {
       await deleteMyVocabulary(targetId);
       // Reload stats and refetch current page
       await fetchStats();
-      await fetchFilteredList();
+      await refetchVocabularies();
     } catch (err) {
       console.warn("Could not sync deletion", err);
     } finally {
@@ -360,6 +367,7 @@ export function useVocabularies() {
     meta,
     stats,
     isLoading,
+    isFetching,
     currentPage,
     setCurrentPage,
     pageSize,
