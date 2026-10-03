@@ -40,22 +40,24 @@ export function useVocabularyDetail(word: string) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  // Vault list for carousel (1/12) navigation
-  const [vaultList, setVaultList] = useState<MyVocabularyItem[]>([]);
-
-  useEffect(() => {
-    fetchMyVocabularies({ limit: 100 })
-      .then((res) => {
+  // Vault list for carousel (1/12) navigation cached via TanStack Query
+  const { data: vaultListData } = useQuery({
+    queryKey: ["vocabularies", "carousel"],
+    queryFn: async () => {
+      try {
+        const res = await fetchMyVocabularies({ limit: 100 });
         if (res && res.data && res.data.length > 0) {
-          setVaultList(res.data);
-        } else {
-          setVaultList(getLocalVault());
+          return res.data;
         }
-      })
-      .catch(() => {
-        setVaultList(getLocalVault());
-      });
-  }, []);
+        return getLocalVault();
+      } catch {
+        return getLocalVault();
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 min
+  });
+
+  const vaultList = vaultListData ?? [];
 
   const currentIndex = useMemo(() => {
     return vaultList.findIndex(
