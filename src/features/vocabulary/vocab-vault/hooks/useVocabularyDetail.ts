@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MyVocabularyItem, VocabularyStatus } from "@/types";
 import {
@@ -15,6 +16,7 @@ import { getLocalVault } from "./utilFn";
 export function useVocabularyDetail(word: string) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const decodedWord = useMemo(
     () => decodeURIComponent(word || "").trim().toLowerCase(),
     [word]
@@ -34,8 +36,6 @@ export function useVocabularyDetail(word: string) {
     }
   }, [router]);
 
-  const [item, setItem] = useState<MyVocabularyItem | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -219,44 +219,65 @@ export function useVocabularyDetail(word: string) {
   const [newSentence, setNewSentence] = useState("");
   const [isAddingSentence, setIsAddingSentence] = useState(false);
 
-  // Load word details
-  const loadWord = useCallback(async () => {
-    if (!decodedWord) return;
-    setIsLoading(true);
-    try {
-      const data = await fetchMyVocabularyByWord(decodedWord);
-      setItem(data);
-      if (data) {
-        setNotesText(data.notes || "");
-      }
+  // TanStack Query for word detail
+  const {
+    data: rawItem,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: ["vocabulary-detail", decodedWord],
+    queryFn: () => fetchMyVocabularyByWord(decodedWord),
+    enabled: Boolean(decodedWord),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-      // Check if full details (collocations, examples, synonyms) should be enriched
-      if (
-        data &&
-        (!data.word?.collocations?.length ||
-          !data.word?.exampleSentences?.length ||
-          !data.word?.synonyms?.length)
-      ) {
-        setIsLoadingDetails(true);
-        fetchMyVocabularyDetails(data)
-          .then((enriched) => {
-            if (enriched) {
-              setItem(enriched);
-            }
-          })
-          .catch((e: unknown) => console.warn("Error enriching details:", e))
-          .finally(() => setIsLoadingDetails(false));
-      }
-    } catch (err) {
-      console.error("[VocabularyDetailPage] Error loading word:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [decodedWord]);
+  const item = rawItem ?? null;
 
+  // Sync notes text state when item is loaded
   useEffect(() => {
-    loadWord();
-  }, [loadWord]);
+    if (item?.notes !== undefined) {
+      setNotesText(item.notes || "");
+    }
+  }, [item?.notes]);
+
+  // Progressive AI enrichment: if collocations/examples are missing, fetch & enrich in background
+  useEffect(() => {
+    if (
+      item &&
+      (!item.word?.collocations?.length ||
+        !item.word?.exampleSentences?.length ||
+        !item.word?.synonyms?.length)
+    ) {
+      setIsLoadingDetails(true);
+      fetchMyVocabularyDetails(item)
+        .then((enriched) => {
+          if (enriched) {
+            queryClient.setQueryData(["vocabulary-detail", decodedWord], enriched);
+          }
+        })
+        .catch((e: unknown) => console.warn("Error enriching details:", e))
+        .finally(() => setIsLoadingDetails(false));
+    }
+  }, [item?.id, decodedWord, queryClient]);
+
+  // Keep setItem compatible for optimistic mutations by updating TanStack cache directly
+  const setItem = useCallback(
+    (
+      updater:
+        | MyVocabularyItem
+        | null
+        | ((prev: MyVocabularyItem | null) => MyVocabularyItem | null)
+    ) => {
+      queryClient.setQueryData(
+        ["vocabulary-detail", decodedWord],
+        (old: MyVocabularyItem | null | undefined) => {
+          const current = old ?? null;
+          return typeof updater === "function" ? updater(current) : updater;
+        }
+      );
+    },
+    [queryClient, decodedWord]
+  );
 
   // Pronunciation handler
   const playPronunciation = useCallback((text: string) => {
@@ -399,6 +420,7 @@ export function useVocabularyDetail(word: string) {
     wordData: item?.word,
     decodedWord,
     isLoading,
+    isFetching,
     isLoadingDetails,
     isPlayingAudio,
     isCopied,
