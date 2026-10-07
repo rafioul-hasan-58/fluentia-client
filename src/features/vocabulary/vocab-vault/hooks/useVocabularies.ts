@@ -16,6 +16,8 @@ export function useVocabularies() {
 
   // Pagination state derived from URL
   const currentPage = Number(searchParams?.get("page")) || 1;
+  const from = Number(searchParams?.get("from")) || 1;
+  const index = Number(searchParams?.get("index")) || 0;
   const [pageSize, setPageSize] = useState<number>(12);
 
   const setCurrentPage = useCallback(

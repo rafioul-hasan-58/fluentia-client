@@ -12,6 +12,7 @@ import {
   deleteMyVocabulary,
 } from "../api/myVocabulary";
 import { getLocalVault } from "./utilFn";
+import { fetchMyVocabularyStats } from "../api";
 
 export function useVocabularyDetail(word: string) {
   const router = useRouter();
@@ -40,6 +41,15 @@ export function useVocabularyDetail(word: string) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
+  // totalWord state
+  const[totalWordCount,setTotalWord]=useState(333);
+  // currentWord calculation
+
+  const indexNumber=Number(searchParams.get("index"));
+  const wordLimit=Number(searchParams.get("limit"));
+  const pageNumber=Number(searchParams.get("from"))
+  const currentWordIndex=Number(((pageNumber-1)*wordLimit)+(indexNumber+1));
+
   // Vault list for carousel (1/12) navigation cached via TanStack Query
   const { data: vaultListData } = useQuery({
     queryKey: ["vocabularies", "carousel"],
@@ -65,7 +75,8 @@ export function useVocabularyDetail(word: string) {
     );
   }, [vaultList, decodedWord]);
 
-  const totalCount = vaultList.length > 0 ? vaultList.length : 1;
+  const totalCount = 500;
+  // const totalCount = vaultList.length > 0 ? vaultList.length : 1;
   const displayIndex = currentIndex !== -1 ? currentIndex + 1 : 1;
 
   const navigateCarousel = useCallback(
@@ -415,7 +426,22 @@ export function useVocabularyDetail(word: string) {
       }
     }
   };
+  // fetch total wordCount
+  const fetchWordCount = useCallback(async () => {
+    try {
+      const data = await fetchMyVocabularyStats();
+      if (data) {
+        setTotalWord(data.totalWords);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch vocabulary stats", err);
+    }
+  }, []);
 
+  // Load stats once on mount
+  useEffect(() => {
+    fetchWordCount();
+  }, [fetchWordCount]);
   return {
     item,
     setItem,
@@ -474,5 +500,8 @@ export function useVocabularyDetail(word: string) {
     handleRemoveSentence,
     handleAddSentenceToEdit,
     handleSaveEdit,
+    // word count showcase
+    totalWordCount,
+    currentWordIndex
   };
 }

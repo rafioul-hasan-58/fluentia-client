@@ -14,7 +14,7 @@ interface DetailMobileHeaderProps {
   handleExit: () => void;
   navigateCarousel: (direction: -1 | 1) => void;
   currentIndex: number;
-  totalCount: number;
+  totalWordCount: number;
   displayIndex: number;
   vaultListLength: number;
   item: MyVocabularyItem;
@@ -27,7 +27,7 @@ export function DetailMobileHeader({
   handleExit,
   navigateCarousel,
   currentIndex,
-  totalCount,
+  totalWordCount,
   displayIndex,
   vaultListLength,
   item,
@@ -64,7 +64,7 @@ export function DetailMobileHeader({
 
         {/* Counter: 1/12 */}
         <span className="text-xs font-bold text-slate-700 dark:text-slate-200 px-1 font-mono select-none whitespace-nowrap">
-          {displayIndex}/{totalCount}
+          {displayIndex}/{totalWordCount}
         </span>
 
         <button
