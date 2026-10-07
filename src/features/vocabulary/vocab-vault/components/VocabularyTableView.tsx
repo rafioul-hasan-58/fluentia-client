@@ -7,6 +7,7 @@ import { getWordRelationText, MyVocabularyItem } from "@/types";
 export interface VocabularyTableViewProps {
   items: MyVocabularyItem[];
   currentPage: number;
+  limit?: number;
   isStorySelectMode: boolean;
   selectedStoryItems: MyVocabularyItem[];
   handleToggleStoryWord: (item: MyVocabularyItem) => void;
@@ -22,6 +23,7 @@ export interface VocabularyTableViewProps {
 export default function VocabularyTableView({
   items,
   currentPage,
+  limit,
   isStorySelectMode,
   selectedStoryItems,
   handleToggleStoryWord,
@@ -54,12 +56,17 @@ export default function VocabularyTableView({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 text-sm">
-                      {items.map((item) => {
+                      {items.map((item, index) => {
                         const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
                         const isAudioPlaying = playingWord === item.word.word;
                         const isFav = item.isFavorite;
                         const displayLevel = item.word.englishLevel || item.word.cefrLevel;
                         const isSelectedForStory = selectedStoryItems.some((s) => s.id === item.id);
+                        const detailUrl = `/dashboard/user/vocabulary/${encodeURIComponent(
+                          item.word.word.toLowerCase()
+                        )}?from=${currentPage}&index=${index}${
+                          limit !== undefined ? `&limit=${limit}` : ""
+                        }`;
 
                         return (
                           <tr
@@ -103,7 +110,7 @@ export default function VocabularyTableView({
                                   </button>
                                 ) : (
                                   <Link
-                                    href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}?from=${currentPage}`}
+                                    href={detailUrl}
                                     className="font-bold text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer capitalize text-sm"
                                     title={`View details for ${item.word.word}`}
                                   >
@@ -243,7 +250,7 @@ export default function VocabularyTableView({
                                  </button>
 
                                  <Link
-                                   href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}?from=${currentPage}`}
+                                   href={detailUrl}
                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80 transition-colors cursor-pointer"
                                    title={`View full dynamic page for ${item.word.word}`}
                                  >

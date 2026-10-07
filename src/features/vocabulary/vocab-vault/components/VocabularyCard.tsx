@@ -7,6 +7,8 @@ import { getVerbForms, MyVocabularyItem } from "@/types";
 interface VocabularyCardProps {
   item: MyVocabularyItem;
   currentPage: number;
+  index?: number;
+  limit?: number;
   isStorySelectMode: boolean;
   isSelectedForStory: boolean;
   handleToggleStoryWord: (item: MyVocabularyItem) => void;
@@ -22,6 +24,8 @@ interface VocabularyCardProps {
 export default function VocabularyCard({
   item,
   currentPage,
+  index,
+  limit,
   isStorySelectMode,
   isSelectedForStory,
   handleToggleStoryWord,
@@ -37,6 +41,11 @@ export default function VocabularyCard({
   const isAudioPlaying = playingWord === item.word.word;
   const isFav = item.isFavorite;
   const displayLevel = item.word.englishLevel || item.word.cefrLevel;
+  const detailUrl = `/dashboard/user/vocabulary/${encodeURIComponent(
+    item.word.word.toLowerCase()
+  )}?from=${currentPage}${index !== undefined ? `&index=${index}` : ""}${
+    limit !== undefined ? `&limit=${limit}` : ""
+  }`;
 
   return (
     <div
@@ -102,7 +111,7 @@ export default function VocabularyCard({
                 </button>
               ) : (
                 <Link
-                  href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}?from=${currentPage}`}
+                  href={detailUrl}
                   className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-left cursor-pointer capitalize truncate"
                   title={`View details for ${item.word.word}`}
                 >
@@ -261,7 +270,7 @@ export default function VocabularyCard({
             <Maximize2 className="w-3.5 h-3.5" />
           </button>
           <Link
-            href={`/dashboard/user/vocabulary/${encodeURIComponent(item.word.word.toLowerCase())}?from=${currentPage}`}
+            href={detailUrl}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 text-xs font-semibold border border-purple-200/80 dark:border-purple-800/80 transition-all hover:scale-[1.02] cursor-pointer"
             title={`View full dynamic page for ${item.word.word}`}
           >

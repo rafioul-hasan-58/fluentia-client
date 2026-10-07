@@ -710,10 +710,12 @@ const VocabularyPage = () => {
           <>
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-                {vocabularies.map((item) => (
+                {vocabularies.map((item, index) => (
                   <VocabularyCard
                     key={item.id}
                     item={item}
+                    index={index}
+                    limit={pageSize}
                     currentPage={currentPage}
                     isStorySelectMode={isStorySelectMode}
                     isSelectedForStory={selectedStoryItems.some((s) => s.id === item.id)}
@@ -732,6 +734,7 @@ const VocabularyPage = () => {
               <VocabularyTableView
                 items={vocabularies}
                 currentPage={currentPage}
+                limit={pageSize}
                 isStorySelectMode={isStorySelectMode}
                 selectedStoryItems={selectedStoryItems}
                 handleToggleStoryWord={handleToggleStoryWord}
