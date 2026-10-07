@@ -14,7 +14,7 @@ interface DetailMobileHeaderProps {
   handleExit: () => void;
   navigateCarousel: (direction: -1 | 1) => void;
   currentIndex: number;
-  totalWordCount: number;
+  totalWordCount: number | null;
   displayIndex: number;
   vaultListLength: number;
   item: MyVocabularyItem;

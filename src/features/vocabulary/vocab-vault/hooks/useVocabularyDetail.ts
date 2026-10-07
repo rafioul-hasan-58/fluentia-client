@@ -42,13 +42,13 @@ export function useVocabularyDetail(word: string) {
   const [isCopied, setIsCopied] = useState(false);
 
   // totalWord state
-  const[totalWordCount,setTotalWord]=useState(333);
+  const [totalWordCount, setTotalWord] = useState<number | null>(null);
   // currentWord calculation
 
-  const indexNumber=Number(searchParams.get("index"));
-  const wordLimit=Number(searchParams.get("limit"));
-  const pageNumber=Number(searchParams.get("from"))
-  const currentWordIndex=Number(((pageNumber-1)*wordLimit)+(indexNumber+1));
+  const indexNumber = Number(searchParams.get("index"));
+  const wordLimit = Number(searchParams.get("limit"));
+  const pageNumber = Number(searchParams.get("from"))
+  const currentWordIndex = Number(((pageNumber - 1) * wordLimit) + (indexNumber + 1));
 
   // Vault list for carousel (1/12) navigation cached via TanStack Query
   const { data: vaultListData } = useQuery({
@@ -431,7 +431,7 @@ export function useVocabularyDetail(word: string) {
     try {
       const data = await fetchMyVocabularyStats();
       if (data) {
-        setTotalWord(data.totalWords);
+        setTotalWord(data.totalWords || null);
       }
     } catch (err) {
       console.warn("Failed to fetch vocabulary stats", err);

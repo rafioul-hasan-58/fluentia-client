@@ -84,7 +84,6 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
   if (isLoading) {
     return <DetailLoadingSkeleton />;
   }
-  console.log("totalWordCount", totalWordCount);
   if (!item || !wordData) {
     return <DetailNotFound decodedWord={decodedWord} />;
   }
@@ -137,7 +136,7 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
           <button
             type="button"
             onClick={() => navigateCarousel(1)}
-            disabled={currentWordIndex >= totalWordCount}
+            disabled={currentWordIndex >= (totalWordCount ?? 0)}
             title="Next Word (→ Arrow key)"
             className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-lg hover:bg-purple-500/20 text-purple-800 dark:text-purple-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
