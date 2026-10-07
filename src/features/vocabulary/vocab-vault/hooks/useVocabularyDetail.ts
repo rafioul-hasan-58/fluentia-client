@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MyVocabularyItem, VocabularyStatus } from "@/types";
+import { MyVocabularyItem, PartOfSpeech, VocabularyStatus } from "@/types";
 import {
   fetchMyVocabularyByWord,
   updateMyVocabulary,
@@ -110,8 +110,124 @@ export function useVocabularyDetail(word: string) {
     if (isFavorite) filters.isFavorite = isFavorite;
     if (date) filters.date = date;
 
+    const todayOnly = searchParams.get("todayOnly");
+    if (todayOnly) filters.todayOnly = todayOnly;
+
     return filters;
   }, [searchParams]);
+
+  // Construct matching query key for TanStack Query vault list
+  const buildVaultQueryKey = useCallback(
+    (targetPage: number) => {
+      const active = getActiveFiltersFromSearchParams();
+      return [
+        "vocabularies",
+        {
+          page: targetPage,
+          limit: wordLimit || 12,
+          search: active.search || "",
+          partOfSpeech: active.partOfSpeech || "ALL",
+          status: active.status || "ALL",
+          englishLevel: active.englishLevel || "ALL",
+          masteryLevel: active.masteryLevel || "ALL",
+          sortBy: active.sortOrder || active.sortBy || "desc",
+          favoritesOnly: active.isFavorite === "true",
+          todayOnly: active.todayOnly === "true",
+          selectedDate: active.date || null,
+        },
+      ] as const;
+    },
+    [getActiveFiltersFromSearchParams, wordLimit]
+  );
+
+  // Prefetch a vault page into React Query cache & prime individual word detail queries
+  const prefetchVaultPage = useCallback(
+    (targetPage: number) => {
+      if (!targetPage || targetPage < 1) return;
+      const queryKey = buildVaultQueryKey(targetPage);
+
+      // Skip if already in cache
+      const existing = queryClient.getQueryData(queryKey);
+      if (existing) return;
+
+      const active = getActiveFiltersFromSearchParams();
+      queryClient.prefetchQuery({
+        queryKey,
+        queryFn: async ({ signal }) => {
+          const res = await fetchMyVocabularies(
+            {
+              page: targetPage,
+              limit: wordLimit || 12,
+              search: active.search || undefined,
+              partOfSpeech:
+                active.partOfSpeech && active.partOfSpeech !== "ALL"
+                  ? (active.partOfSpeech as PartOfSpeech)
+                  : undefined,
+              status: active.status !== "ALL" ? (active.status as any) : undefined,
+              englishLevel: active.englishLevel !== "ALL" ? active.englishLevel : undefined,
+              masteryLevel: active.masteryLevel !== "ALL" ? active.masteryLevel : undefined,
+              sortBy: active.sortOrder || active.sortBy || "desc",
+              favoritesOnly: active.isFavorite === "true" ? true : undefined,
+              todayOnly: active.todayOnly === "true" ? true : undefined,
+              selectedDate: active.date || undefined,
+            },
+            signal
+          );
+
+          // Prime individual detail queries for each word returned by the prefetched page
+          if (res?.data && Array.isArray(res.data)) {
+            res.data.forEach((v) => {
+              const w = (v.word?.word || "").trim().toLowerCase();
+              if (w) {
+                queryClient.setQueryData(["vocabulary-detail", w], v);
+              }
+            });
+          }
+          return res;
+        },
+        staleTime: 60 * 1000,
+      });
+    },
+    [buildVaultQueryKey, getActiveFiltersFromSearchParams, wordLimit, queryClient]
+  );
+
+  // 1. Silent background warming: ensure current page's list is warm so Exit is instant
+  useEffect(() => {
+    if (hasNavContext && pageNumber) {
+      prefetchVaultPage(pageNumber);
+    }
+  }, [hasNavContext, pageNumber, prefetchVaultPage]);
+
+  // 2. Predictive prefetch for Next Page when on the last items of a page
+  useEffect(() => {
+    if (hasNavContext && pageNumber && wordLimit && indexNumber !== null) {
+      const isNearEndOfPage = indexNumber >= wordLimit - 2;
+      const hasMoreWords =
+        totalWordCount === null ||
+        (currentWordIndex !== null && currentWordIndex < totalWordCount);
+
+      if (isNearEndOfPage && hasMoreWords) {
+        prefetchVaultPage(pageNumber + 1);
+      }
+    }
+  }, [
+    hasNavContext,
+    pageNumber,
+    wordLimit,
+    indexNumber,
+    totalWordCount,
+    currentWordIndex,
+    prefetchVaultPage,
+  ]);
+
+  // 3. Predictive prefetch for Previous Page when on the first item of a page
+  useEffect(() => {
+    if (hasNavContext && pageNumber && indexNumber !== null) {
+      if (indexNumber === 0 && pageNumber > 1) {
+        prefetchVaultPage(pageNumber - 1);
+      }
+    }
+  }, [hasNavContext, pageNumber, indexNumber, prefetchVaultPage]);
 
   // Unified boundary states for desktop and mobile
   const isPrevDisabled =
@@ -203,6 +319,10 @@ export function useVocabularyDetail(word: string) {
             ...activeFilters,
           });
 
+          if (newPage !== pageNumber) {
+            prefetchVaultPage(newPage);
+          }
+
           router.push(
             `/dashboard/user/vocabulary/${encodeURIComponent(nextWord)}?${queryParams.toString()}`
           );
@@ -228,6 +348,11 @@ export function useVocabularyDetail(word: string) {
 
           const nextWord = (res.word.word.word || "").trim().toLowerCase();
           queryClient.setQueryData(["vocabulary-detail", nextWord], res.word);
+
+          // If crossed page boundary, trigger background prefetch of the new page's full list
+          if (newPage !== pageNumber) {
+            prefetchVaultPage(newPage);
+          }
 
           const queryParams = new URLSearchParams({
             from: String(newPage),
