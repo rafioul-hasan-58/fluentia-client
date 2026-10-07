@@ -11,7 +11,7 @@ import { useLegacyCalendarCounts, useVocabularies } from "../hooks";
 import { VocabularyCard, VocabularyFilterBar, VocabularyHeader, VocabularyPagination, VocabularyStoryBanner, VocabularyTableView } from "../components";
 import { AddVocabularyModal, DeleteVocabularyModal, EditVocabularyModal, StoryContextModal, VocabularyFullscreenModal } from "../components/modals";
 import { MyVocabularyItem } from "@/types";
-import { addSingleVocabulary, fetchMyVocabularyDetails, updateMyVocabulary } from "..";
+import { addSingleVocabulary, updateMyVocabulary } from "..";
 import { generateVocabStoryApi } from "../../vocab-story";
 
 
@@ -216,37 +216,7 @@ const VocabularyPage = () => {
     };
   }, [fullscreenVocabId, vocabularies]);
 
-  const [isLoadingFullscreenDetails, setIsLoadingFullscreenDetails] = useState(false);
-
-  // Auto-enrich details when viewing in fullscreen if collocations/sentences are missing
-  useEffect(() => {
-    if (!fullscreenVocabId) return;
-    const currentItem = vocabularies.find((v) => v.id === fullscreenVocabId);
-    if (!currentItem) return;
-
-    const hasCollocations =
-      currentItem.word?.collocations && currentItem.word.collocations.length > 0;
-    const hasExamples =
-      currentItem.word?.exampleSentences && currentItem.word.exampleSentences.length > 0;
-    const hasSynonyms =
-      currentItem.word?.synonyms && currentItem.word.synonyms.length > 0;
-
-    // If details are sparse, fetch complete details from backend
-    if (!hasCollocations || !hasExamples || !hasSynonyms) {
-      setIsLoadingFullscreenDetails(true);
-      fetchMyVocabularyDetails(currentItem)
-        .then((enriched) => {
-          if (enriched && enriched !== currentItem) {
-            setVocabularies((prev) =>
-              prev.map((v) => (v.id === enriched.id ? enriched : v))
-            );
-          }
-        })
-        .finally(() => {
-          setIsLoadingFullscreenDetails(false);
-        });
-    }
-  }, [fullscreenVocabId]);
+  const [isLoadingFullscreenDetails] = useState(false);
 
 
 

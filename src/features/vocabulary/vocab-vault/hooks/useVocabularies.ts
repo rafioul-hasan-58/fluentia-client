@@ -198,6 +198,18 @@ export function useVocabularies() {
   const vocabularies = data?.data ?? [];
   const meta = data?.meta ?? null;
 
+  // Pre-seed individual word detail queries in TanStack cache from findAll for instant detail page loading
+  useEffect(() => {
+    if (data?.data && Array.isArray(data.data)) {
+      data.data.forEach((item) => {
+        const cleanWord = (item.word?.word || "").trim().toLowerCase();
+        if (cleanWord) {
+          queryClient.setQueryData(["vocabulary-detail", cleanWord], item);
+        }
+      });
+    }
+  }, [data?.data, queryClient]);
+
   // Stage 6: If meta.total > 0 but page returned empty (out of bounds), auto-redirect
   useEffect(() => {
     if (
@@ -218,6 +230,16 @@ export function useVocabularies() {
         const currentList = old.data || [];
         const updatedList =
           typeof updater === "function" ? updater(currentList) : updater;
+
+        if (Array.isArray(updatedList)) {
+          updatedList.forEach((item) => {
+            const cleanWord = (item.word?.word || "").trim().toLowerCase();
+            if (cleanWord) {
+              queryClient.setQueryData(["vocabulary-detail", cleanWord], item);
+            }
+          });
+        }
+
         return { ...old, data: updatedList };
       });
     },

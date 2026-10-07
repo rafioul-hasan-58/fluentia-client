@@ -591,8 +591,7 @@ export async function fetchMyVocabularyByWord(
             (v: MyVocabularyItem) => (v.word?.word || "").trim().toLowerCase() === cleanWord
           );
           if (matched) {
-            const enriched = await fetchMyVocabularyDetails(matched);
-            return enriched;
+            return matched;
           }
         }
       } catch (searchErr) {
@@ -606,8 +605,7 @@ export async function fetchMyVocabularyByWord(
       (v) => (v.word?.word || "").trim().toLowerCase() === cleanWord
     );
     if (localMatch) {
-      const enriched = await fetchMyVocabularyDetails(localMatch);
-      return enriched;
+      return localMatch;
     }
 
     // 3. Try direct endpoint if backend supports it
@@ -640,8 +638,7 @@ export async function fetchMyVocabularyByWord(
           mySentences: Array.isArray(data.mySentences) ? data.mySentences : [],
           notes: data.notes || null,
         };
-        const enriched = await fetchMyVocabularyDetails(item);
-        return enriched;
+        return item;
       }
     }
 

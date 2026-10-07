@@ -7,7 +7,6 @@ import { MyVocabularyItem, VocabularyStatus } from "@/types";
 import {
   fetchMyVocabularyByWord,
   updateMyVocabulary,
-  fetchMyVocabularyDetails,
   fetchMyVocabularies,
   deleteMyVocabulary,
   fetchNextWordDetails,
@@ -173,10 +172,45 @@ export function useVocabularyDetail(word: string) {
           return;
         }
 
+        const activeFilters = getActiveFiltersFromSearchParams();
+        const newGlobalIndex =
+          direction === 1 ? currentWordIndex + 1 : currentWordIndex - 1;
+        const newPage = Math.floor((newGlobalIndex - 1) / wordLimit) + 1;
+        const newIndex = (newGlobalIndex - 1) % wordLimit;
+
+        // Instant navigation: check if target word is already in cached findAll queries
+        const vocabQueries = queryClient.getQueriesData<{ data?: MyVocabularyItem[] }>({
+          queryKey: ["vocabularies"],
+        });
+        let cachedNeighbor: MyVocabularyItem | null = null;
+        for (const [key, qData] of vocabQueries) {
+          const options = (key[1] as any) || {};
+          if (options.page === newPage && qData?.data && qData.data[newIndex]) {
+            cachedNeighbor = qData.data[newIndex];
+            break;
+          }
+        }
+
+        if (cachedNeighbor && cachedNeighbor.word?.word) {
+          const nextWord = (cachedNeighbor.word.word || "").trim().toLowerCase();
+          queryClient.setQueryData(["vocabulary-detail", nextWord], cachedNeighbor);
+
+          const queryParams = new URLSearchParams({
+            from: String(newPage),
+            index: String(newIndex),
+            limit: String(wordLimit),
+            ...(totalWordCount !== null ? { total: String(totalWordCount) } : {}),
+            ...activeFilters,
+          });
+
+          router.push(
+            `/dashboard/user/vocabulary/${encodeURIComponent(nextWord)}?${queryParams.toString()}`
+          );
+          return;
+        }
+
         setIsNavigating(true);
         try {
-          const activeFilters = getActiveFiltersFromSearchParams();
-
           // Skip math in backend: skip = direction === 'next' ? page * limit : (page - 1) * limit - 1
           // With page = currentWordIndex and limit = 1:
           // direction === 'next' skips currentWordIndex * 1 -> exact next item
@@ -193,10 +227,7 @@ export function useVocabularyDetail(word: string) {
           }
 
           const nextWord = (res.word.word.word || "").trim().toLowerCase();
-          const newGlobalIndex =
-            direction === 1 ? currentWordIndex + 1 : currentWordIndex - 1;
-          const newPage = Math.floor((newGlobalIndex - 1) / wordLimit) + 1;
-          const newIndex = (newGlobalIndex - 1) % wordLimit;
+          queryClient.setQueryData(["vocabulary-detail", nextWord], res.word);
 
           const queryParams = new URLSearchParams({
             from: String(newPage),
@@ -224,6 +255,7 @@ export function useVocabularyDetail(word: string) {
           const nextItem = vaultList[newIndex];
           const nextWord = (nextItem.word?.word || "").trim().toLowerCase();
           if (nextWord) {
+            queryClient.setQueryData(["vocabulary-detail", nextWord], nextItem);
             router.push(
               `/dashboard/user/vocabulary/${encodeURIComponent(nextWord)}`
             );
@@ -384,7 +416,7 @@ export function useVocabularyDetail(word: string) {
   const [newSentence, setNewSentence] = useState("");
   const [isAddingSentence, setIsAddingSentence] = useState(false);
 
-  // TanStack Query for word detail
+  // TanStack Query for word detail with instant loading from findAll cache
   const {
     data: rawItem,
     isLoading,
@@ -394,6 +426,42 @@ export function useVocabularyDetail(word: string) {
     queryFn: () => fetchMyVocabularyByWord(decodedWord),
     enabled: Boolean(decodedWord),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    initialData: () => {
+      if (!decodedWord) return undefined;
+
+      // 1. Direct query cache lookup
+      const existing = queryClient.getQueryData<MyVocabularyItem>([
+        "vocabulary-detail",
+        decodedWord,
+      ]);
+      if (existing) return existing;
+
+      // 2. Scan all cached "vocabularies" queries (populated by findAll)
+      const vocabQueries = queryClient.getQueriesData<{ data?: MyVocabularyItem[] }>({
+        queryKey: ["vocabularies"],
+      });
+      for (const [, qData] of vocabQueries) {
+        if (qData?.data && Array.isArray(qData.data)) {
+          const matched = qData.data.find(
+            (v) => (v.word?.word || "").trim().toLowerCase() === decodedWord
+          );
+          if (matched) {
+            queryClient.setQueryData(["vocabulary-detail", decodedWord], matched);
+            return matched;
+          }
+        }
+      }
+
+      // 3. Fallback: local vault storage
+      const vault = getLocalVault();
+      const localMatch = vault.find(
+        (v) => (v.word?.word || "").trim().toLowerCase() === decodedWord
+      );
+      if (localMatch) return localMatch;
+
+      return undefined;
+    },
+    initialDataUpdatedAt: () => Date.now(),
   });
 
   const item = rawItem ?? null;
@@ -405,26 +473,6 @@ export function useVocabularyDetail(word: string) {
     }
   }, [item?.notes]);
 
-  // Progressive AI enrichment: if collocations/examples are missing, fetch & enrich in background
-  useEffect(() => {
-    if (
-      item &&
-      (!item.word?.collocations?.length ||
-        !item.word?.exampleSentences?.length ||
-        !item.word?.synonyms?.length)
-    ) {
-      setIsLoadingDetails(true);
-      fetchMyVocabularyDetails(item)
-        .then((enriched) => {
-          if (enriched) {
-            queryClient.setQueryData(["vocabulary-detail", decodedWord], enriched);
-          }
-        })
-        .catch((e: unknown) => console.warn("Error enriching details:", e))
-        .finally(() => setIsLoadingDetails(false));
-    }
-  }, [item?.id, decodedWord, queryClient]);
-
   // Keep setItem compatible for optimistic mutations by updating TanStack cache directly
   const setItem = useCallback(
     (
@@ -433,13 +481,30 @@ export function useVocabularyDetail(word: string) {
         | null
         | ((prev: MyVocabularyItem | null) => MyVocabularyItem | null)
     ) => {
+      let nextItem: MyVocabularyItem | null = null;
       queryClient.setQueryData(
         ["vocabulary-detail", decodedWord],
         (old: MyVocabularyItem | null | undefined) => {
           const current = old ?? null;
-          return typeof updater === "function" ? updater(current) : updater;
+          nextItem = typeof updater === "function" ? updater(current) : updater;
+          return nextItem;
         }
       );
+
+      // Also sync back to any cached vocabularies queries so list view reflects updates
+      if (nextItem) {
+        const updated: MyVocabularyItem = nextItem;
+        queryClient.setQueriesData<{ data?: MyVocabularyItem[]; meta?: any }>(
+          { queryKey: ["vocabularies"] },
+          (old) => {
+            if (!old?.data || !Array.isArray(old.data)) return old;
+            return {
+              ...old,
+              data: old.data.map((v: MyVocabularyItem) => (v.id === updated.id ? updated : v)),
+            };
+          }
+        );
+      }
     },
     [queryClient, decodedWord]
   );
