@@ -673,4 +673,101 @@ export async function fetchMyVocabularyByWord(
   }
 
   return null;
+}
+
+export interface FetchNextWordParams {
+  page?: number;
+  limit?: number;
+  direction?: "next" | "prev";
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  status?: string;
+  partOfSpeech?: string;
+  englishLevel?: string;
+  masteryLevel?: number;
+  date?: string;
+  isFavorite?: boolean;
+}
+
+export interface FetchNextWordResult {
+  word: MyVocabularyItem | null;
+  hasMore: boolean;
+}
+
+/**
+ * Fetch the neighboring vocabulary word (next/prev) relative to the given page and filters
+ * Endpoint: GET /api/v1/my-vocabularies/next-word
+ */
+export async function fetchNextWordDetails(
+  params: FetchNextWordParams
+): Promise<FetchNextWordResult> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
+
+  const query = new URLSearchParams();
+  if (params.page !== undefined) query.set("page", String(params.page));
+  if (params.limit !== undefined) query.set("limit", String(params.limit));
+  if (params.direction) query.set("direction", params.direction);
+  if (params.sortBy) query.set("sortBy", params.sortBy);
+  if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+  if (params.search?.trim()) query.set("search", params.search.trim());
+  if (params.status && params.status !== "ALL") query.set("status", params.status);
+  if (params.partOfSpeech && params.partOfSpeech !== "ALL") {
+    query.set("partOfSpeech", params.partOfSpeech);
+  }
+  if (params.englishLevel && params.englishLevel !== "ALL") {
+    query.set("englishLevel", params.englishLevel);
+  }
+  if (params.masteryLevel !== undefined && String(params.masteryLevel) !== "ALL") {
+    query.set("masteryLevel", String(params.masteryLevel));
+  }
+  if (params.date) query.set("date", params.date);
+  if (params.isFavorite !== undefined) query.set("isFavorite", String(params.isFavorite));
+
+  try {
+    const res = await fetch(`${baseUrl}/my-vocabularies/next-word?${query.toString()}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      const data = json.data ?? json;
+      if (data && data.word) {
+        const rawWord =
+          data.word.word && typeof data.word.word === "object"
+            ? data.word.word
+            : data.word;
+        const fullWord = normalizeVocabularyItem(rawWord);
+        const item: MyVocabularyItem = {
+          ...data.word,
+          id: data.word.id || data.word._id || `my-vocab-${Date.now()}`,
+          isFavorite: data.word.isFavorite ?? data.word.isFavourate ?? false,
+          vocabularyStatus: data.word.vocabularyStatus || "LEARNING",
+          masteryLevel: data.word.masteryLevel ?? 1,
+          word: fullWord,
+          mySentences: Array.isArray(data.word.mySentences)
+            ? data.word.mySentences
+            : [],
+          notes: data.word.notes || null,
+        };
+        return {
+          word: item,
+          hasMore: Boolean(data.hasMore),
+        };
+      }
+      return {
+        word: null,
+        hasMore: false,
+      };
+    }
+  } catch (err) {
+    console.warn("fetchNextWordDetails error:", err);
+  }
+
+  return { word: null, hasMore: false };
 }

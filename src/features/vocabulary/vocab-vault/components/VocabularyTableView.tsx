@@ -8,6 +8,7 @@ export interface VocabularyTableViewProps {
   items: MyVocabularyItem[];
   currentPage: number;
   limit?: number;
+  filterQueryString?: string;
   isStorySelectMode: boolean;
   selectedStoryItems: MyVocabularyItem[];
   handleToggleStoryWord: (item: MyVocabularyItem) => void;
@@ -24,6 +25,7 @@ export default function VocabularyTableView({
   items,
   currentPage,
   limit,
+  filterQueryString,
   isStorySelectMode,
   selectedStoryItems,
   handleToggleStoryWord,
@@ -66,7 +68,7 @@ export default function VocabularyTableView({
                           item.word.word.toLowerCase()
                         )}?from=${currentPage}&index=${index}${
                           limit !== undefined ? `&limit=${limit}` : ""
-                        }`;
+                        }${filterQueryString || ""}`;
 
                         return (
                           <tr

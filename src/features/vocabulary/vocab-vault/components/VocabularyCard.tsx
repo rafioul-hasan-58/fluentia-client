@@ -9,6 +9,7 @@ interface VocabularyCardProps {
   currentPage: number;
   index?: number;
   limit?: number;
+  filterQueryString?: string;
   isStorySelectMode: boolean;
   isSelectedForStory: boolean;
   handleToggleStoryWord: (item: MyVocabularyItem) => void;
@@ -26,6 +27,7 @@ export default function VocabularyCard({
   currentPage,
   index,
   limit,
+  filterQueryString,
   isStorySelectMode,
   isSelectedForStory,
   handleToggleStoryWord,
@@ -45,7 +47,7 @@ export default function VocabularyCard({
     item.word.word.toLowerCase()
   )}?from=${currentPage}${index !== undefined ? `&index=${index}` : ""}${
     limit !== undefined ? `&limit=${limit}` : ""
-  }`;
+  }${filterQueryString || ""}`;
 
   return (
     <div

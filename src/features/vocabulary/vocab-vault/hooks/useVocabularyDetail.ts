@@ -10,6 +10,7 @@ import {
   fetchMyVocabularyDetails,
   fetchMyVocabularies,
   deleteMyVocabulary,
+  fetchNextWordDetails,
 } from "../api/myVocabulary";
 import { getLocalVault } from "./utilFn";
 import { fetchMyVocabularyStats } from "../api";
@@ -41,16 +42,88 @@ export function useVocabularyDetail(word: string) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  // totalWord state
-  const [totalWordCount, setTotalWord] = useState<number | null>(null);
-  // currentWord calculation
+  // 1. Safe parameter parsing
+  const pageNumber = useMemo(() => {
+    const val = searchParams?.get("from");
+    if (!val) return null;
+    const n = Number(val);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : null;
+  }, [searchParams]);
 
-  const indexNumber = Number(searchParams.get("index"));
-  const wordLimit = Number(searchParams.get("limit"));
-  const pageNumber = Number(searchParams.get("from"))
-  const currentWordIndex = Number(((pageNumber - 1) * wordLimit) + (indexNumber + 1));
+  const wordLimit = useMemo(() => {
+    const val = searchParams?.get("limit");
+    if (!val) return null;
+    const n = Number(val);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : null;
+  }, [searchParams]);
 
-  // Vault list for carousel (1/12) navigation cached via TanStack Query
+  const indexNumber = useMemo(() => {
+    const val = searchParams?.get("index");
+    if (val === null || val === undefined || val === "") return null;
+    const n = Number(val);
+    return Number.isFinite(n) && n >= 0 ? Math.floor(n) : null;
+  }, [searchParams]);
+
+  const totalParam = useMemo(() => {
+    const val = searchParams?.get("total");
+    if (!val) return null;
+    const n = Number(val);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : null;
+  }, [searchParams]);
+
+  const hasNavContext =
+    pageNumber !== null && wordLimit !== null && indexNumber !== null;
+
+  const currentWordIndex = hasNavContext
+    ? (pageNumber - 1) * wordLimit + (indexNumber + 1)
+    : null;
+
+  // Total word count: initialize from URL param if available, otherwise null
+  const [totalWordCount, setTotalWord] = useState<number | null>(() => totalParam);
+
+  useEffect(() => {
+    if (totalParam !== null) {
+      setTotalWord(totalParam);
+    }
+  }, [totalParam]);
+
+  // Extract all active filters from search params
+  const getActiveFiltersFromSearchParams = useCallback(() => {
+    if (!searchParams) return {};
+    const filters: Record<string, string> = {};
+    const search = searchParams.get("search");
+    const status = searchParams.get("status");
+    const partOfSpeech = searchParams.get("partOfSpeech");
+    const englishLevel = searchParams.get("englishLevel");
+    const masteryLevel = searchParams.get("masteryLevel");
+    const sortBy = searchParams.get("sortBy");
+    const sortOrder = searchParams.get("sortOrder");
+    const isFavorite = searchParams.get("isFavorite");
+    const date = searchParams.get("date");
+
+    if (search?.trim()) filters.search = search.trim();
+    if (status && status !== "ALL") filters.status = status;
+    if (partOfSpeech && partOfSpeech !== "ALL") filters.partOfSpeech = partOfSpeech;
+    if (englishLevel && englishLevel !== "ALL") filters.englishLevel = englishLevel;
+    if (masteryLevel && masteryLevel !== "ALL") filters.masteryLevel = masteryLevel;
+    if (sortBy) filters.sortBy = sortBy;
+    if (sortOrder) filters.sortOrder = sortOrder;
+    if (isFavorite) filters.isFavorite = isFavorite;
+    if (date) filters.date = date;
+
+    return filters;
+  }, [searchParams]);
+
+  // Unified boundary states for desktop and mobile
+  const isPrevDisabled =
+    !hasNavContext || (currentWordIndex !== null && currentWordIndex <= 1);
+  const isNextDisabled =
+    !hasNavContext ||
+    (totalWordCount !== null &&
+      currentWordIndex !== null &&
+      currentWordIndex >= totalWordCount);
+
+  // Fallback in-memory list for words without navigation context
   const { data: vaultListData } = useQuery({
     queryKey: ["vocabularies", "carousel"],
     queryFn: async () => {
@@ -64,7 +137,8 @@ export function useVocabularyDetail(word: string) {
         return getLocalVault();
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 min
+    staleTime: 5 * 60 * 1000,
+    enabled: !hasNavContext,
   });
 
   const vaultList = vaultListData ?? [];
@@ -75,37 +149,115 @@ export function useVocabularyDetail(word: string) {
     );
   }, [vaultList, decodedWord]);
 
-  const totalCount = 500;
-  // const totalCount = vaultList.length > 0 ? vaultList.length : 1;
-  const displayIndex = currentIndex !== -1 ? currentIndex + 1 : 1;
+  const displayIndex = currentWordIndex ?? (currentIndex !== -1 ? currentIndex + 1 : 1);
+
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const navigateCarousel = useCallback(
-    (direction: -1 | 1) => {
-      if (vaultList.length === 0 || currentIndex === -1) return;
-      const newIndex = currentIndex + direction;
-      if (newIndex >= 0 && newIndex < vaultList.length) {
-        const nextItem = vaultList[newIndex];
-        const nextWord = (nextItem.word?.word || "").trim().toLowerCase();
-        if (nextWord) {
-          const fromPage = searchParams?.get("from");
-          const query = fromPage ? `?from=${fromPage}` : "";
+    async (direction: -1 | 1) => {
+      if (isNavigating) return;
+
+      // 1. Contextual navigation via backend next-word endpoint
+      if (
+        hasNavContext &&
+        currentWordIndex !== null &&
+        wordLimit !== null &&
+        pageNumber !== null
+      ) {
+        if (direction === -1 && currentWordIndex <= 1) return;
+        if (
+          direction === 1 &&
+          totalWordCount !== null &&
+          currentWordIndex >= totalWordCount
+        ) {
+          return;
+        }
+
+        setIsNavigating(true);
+        try {
+          const activeFilters = getActiveFiltersFromSearchParams();
+
+          // Skip math in backend: skip = direction === 'next' ? page * limit : (page - 1) * limit - 1
+          // With page = currentWordIndex and limit = 1:
+          // direction === 'next' skips currentWordIndex * 1 -> exact next item
+          // direction === 'prev' skips (currentWordIndex - 1) * 1 - 1 -> exact previous item
+          const res = await fetchNextWordDetails({
+            page: currentWordIndex,
+            limit: 1,
+            direction: direction === 1 ? "next" : "prev",
+            ...activeFilters,
+          });
+
+          if (!res.word || !res.word.word?.word) {
+            return;
+          }
+
+          const nextWord = (res.word.word.word || "").trim().toLowerCase();
+          const newGlobalIndex =
+            direction === 1 ? currentWordIndex + 1 : currentWordIndex - 1;
+          const newPage = Math.floor((newGlobalIndex - 1) / wordLimit) + 1;
+          const newIndex = (newGlobalIndex - 1) % wordLimit;
+
+          const queryParams = new URLSearchParams({
+            from: String(newPage),
+            index: String(newIndex),
+            limit: String(wordLimit),
+            ...(totalWordCount !== null ? { total: String(totalWordCount) } : {}),
+            ...activeFilters,
+          });
+
           router.push(
-            `/dashboard/user/vocabulary/${encodeURIComponent(nextWord)}${query}`
+            `/dashboard/user/vocabulary/${encodeURIComponent(nextWord)}?${queryParams.toString()}`
           );
+        } catch (err) {
+          console.warn("Failed to navigate carousel:", err);
+        } finally {
+          setIsNavigating(false);
+        }
+        return;
+      }
+
+      // 2. Direct-access fallback navigation via local vault list
+      if (vaultList.length > 0 && currentIndex !== -1) {
+        const newIndex = currentIndex + direction;
+        if (newIndex >= 0 && newIndex < vaultList.length) {
+          const nextItem = vaultList[newIndex];
+          const nextWord = (nextItem.word?.word || "").trim().toLowerCase();
+          if (nextWord) {
+            router.push(
+              `/dashboard/user/vocabulary/${encodeURIComponent(nextWord)}`
+            );
+          }
         }
       }
     },
-    [vaultList, currentIndex, router, searchParams]
+    [
+      isNavigating,
+      hasNavContext,
+      currentWordIndex,
+      wordLimit,
+      pageNumber,
+      totalWordCount,
+      getActiveFiltersFromSearchParams,
+      vaultList,
+      currentIndex,
+      router,
+    ]
   );
 
   const handleExit = useCallback(() => {
     const fromPage = searchParams?.get("from");
+    const activeFilters = getActiveFiltersFromSearchParams();
+    const queryParams = new URLSearchParams();
+    if (fromPage) queryParams.set("page", fromPage);
+    Object.entries(activeFilters).forEach(([k, v]) => queryParams.set(k, v));
+    const str = queryParams.toString();
     router.push(
-      fromPage
-        ? `/dashboard/user/vocabulary?page=${fromPage}`
+      str
+        ? `/dashboard/user/vocabulary?${str}`
         : "/dashboard/user/vocabulary"
     );
-  }, [router, searchParams]);
+  }, [router, searchParams, getActiveFiltersFromSearchParams]);
 
   // Keyboard shortcuts (Escape = exit to vault, Left/Right arrow = carousel)
   useEffect(() => {
@@ -426,8 +578,9 @@ export function useVocabularyDetail(word: string) {
       }
     }
   };
-  // fetch total wordCount
+  // fetch total wordCount (fallback for direct access when total is not in URL)
   const fetchWordCount = useCallback(async () => {
+    if (totalParam !== null) return;
     try {
       const data = await fetchMyVocabularyStats();
       if (data) {
@@ -436,12 +589,13 @@ export function useVocabularyDetail(word: string) {
     } catch (err) {
       console.warn("Failed to fetch vocabulary stats", err);
     }
-  }, []);
+  }, [totalParam]);
 
-  // Load stats once on mount
+  // Load stats once on mount if total was not supplied in search params
   useEffect(() => {
     fetchWordCount();
   }, [fetchWordCount]);
+
   return {
     item,
     setItem,
@@ -456,10 +610,14 @@ export function useVocabularyDetail(word: string) {
     // Carousel & Navigation
     vaultList,
     currentIndex,
-    totalCount,
+    totalCount: totalWordCount,
     displayIndex,
     navigateCarousel,
     handleExit,
+    hasNavContext,
+    isPrevDisabled,
+    isNextDisabled,
+    isNavigating,
     // Actions & Audio
     playPronunciation,
     handleToggleFavorite,
@@ -502,6 +660,6 @@ export function useVocabularyDetail(word: string) {
     handleSaveEdit,
     // word count showcase
     totalWordCount,
-    currentWordIndex
+    currentWordIndex,
   };
 }

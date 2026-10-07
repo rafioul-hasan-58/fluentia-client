@@ -553,6 +553,40 @@ const VocabularyPage = () => {
   const endRecord =
     totalCount === 0 ? 0 : Math.min(startRecord + vocabularies.length - 1, totalCount);
 
+  // Thread active filter parameters + total count into detail view URLs
+  const filterQueryString = useMemo(() => {
+    const params = new URLSearchParams();
+    if (filters.debouncedSearchQuery?.trim()) {
+      params.set("search", filters.debouncedSearchQuery.trim());
+    }
+    if (filters.selectedPos && filters.selectedPos !== "ALL") {
+      params.set("partOfSpeech", filters.selectedPos);
+    }
+    if (filters.selectedStatus && filters.selectedStatus !== "ALL") {
+      params.set("status", filters.selectedStatus);
+    }
+    if (filters.selectedLevel && filters.selectedLevel !== "ALL") {
+      params.set("englishLevel", filters.selectedLevel);
+    }
+    if (filters.selectedMastery && filters.selectedMastery !== "ALL") {
+      params.set("masteryLevel", filters.selectedMastery);
+    }
+    if (filters.selectedSort) {
+      params.set("sortOrder", filters.selectedSort);
+    }
+    if (filters.favoritesOnly) {
+      params.set("isFavorite", "true");
+    }
+    if (filters.selectedDate) {
+      params.set("date", filters.selectedDate);
+    }
+    if (totalCount !== undefined) {
+      params.set("total", String(totalCount));
+    }
+    const str = params.toString();
+    return str ? `&${str}` : "";
+  }, [filters, totalCount]);
+
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Header Banner & Action */}
@@ -716,6 +750,7 @@ const VocabularyPage = () => {
                     item={item}
                     index={index}
                     limit={pageSize}
+                    filterQueryString={filterQueryString}
                     currentPage={currentPage}
                     isStorySelectMode={isStorySelectMode}
                     isSelectedForStory={selectedStoryItems.some((s) => s.id === item.id)}
@@ -735,6 +770,7 @@ const VocabularyPage = () => {
                 items={vocabularies}
                 currentPage={currentPage}
                 limit={pageSize}
+                filterQueryString={filterQueryString}
                 isStorySelectMode={isStorySelectMode}
                 selectedStoryItems={selectedStoryItems}
                 handleToggleStoryWord={handleToggleStoryWord}

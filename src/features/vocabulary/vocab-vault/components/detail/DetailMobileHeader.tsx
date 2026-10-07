@@ -15,8 +15,11 @@ interface DetailMobileHeaderProps {
   navigateCarousel: (direction: -1 | 1) => void;
   currentIndex: number;
   totalWordCount: number | null;
-  displayIndex: number;
+  displayIndex: number | null;
   vaultListLength: number;
+  isPrevDisabled?: boolean;
+  isNextDisabled?: boolean;
+  hasNavContext?: boolean;
   item: MyVocabularyItem;
   handleOpenEditModal: (item: MyVocabularyItem) => void;
   setItemToDelete: (item: MyVocabularyItem) => void;
@@ -30,6 +33,9 @@ export function DetailMobileHeader({
   totalWordCount,
   displayIndex,
   vaultListLength,
+  isPrevDisabled,
+  isNextDisabled,
+  hasNavContext,
   item,
   handleOpenEditModal,
   setItemToDelete,
@@ -55,7 +61,7 @@ export function DetailMobileHeader({
         <button
           type="button"
           onClick={() => navigateCarousel(-1)}
-          disabled={currentIndex <= 0}
+          disabled={isPrevDisabled ?? (currentIndex <= 0)}
           title="Previous Word (← Arrow key)"
           className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
@@ -64,13 +70,13 @@ export function DetailMobileHeader({
 
         {/* Counter: 1/12 */}
         <span className="text-xs font-bold text-slate-700 dark:text-slate-200 px-1 font-mono select-none whitespace-nowrap">
-          {displayIndex}/{totalWordCount}
+          {displayIndex ?? "—"}/{totalWordCount ?? "..."}
         </span>
 
         <button
           type="button"
           onClick={() => navigateCarousel(1)}
-          disabled={currentIndex === -1 || currentIndex >= vaultListLength - 1}
+          disabled={isNextDisabled ?? (currentIndex === -1 || currentIndex >= vaultListLength - 1)}
           title="Next Word (→ Arrow key)"
           className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >

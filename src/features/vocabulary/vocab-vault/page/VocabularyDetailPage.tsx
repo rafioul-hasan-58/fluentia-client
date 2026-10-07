@@ -78,7 +78,11 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
     handleAddSentenceToEdit,
     handleSaveEdit,
     totalWordCount,
-    currentWordIndex
+    currentWordIndex,
+    hasNavContext,
+    isPrevDisabled,
+    isNextDisabled,
+    isNavigating,
   } = useVocabularyDetail(word);
 
   if (isLoading) {
@@ -98,6 +102,9 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
         totalWordCount={totalWordCount}
         displayIndex={currentWordIndex}
         vaultListLength={vaultList.length}
+        isPrevDisabled={isPrevDisabled || isNavigating}
+        isNextDisabled={isNextDisabled || isNavigating}
+        hasNavContext={hasNavContext}
         item={item}
         handleOpenEditModal={handleOpenEditModal}
         setItemToDelete={setItemToDelete}
@@ -121,7 +128,7 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
           <button
             type="button"
             onClick={() => navigateCarousel(-1)}
-            disabled={currentWordIndex <= 1}
+            disabled={isPrevDisabled || isNavigating}
             title="Previous Word (← Arrow key)"
             className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-lg hover:bg-purple-500/20 text-purple-800 dark:text-purple-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
@@ -129,14 +136,20 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
             <span>Prev</span>
           </button>
 
-          <span className="text-xs font-bold text-purple-900 dark:text-purple-200 px-2 font-mono whitespace-nowrap min-w-[3.5rem] text-center">
-            {currentWordIndex}&nbsp;/&nbsp;{totalWordCount}
-          </span>
+          {hasNavContext && currentWordIndex !== null ? (
+            <span className="text-xs font-bold text-purple-900 dark:text-purple-200 px-2 font-mono whitespace-nowrap min-w-[3.5rem] text-center">
+              {currentWordIndex}&nbsp;/&nbsp;{totalWordCount ?? "..."}
+            </span>
+          ) : (
+            <span className="text-xs text-purple-900/60 dark:text-purple-200/60 px-2 font-mono whitespace-nowrap min-w-[3.5rem] text-center">
+              —&nbsp;/&nbsp;{totalWordCount ?? "—"}
+            </span>
+          )}
 
           <button
             type="button"
             onClick={() => navigateCarousel(1)}
-            disabled={currentWordIndex >= (totalWordCount ?? 0)}
+            disabled={isNextDisabled || isNavigating}
             title="Next Word (→ Arrow key)"
             className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-lg hover:bg-purple-500/20 text-purple-800 dark:text-purple-200 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
