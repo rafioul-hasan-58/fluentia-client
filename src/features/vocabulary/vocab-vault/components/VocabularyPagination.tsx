@@ -133,7 +133,7 @@ export default function VocabularyPagination({
             }}
             className="h-8 px-2 rounded-lg bg-paper border border-slate-200 dark:border-white/10 text-xs font-semibold text-ink cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40"
           >
-            {[12, 24, 36, 48].map((size) => (
+            {[8, 12, 24, 36, 48].map((size) => (
               <option key={size} value={size}>
                 {size}
               </option>
