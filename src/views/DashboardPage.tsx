@@ -27,6 +27,7 @@ import {
   Mic,
 } from "lucide-react";
 import { StreakWidget } from "@/components/dashboard";
+import { usePrefetchVocabularyVault } from "@/features/vocabulary/vocab-vault/hooks";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -35,6 +36,16 @@ export default function DashboardPage() {
   const [selectedAttempt, setSelectedAttempt] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"all" | "diagnostic" | "ielts">("all");
+
+  const prefetchVault = usePrefetchVocabularyVault();
+
+  // Prefetch first page of Vocabulary Vault while user is reviewing dashboard
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      prefetchVault();
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [prefetchVault]);
 
   useEffect(() => {
     let isMounted = true;
@@ -219,6 +230,9 @@ export default function DashboardPage() {
 
         <Link
           href="/dashboard/user/vocabulary"
+          onMouseEnter={() => prefetchVault()}
+          onTouchStart={() => prefetchVault()}
+          onFocus={() => prefetchVault()}
           className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-paper-card border border-slate-200 dark:border-white/10 shadow-sm space-y-1.5 sm:space-y-2 relative overflow-hidden group hover:border-emerald-500/40 hover:shadow-md transition-all cursor-pointer block"
         >
           <div className="flex items-center justify-between">

@@ -280,8 +280,8 @@ export async function fetchMyVocabularies(
         };
       }
 
-      // Cache the CURRENT page's items
-      saveCachedPage(page, limit, options, formatted);
+      // Cache the CURRENT page's items along with meta
+      saveCachedPage(page, limit, options, formatted, meta);
 
       return {
         data: formatted,
@@ -300,8 +300,8 @@ export async function fetchMyVocabularies(
   const cachedPage = getCachedPage(page, limit, options);
   if (cachedPage) {
     return {
-      data: cachedPage,
-      meta: null,
+      data: cachedPage.data || [],
+      meta: cachedPage.meta || null,
     };
   }
 

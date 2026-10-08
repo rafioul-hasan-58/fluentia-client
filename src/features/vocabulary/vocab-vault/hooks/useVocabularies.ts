@@ -1,10 +1,99 @@
 "use client";
 
 import { IMeta, MyVocabularyItem, PartOfSpeech, VocabularyStats, VocabularyStatus } from "@/types";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useQuery, useQueryClient, QueryClient } from "@tanstack/react-query";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { deleteMyVocabulary, fetchMyVocabularies, fetchMyVocabularyStats, updateMyVocabulary } from "../api";
+import { getAuthToken, getCachedPage } from "./utilFn";
+
+export const DEFAULT_VOCABULARY_QUERY_PARAMS = {
+  page: 1,
+  limit: 12,
+  search: "",
+  partOfSpeech: "ALL" as PartOfSpeech | "ALL",
+  status: "ALL",
+  englishLevel: "ALL",
+  masteryLevel: "ALL",
+  sortBy: "desc" as "asc" | "desc",
+  favoritesOnly: false,
+  todayOnly: false,
+  selectedDate: null as string | null,
+};
+
+export const buildVocabularyQueryKey = (
+  params?: Partial<typeof DEFAULT_VOCABULARY_QUERY_PARAMS>
+) =>
+  [
+    "vocabularies",
+    {
+      page: params?.page ?? 1,
+      limit: params?.limit ?? 12,
+      search: params?.search ?? "",
+      partOfSpeech: params?.partOfSpeech ?? "ALL",
+      status: params?.status ?? "ALL",
+      englishLevel: params?.englishLevel ?? "ALL",
+      masteryLevel: params?.masteryLevel ?? "ALL",
+      sortBy: params?.sortBy ?? "desc",
+      favoritesOnly: params?.favoritesOnly ?? false,
+      todayOnly: params?.todayOnly ?? false,
+      selectedDate: params?.selectedDate ?? null,
+    },
+  ] as const;
+
+/**
+ * Prefetch first page of user vocabulary data into TanStack Query cache.
+ * Can be called during idle time, on link hover, or on parent view mount.
+ */
+export async function prefetchVocabularyFirstPage(
+  queryClient: QueryClient,
+  limit = 12
+) {
+  if (typeof window === "undefined") return;
+  const token = getAuthToken();
+  if (!token) return;
+
+  const queryKey = buildVocabularyQueryKey({ page: 1, limit });
+
+  // If already populated in cache and still fresh (< 60s), skip duplicate network request
+  const state = queryClient.getQueryState(queryKey);
+  if (state?.data && state.dataUpdatedAt && Date.now() - state.dataUpdatedAt < 60 * 1000) {
+    return;
+  }
+
+  return queryClient.prefetchQuery({
+    queryKey,
+    queryFn: ({ signal }) =>
+      fetchMyVocabularies(
+        {
+          page: 1,
+          limit,
+          search: undefined,
+          partOfSpeech: "ALL",
+          status: undefined,
+          englishLevel: undefined,
+          masteryLevel: undefined,
+          sortBy: "desc",
+          favoritesOnly: false,
+          todayOnly: false,
+          selectedDate: undefined,
+        },
+        signal
+      ),
+    staleTime: 60 * 1000,
+  });
+}
+
+/**
+ * Hook to get an imperative prefetcher function for the Vocabulary Vault first page
+ */
+export function usePrefetchVocabularyVault() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    (limit = 12) => prefetchVocabularyFirstPage(queryClient, limit),
+    [queryClient]
+  );
+}
 
 export function useVocabularies() {
   const router = useRouter();
@@ -150,22 +239,35 @@ export function useVocabularies() {
   }, [fetchStats]);
 
   // 4. Declarative query key and useQuery for vocabulary list
-  const queryKey = [
-    "vocabularies",
-    {
-      page: currentPage,
-      limit: pageSize,
-      search: debouncedSearchQuery,
-      partOfSpeech: selectedPos,
-      status: selectedStatus,
-      englishLevel: selectedLevel,
-      masteryLevel: selectedMastery,
-      sortBy: selectedSort,
+  const queryKey = useMemo(
+    () =>
+      buildVocabularyQueryKey({
+        page: currentPage,
+        limit: pageSize,
+        search: debouncedSearchQuery,
+        partOfSpeech: selectedPos,
+        status: selectedStatus,
+        englishLevel: selectedLevel,
+        masteryLevel: selectedMastery,
+        sortBy: selectedSort,
+        favoritesOnly,
+        todayOnly,
+        selectedDate,
+      }),
+    [
+      currentPage,
+      pageSize,
+      debouncedSearchQuery,
+      selectedPos,
+      selectedStatus,
+      selectedLevel,
+      selectedMastery,
+      selectedSort,
       favoritesOnly,
       todayOnly,
       selectedDate,
-    },
-  ] as const;
+    ]
+  );
 
   const {
     data,
@@ -192,11 +294,90 @@ export function useVocabularies() {
         },
         signal
       ),
+    placeholderData: (previousData) => {
+      if (previousData) return previousData;
+      // Instant cache fallback for initial paint (e.g. on direct entry or page refresh)
+      const cached = getCachedPage(currentPage, pageSize, {
+        page: currentPage,
+        limit: pageSize,
+        search: debouncedSearchQuery,
+        partOfSpeech: selectedPos,
+        status: selectedStatus !== "ALL" ? (selectedStatus as any) : undefined,
+        englishLevel: selectedLevel !== "ALL" ? selectedLevel : undefined,
+        masteryLevel:
+          selectedMastery !== "ALL" ? selectedMastery : undefined,
+        sortBy: selectedSort,
+        favoritesOnly,
+        todayOnly,
+        selectedDate: selectedDate || undefined,
+      });
+      if (cached && cached.data && cached.data.length > 0) {
+        return cached;
+      }
+      return undefined;
+    },
     staleTime: 60 * 1000,
   });
 
   const vocabularies = data?.data ?? [];
   const meta = data?.meta ?? null;
+
+  // Prefetch next page into React Query cache for instant pagination clicks
+  useEffect(() => {
+    if (meta && currentPage < meta.totalPages) {
+      const nextPage = currentPage + 1;
+      const nextPageKey = buildVocabularyQueryKey({
+        page: nextPage,
+        limit: pageSize,
+        search: debouncedSearchQuery,
+        partOfSpeech: selectedPos,
+        status: selectedStatus,
+        englishLevel: selectedLevel,
+        masteryLevel: selectedMastery,
+        sortBy: selectedSort,
+        favoritesOnly,
+        todayOnly,
+        selectedDate,
+      });
+
+      queryClient.prefetchQuery({
+        queryKey: nextPageKey,
+        queryFn: ({ signal }) =>
+          fetchMyVocabularies(
+            {
+              page: nextPage,
+              limit: pageSize,
+              search: debouncedSearchQuery,
+              partOfSpeech: selectedPos,
+              status: selectedStatus !== "ALL" ? (selectedStatus as any) : undefined,
+              englishLevel: selectedLevel !== "ALL" ? selectedLevel : undefined,
+              masteryLevel:
+                selectedMastery !== "ALL" ? selectedMastery : undefined,
+              sortBy: selectedSort,
+              favoritesOnly,
+              todayOnly,
+              selectedDate,
+            },
+            signal
+          ),
+        staleTime: 60 * 1000,
+      });
+    }
+  }, [
+    meta,
+    currentPage,
+    pageSize,
+    debouncedSearchQuery,
+    selectedPos,
+    selectedStatus,
+    selectedLevel,
+    selectedMastery,
+    selectedSort,
+    favoritesOnly,
+    todayOnly,
+    selectedDate,
+    queryClient,
+  ]);
 
   // Pre-seed individual word detail queries in TanStack cache from findAll for instant detail page loading
   useEffect(() => {

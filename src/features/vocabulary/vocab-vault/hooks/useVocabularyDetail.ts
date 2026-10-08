@@ -13,6 +13,7 @@ import {
 } from "../api/myVocabulary";
 import { getLocalVault } from "./utilFn";
 import { fetchMyVocabularyStats } from "../api";
+import { buildVocabularyQueryKey } from "./useVocabularies";
 
 export function useVocabularyDetail(word: string) {
   const router = useRouter();
@@ -120,22 +121,19 @@ export function useVocabularyDetail(word: string) {
   const buildVaultQueryKey = useCallback(
     (targetPage: number) => {
       const active = getActiveFiltersFromSearchParams();
-      return [
-        "vocabularies",
-        {
-          page: targetPage,
-          limit: wordLimit || 12,
-          search: active.search || "",
-          partOfSpeech: active.partOfSpeech || "ALL",
-          status: active.status || "ALL",
-          englishLevel: active.englishLevel || "ALL",
-          masteryLevel: active.masteryLevel || "ALL",
-          sortBy: active.sortOrder || active.sortBy || "desc",
-          favoritesOnly: active.isFavorite === "true",
-          todayOnly: active.todayOnly === "true",
-          selectedDate: active.date || null,
-        },
-      ] as const;
+      return buildVocabularyQueryKey({
+        page: targetPage,
+        limit: wordLimit || 12,
+        search: active.search || "",
+        partOfSpeech: (active.partOfSpeech as any) || "ALL",
+        status: active.status || "ALL",
+        englishLevel: active.englishLevel || "ALL",
+        masteryLevel: active.masteryLevel || "ALL",
+        sortBy: (active.sortOrder || active.sortBy || "desc") as "asc" | "desc",
+        favoritesOnly: active.isFavorite === "true",
+        todayOnly: active.todayOnly === "true",
+        selectedDate: active.date || null,
+      });
     },
     [getActiveFiltersFromSearchParams, wordLimit]
   );

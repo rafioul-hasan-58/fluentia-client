@@ -6,6 +6,7 @@ import {
   MyVocabularyItem,
   VocabularyFilterOptions,
 } from "../types/vocabulary";
+import { IMeta } from "@/types";
 
 // Pre-seeded high-yield vocabulary items for instant rich exploration
 export const SEED_VOCABULARY: MyVocabularyItem[] = [
@@ -565,7 +566,8 @@ function computeFilterKey(
     `pos:${options.partOfSpeech || "ALL"}`,
     `st:${options.status || "ALL"}`,
     `lvl:${options.englishLevel || "ALL"}`,
-    `sort:${options.sortBy || "recent"}`,
+    `m:${options.masteryLevel !== undefined && options.masteryLevel !== null ? options.masteryLevel : "ALL"}`,
+    `sort:${options.sortBy || "desc"}`,
     `fav:${options.favoritesOnly ?? options.isFavorite ?? false}`,
     `d:${options.date || options.selectedDate || ""}`,
     `today:${options.todayOnly || false}`,
@@ -577,7 +579,8 @@ export function saveCachedPage(
   page: number,
   limit: number,
   options: VocabularyFilterOptions,
-  items: MyVocabularyItem[]
+  items: MyVocabularyItem[],
+  meta?: IMeta | null
 ): void {
   if (typeof window === "undefined") return;
   try {
@@ -597,7 +600,12 @@ export function saveCachedPage(
       if (evicted) localStorage.removeItem(evicted);
     }
 
-    localStorage.setItem(storageKey, JSON.stringify(items));
+    const payload = {
+      data: items,
+      meta: meta || null,
+    };
+
+    localStorage.setItem(storageKey, JSON.stringify(payload));
     localStorage.setItem(PAGE_CACHE_INDEX_KEY, JSON.stringify(keys));
   } catch (err) {
     console.warn("Failed to save cached page:", err);
@@ -608,14 +616,20 @@ export function getCachedPage(
   page: number,
   limit: number,
   options: VocabularyFilterOptions
-): MyVocabularyItem[] | null {
+): { data: MyVocabularyItem[]; meta: IMeta | null } | null {
   if (typeof window === "undefined") return null;
   try {
     const filterKey = computeFilterKey(options, page, limit);
     const storageKey = `${PAGE_CACHE_PREFIX}${filterKey}`;
     const raw = localStorage.getItem(storageKey);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return { data: parsed, meta: null };
+      }
+      if (parsed && Array.isArray(parsed.data)) {
+        return parsed;
+      }
     }
   } catch (err) {
     console.warn("Failed to get cached page:", err);

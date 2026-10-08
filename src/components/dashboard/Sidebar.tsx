@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/shared";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar } from "@/components/ui/avatar";
+import { usePrefetchVocabularyVault } from "@/features/vocabulary/vocab-vault/hooks";
 
 interface SubNavItem {
   name: string;
@@ -313,6 +314,27 @@ export function Sidebar({
     setMobileOpen(false);
   }, [pathname]);
 
+  const prefetchVault = usePrefetchVocabularyVault();
+
+  // Prefetch Vocabulary Vault in background when user is on dashboard
+  React.useEffect(() => {
+    if (!isAuthenticated || typeof window === "undefined") return;
+    if ("requestIdleCallback" in window) {
+      const handle = (window as any).requestIdleCallback(
+        () => {
+          prefetchVault();
+        },
+        { timeout: 3000 }
+      );
+      return () => (window as any).cancelIdleCallback(handle);
+    } else {
+      const timer = setTimeout(() => {
+        prefetchVault();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, prefetchVault]);
+
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({
     Vocabulary: true,
     Practice: true,
@@ -522,6 +544,21 @@ export function Sidebar({
                                 key={child.name}
                                 href={child.href}
                                 onClick={() => setMobileOpen(false)}
+                                onMouseEnter={() => {
+                                  if (child.href === "/dashboard/user/vocabulary") {
+                                    prefetchVault();
+                                  }
+                                }}
+                                onTouchStart={() => {
+                                  if (child.href === "/dashboard/user/vocabulary") {
+                                    prefetchVault();
+                                  }
+                                }}
+                                onFocus={() => {
+                                  if (child.href === "/dashboard/user/vocabulary") {
+                                    prefetchVault();
+                                  }
+                                }}
                                 className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
                                   isChildActive
                                     ? "bg-primary text-white shadow-xs font-semibold"

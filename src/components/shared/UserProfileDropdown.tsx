@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar } from "@/components/ui/avatar";
+import { usePrefetchVocabularyVault } from "@/features/vocabulary/vocab-vault/hooks";
 
 export function UserProfileDropdown() {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const prefetchVault = usePrefetchVocabularyVault();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -132,6 +134,8 @@ export function UserProfileDropdown() {
 
             <Link
               href="/dashboard/user/vocabulary"
+              onMouseEnter={() => prefetchVault()}
+              onTouchStart={() => prefetchVault()}
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-ink-soft hover:text-ink"
             >
