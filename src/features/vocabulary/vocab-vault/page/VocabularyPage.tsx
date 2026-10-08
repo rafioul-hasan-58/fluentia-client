@@ -558,7 +558,7 @@ const VocabularyPage = () => {
   }, [filters, totalCount]);
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="space-y-5 sm:space-y-8 pb-16">
       {/* 1. Header Banner & Action */}
       <VocabularyHeader
         stats={headerStats}
