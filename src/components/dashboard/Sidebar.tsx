@@ -208,7 +208,6 @@ const NAV_ITEMS: { category?: string; items: NavItem[] }[] = [
           {
             name: "Vocab Practice",
             href: "/dashboard/user/practice/vocab",
-            badge: "AI",
             icon: ({ className }) => (
               <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="18" height="14" x="3" y="5" rx="2" />
