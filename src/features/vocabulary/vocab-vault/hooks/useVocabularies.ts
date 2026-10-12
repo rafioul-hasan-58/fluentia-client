@@ -115,8 +115,13 @@ export function useVocabularies() {
           : pageOrUpdater;
 
       const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
-      params.set("page", String(newPage));
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      if (newPage > 1) {
+        params.set("page", String(newPage));
+      } else {
+        params.delete("page");
+      }
+      const qs = params.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
     [currentPage, pathname, router, searchParams]
   );
@@ -167,6 +172,20 @@ export function useVocabularies() {
   }, [searchQuery]);
 
   // Sync state from URL searchParams when searchParams change (e.g. returning from details page or browser back)
+  const prevFiltersRef = useRef({
+    debouncedSearchQuery,
+    selectedPos,
+    selectedStatus,
+    selectedLevel,
+    selectedMastery,
+    selectedSort,
+    favoritesOnly,
+    todayOnly,
+    selectedDate,
+    pageSize,
+  });
+
+  // Sync state from URL searchParams when searchParams change (e.g. returning from details page or browser back)
   useEffect(() => {
     if (!searchParams) return;
     const urlSearch = searchParams.get("search") || "";
@@ -194,14 +213,58 @@ export function useVocabularies() {
     setTodayOnly((prev) => (prev !== urlToday ? urlToday : prev));
     setSelectedDate((prev) => (prev !== urlDate ? urlDate : prev));
     setPageSize((prev) => (prev !== urlLimit ? urlLimit : prev));
+
+    // Keep prevFilters in sync with URL values to avoid false "filter changed" triggers on back navigation
+    prevFiltersRef.current = {
+      debouncedSearchQuery: urlSearch,
+      selectedPos: urlPos,
+      selectedStatus: urlStatus,
+      selectedLevel: urlLevel,
+      selectedMastery: urlMastery,
+      selectedSort: urlSort,
+      favoritesOnly: urlFavorites,
+      todayOnly: urlToday,
+      selectedDate: urlDate,
+      pageSize: urlLimit,
+    };
   }, [searchParams]);
 
-  // Keep browser URL in sync with active filters
+  // Keep browser URL in sync with active filters & reset page to 1 on filter changes atomically
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const prev = prevFiltersRef.current;
+    const hasFilterChanged =
+      prev.debouncedSearchQuery !== debouncedSearchQuery ||
+      prev.selectedPos !== selectedPos ||
+      prev.selectedStatus !== selectedStatus ||
+      prev.selectedLevel !== selectedLevel ||
+      prev.selectedMastery !== selectedMastery ||
+      prev.selectedSort !== selectedSort ||
+      prev.favoritesOnly !== favoritesOnly ||
+      prev.todayOnly !== todayOnly ||
+      prev.selectedDate !== selectedDate ||
+      prev.pageSize !== pageSize;
+
+    // Update prevFilters snapshot
+    prevFiltersRef.current = {
+      debouncedSearchQuery,
+      selectedPos,
+      selectedStatus,
+      selectedLevel,
+      selectedMastery,
+      selectedSort,
+      favoritesOnly,
+      todayOnly,
+      selectedDate,
+      pageSize,
+    };
+
     const params = new URLSearchParams();
-    if (currentPage > 1) {
+
+    // If user changed any filter, page resets to 1 (omitted from URL).
+    // Otherwise keep currentPage if currentPage > 1.
+    if (!hasFilterChanged && currentPage > 1) {
       params.set("page", String(currentPage));
     }
     if (pageSize !== 12) {
@@ -256,71 +319,6 @@ export function useVocabularies() {
     selectedDate,
     pathname,
     router,
-  ]);
-
-  const isMountedRef = useRef(false);
-  const prevFiltersRef = useRef({
-    debouncedSearchQuery,
-    selectedPos,
-    selectedStatus,
-    selectedLevel,
-    selectedMastery,
-    selectedSort,
-    favoritesOnly,
-    todayOnly,
-    selectedDate,
-    pageSize,
-  });
-
-  // 2. Reset currentPage to 1 whenever any filter changes (skip initial mount)
-  useEffect(() => {
-    if (!isMountedRef.current) {
-      isMountedRef.current = true;
-      return;
-    }
-
-    const prev = prevFiltersRef.current;
-    const hasFilterChanged =
-      prev.debouncedSearchQuery !== debouncedSearchQuery ||
-      prev.selectedPos !== selectedPos ||
-      prev.selectedStatus !== selectedStatus ||
-      prev.selectedLevel !== selectedLevel ||
-      prev.selectedMastery !== selectedMastery ||
-      prev.selectedSort !== selectedSort ||
-      prev.favoritesOnly !== favoritesOnly ||
-      prev.todayOnly !== todayOnly ||
-      prev.selectedDate !== selectedDate ||
-      prev.pageSize !== pageSize;
-
-    prevFiltersRef.current = {
-      debouncedSearchQuery,
-      selectedPos,
-      selectedStatus,
-      selectedLevel,
-      selectedMastery,
-      selectedSort,
-      favoritesOnly,
-      todayOnly,
-      selectedDate,
-      pageSize,
-    };
-
-    if (hasFilterChanged && currentPage !== 1) {
-      setCurrentPage(1);
-    }
-  }, [
-    debouncedSearchQuery,
-    selectedPos,
-    selectedStatus,
-    selectedLevel,
-    selectedMastery,
-    selectedSort,
-    favoritesOnly,
-    todayOnly,
-    selectedDate,
-    pageSize,
-    currentPage,
-    setCurrentPage,
   ]);
 
   // 3. Fetch vocabulary stats from dedicated endpoint GET /my-vocabularies/stats?month=YYYY-MM
