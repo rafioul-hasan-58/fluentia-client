@@ -266,6 +266,28 @@ const VocabPracticePage = () => {
         setCurrentIndex(0);
     };
 
+    // Keyboard navigation (ArrowLeft = prev, ArrowRight = next, Space = flip card)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+            if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                handlePrev();
+            } else if (e.key === "ArrowRight") {
+                e.preventDefault();
+                handleNext();
+            } else if (e.key === " " && mode === "flashcards") {
+                e.preventDefault();
+                setIsFlipped((prev) => !prev);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [vocabularies.length, mode]);
+
     const handleRateMastery = async (level: number) => {
         if (!currentWord) return;
         try {
@@ -405,6 +427,8 @@ const VocabPracticePage = () => {
                             playingWord={playingWord}
                             onPlayPronunciation={playPronunciation}
                             onRateMastery={handleRateMastery}
+                            onPrev={handlePrev}
+                            onNext={handleNext}
                         />
                     )}
 

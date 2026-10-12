@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { RotateCw, Volume2 } from "lucide-react";
+import { RotateCw, Volume2, ChevronLeft, ChevronRight } from "lucide-react";
 import { MyVocabularyItem } from "@/types";
 import { POS_COLORS } from "@/features/vocabulary";
 
@@ -12,6 +12,8 @@ interface VocabFlashcardProps {
     playingWord: string | null;
     onPlayPronunciation: (word: string) => void;
     onRateMastery: (level: number) => void;
+    onPrev: () => void;
+    onNext: () => void;
 }
 
 export const VocabFlashcard: React.FC<VocabFlashcardProps> = ({
@@ -21,12 +23,28 @@ export const VocabFlashcard: React.FC<VocabFlashcardProps> = ({
     playingWord,
     onPlayPronunciation,
     onRateMastery,
+    onPrev,
+    onNext,
 }) => {
     const pos = currentWord.word.partOfSpeech;
     const posConfig = POS_COLORS[pos];
 
     return (
-        <div className="space-y-4">
+        <div className="relative group/carousel">
+            {/* Backward / Prev Carousel Button */}
+            <button
+                type="button"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onPrev();
+                }}
+                className="absolute left-2 sm:-left-5 md:-left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+                title="Previous word"
+                aria-label="Previous word"
+            >
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+
             <div
                 onClick={onToggleFlip}
                 className="min-h-[350px] sm:min-h-[390px] p-6 sm:p-10 rounded-3xl bg-white dark:bg-slate-900 border-2 border-indigo-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600/60 shadow-md cursor-pointer transition-all flex flex-col justify-between select-none group relative overflow-hidden"
@@ -153,6 +171,20 @@ export const VocabFlashcard: React.FC<VocabFlashcardProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Forward / Next Carousel Button */}
+            <button
+                type="button"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onNext();
+                }}
+                className="absolute right-2 sm:-right-5 md:-right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+                title="Next word"
+                aria-label="Next word"
+            >
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
         </div>
     );
 };

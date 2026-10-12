@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Shuffle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { PartOfSpeech } from "@/types";
 import { POS_COLORS } from "@/features/vocabulary";
 
@@ -9,8 +9,8 @@ interface VocabPracticeSessionBarProps {
     currentIndex: number;
     totalWords: number;
     selectedPos: PartOfSpeech | "ALL";
-    onPrev: () => void;
-    onNext: () => void;
+    onPrev?: () => void;
+    onNext?: () => void;
     onShuffle: () => void;
 }
 
@@ -43,22 +43,6 @@ export const VocabPracticeSessionBar: React.FC<VocabPracticeSessionBarProps> = (
                     title="Shuffle session words"
                 >
                     <Shuffle className="w-4 h-4" />
-                </button>
-                <button
-                    type="button"
-                    onClick={onPrev}
-                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-                    title="Previous word"
-                >
-                    <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                    type="button"
-                    onClick={onNext}
-                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-                    title="Next word"
-                >
-                    <ChevronRight className="w-4 h-4" />
                 </button>
             </div>
         </div>
