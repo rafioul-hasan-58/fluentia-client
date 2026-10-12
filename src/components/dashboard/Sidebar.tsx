@@ -347,6 +347,23 @@ export function Sidebar({
     }));
   };
 
+  const isChildRouteActive = (childHref: string) => {
+    if (childHref === "/dashboard/user/vocabulary") {
+      return (
+        Boolean(pathname?.startsWith("/dashboard/user/vocabulary")) &&
+        !pathname?.startsWith("/dashboard/user/vocabulary/stories") &&
+        !pathname?.startsWith("/dashboard/user/vocabulary/story-details")
+      );
+    }
+    if (childHref === "/dashboard/user/vocabulary/stories") {
+      return (
+        Boolean(pathname?.startsWith("/dashboard/user/vocabulary/stories")) ||
+        Boolean(pathname?.startsWith("/dashboard/user/vocabulary/story-details"))
+      );
+    }
+    return pathname === childHref || Boolean(pathname?.startsWith(childHref));
+  };
+
   const displayName =
     user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
@@ -479,12 +496,9 @@ export function Sidebar({
 
                 // Handle Dropdown Menu (items with children)
                 if (item.children && item.children.length > 0) {
-                  const isAnyChildActive = item.children.some((child) => {
-                    if (child.href === "/dashboard/user/vocabulary") {
-                      return pathname === "/dashboard/user/vocabulary";
-                    }
-                    return pathname === child.href || pathname?.startsWith(child.href);
-                  });
+                  const isAnyChildActive = item.children.some((child) =>
+                    isChildRouteActive(child.href)
+                  );
 
                   const isDropdownOpen =
                     openDropdowns[item.name] !== undefined
@@ -532,10 +546,7 @@ export function Sidebar({
                       {isDropdownOpen && (
                         <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-primary/20 dark:border-purple-500/20 ml-5 my-1 animate-in fade-in slide-in-from-top-1 duration-150">
                           {item.children.map((child) => {
-                            const isChildActive =
-                              child.href === "/dashboard/user/vocabulary"
-                                ? pathname === "/dashboard/user/vocabulary"
-                                : pathname === child.href || pathname?.startsWith(child.href);
+                            const isChildActive = isChildRouteActive(child.href);
 
                             const SubIcon = child.icon;
 
