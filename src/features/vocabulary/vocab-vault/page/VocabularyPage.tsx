@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   BookOpen,
   Plus,
@@ -101,6 +102,7 @@ const VocabularyPage = () => {
   const [editingItem, setEditingItem] = useState<MyVocabularyItem | null>(null);
 
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // Story Creation Mode State
   const [isStorySelectMode, setIsStorySelectMode] = useState<boolean>(false);
@@ -363,6 +365,94 @@ const VocabularyPage = () => {
         notes: userNote.trim() || undefined,
       });
 
+      // Case 1: Word already exists in vault -> Redirect to details page maintaining all search params
+      if (response.alreadyExists) {
+        setFeedbackMessage({
+          type: "success",
+          text:
+            response.message ||
+            `This vocabulary word is already in your personal collection. Redirecting to details...`,
+        });
+
+        const wordSlug = (response.item.word?.word || targetWord)
+          .trim()
+          .toLowerCase();
+
+        // 1. Prime TanStack Query cache with word details for instant transition
+        queryClient.setQueryData(["vocabulary-detail", wordSlug], response.item);
+
+        // 2. Build detail URL maintaining all search params and pagination context
+        const detailParams = new URLSearchParams();
+        detailParams.set("from", String(currentPage || 1));
+        if (pageSize) {
+          detailParams.set("limit", String(pageSize));
+        }
+
+        // Check if item is on the currently loaded page to provide exact index
+        const existingIndex = vocabularies.findIndex(
+          (v) => (v.word?.word || "").trim().toLowerCase() === wordSlug
+        );
+        if (existingIndex !== -1) {
+          detailParams.set("index", String(existingIndex));
+        }
+
+        // Thread active filters
+        if (filters.debouncedSearchQuery?.trim()) {
+          detailParams.set("search", filters.debouncedSearchQuery.trim());
+        }
+        if (filters.selectedPos && filters.selectedPos !== "ALL") {
+          detailParams.set("partOfSpeech", filters.selectedPos);
+        }
+        if (filters.selectedStatus && filters.selectedStatus !== "ALL") {
+          detailParams.set("status", filters.selectedStatus);
+        }
+        if (filters.selectedLevel && filters.selectedLevel !== "ALL") {
+          detailParams.set("englishLevel", filters.selectedLevel);
+        }
+        if (filters.selectedMastery && filters.selectedMastery !== "ALL") {
+          detailParams.set("masteryLevel", filters.selectedMastery);
+        }
+        if (filters.selectedSort) {
+          detailParams.set("sortOrder", filters.selectedSort);
+        }
+        if (filters.favoritesOnly) {
+          detailParams.set("isFavorite", "true");
+        }
+        if (filters.todayOnly) {
+          detailParams.set("todayOnly", "true");
+        }
+        if (filters.selectedDate) {
+          detailParams.set("date", filters.selectedDate);
+        }
+        if (totalCount !== undefined) {
+          detailParams.set("total", String(totalCount));
+        }
+
+        // Maintain any additional URL search params
+        if (typeof window !== "undefined") {
+          const currentUrlParams = new URLSearchParams(window.location.search);
+          currentUrlParams.forEach((val, key) => {
+            if (!detailParams.has(key) && key !== "page") {
+              detailParams.set(key, val);
+            }
+          });
+        }
+
+        const targetUrl = `/dashboard/user/vocabulary/${encodeURIComponent(wordSlug)}?${detailParams.toString()}`;
+
+        // Close modal and redirect
+        setTimeout(() => {
+          setInputWordText("");
+          setUserNote("");
+          setIsModalOpen(false);
+          setIsGenerating(false);
+          setFeedbackMessage(null);
+          router.push(targetUrl);
+        }, 800);
+        return;
+      }
+
+      // Case 2: Newly Created Word
       setFeedbackMessage({
         type: "success",
         text: response.message || `Successfully generated '${response.item.word.word}' with AI!`,

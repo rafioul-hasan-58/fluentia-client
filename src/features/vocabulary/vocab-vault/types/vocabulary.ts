@@ -68,9 +68,39 @@ export interface MyVocabularyItem {
   notes?: string | null;
   vocabularyStatus?: VocabularyStatus | string;
   isFavorite?: boolean;
+  masteryScore?: number;
   masteryLevel?: number;
+  alreadyExists?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SaveMyVocabularyResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+    userId: string;
+    wordId: string;
+    masteryScore: number;
+    masteryLevel: number;
+    vocabularyStatus: string;
+    isFavorite: boolean;
+    mySentences: string[];
+    notes: string | null;
+    createdAt: string;
+    updatedAt: string;
+    alreadyExists: boolean;
+  };
+  timestamp?: string;
+}
+
+export interface AddSingleVocabularyResult {
+  success: boolean;
+  message: string;
+  item: MyVocabularyItem;
+  alreadyExists?: boolean;
 }
 export interface IFetchVocabulariesResult {
   data: MyVocabularyItem[];

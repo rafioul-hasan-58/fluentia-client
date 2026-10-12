@@ -8,14 +8,53 @@ import {
   saveCachedPage,
   saveLocalVault,
 } from "../hooks/utilFn";
-import { AddVocabularyDto, GenerateVocabularyDto, IFetchVocabulariesResult, IMeta, MyVocabularyItem, VocabularyFilterOptions } from "@/types";
+import {
+  AddSingleVocabularyResult,
+  AddVocabularyDto,
+  GenerateVocabularyDto,
+  IFetchVocabulariesResult,
+  IMeta,
+  MyVocabularyItem,
+  SaveMyVocabularyResponse,
+  VocabularyFilterOptions,
+} from "@/types";
+
+/**
+ * Save Vocabulary Word to Personal Vault
+ * Endpoint: POST /api/my-vocabularies/save
+ * Auth: Bearer Token
+ * Request Body: { wordId: string }
+ */
+export async function saveMyVocabulary(
+  wordId: string
+): Promise<SaveMyVocabularyResponse> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAuthToken();
+
+  const res = await fetch(`${baseUrl}/my-vocabularies/save`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ wordId }),
+  });
+
+  const json: SaveMyVocabularyResponse = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || `Failed to save vocabulary (${res.status})`);
+  }
+
+  return json;
+}
 
 /**
  * Add Single Vocabulary Word using AI Generation
  */
 export async function addSingleVocabulary(
   dto: GenerateVocabularyDto
-): Promise<{ success: boolean; message: string; item: MyVocabularyItem }> {
+): Promise<AddSingleVocabularyResult> {
   const cleanWord = (dto.word || "").trim();
   if (!cleanWord) {
     throw new Error("Please enter a vocabulary word.");
@@ -28,6 +67,10 @@ export async function addSingleVocabulary(
   const baseUrl = getApiBaseUrl();
   const token = getAuthToken();
 
+  let alreadyExists = false;
+  let backendItem: any = null;
+  let serverMessage = "";
+
   if (token && wordInfo.id) {
     try {
       const saveRes = await fetch(`${baseUrl}/my-vocabularies/save`, {
@@ -39,14 +82,19 @@ export async function addSingleVocabulary(
         },
         body: JSON.stringify({
           wordId: wordInfo.id,
-          notes: dto.notes,
-          mySentences: dto.mySentences,
         }),
       });
 
-      if (!saveRes.ok) {
+      if (saveRes.ok) {
+        const json = await saveRes.json();
+        backendItem = json.data;
+        serverMessage = json.message || "";
+        if (backendItem?.alreadyExists === true) {
+          alreadyExists = true;
+        }
+      } else {
         // Fallback endpoint if route differs
-        await fetch(`${baseUrl}/vocabularies/my`, {
+        const fbRes = await fetch(`${baseUrl}/vocabularies/my`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -59,6 +107,14 @@ export async function addSingleVocabulary(
             mySentences: dto.mySentences,
           }),
         });
+        if (fbRes.ok) {
+          const json = await fbRes.json();
+          backendItem = json.data;
+          serverMessage = json.message || "";
+          if (backendItem?.alreadyExists === true) {
+            alreadyExists = true;
+          }
+        }
       }
     } catch (err) {
       console.warn("Could not save to remote collection:", err);
@@ -71,19 +127,44 @@ export async function addSingleVocabulary(
     (v) => v.word.word.toLowerCase() === wordInfo.word.toLowerCase()
   );
 
+  if (existingIndex >= 0) {
+    alreadyExists = true;
+  }
+
   const now = new Date().toISOString();
   const newItem: MyVocabularyItem = {
-    id: `my-vocab-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    id:
+      backendItem?.id ||
+      backendItem?._id ||
+      (existingIndex >= 0
+        ? currentVault[existingIndex].id
+        : `my-vocab-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`),
     wordId: wordInfo.id,
-    userId: "user-current",
+    userId: backendItem?.userId || "user-current",
     word: wordInfo,
-    mySentences: dto.mySentences || [],
-    notes: dto.notes || null,
-    vocabularyStatus: "LEARNING",
-    masteryLevel: 1,
-    isFavorite: false,
-    createdAt: now,
-    updatedAt: now,
+    mySentences:
+      backendItem?.mySentences ||
+      (existingIndex >= 0 ? currentVault[existingIndex].mySentences : dto.mySentences) ||
+      [],
+    notes:
+      backendItem?.notes ??
+      (existingIndex >= 0 ? currentVault[existingIndex].notes : dto.notes) ??
+      null,
+    vocabularyStatus:
+      backendItem?.vocabularyStatus ||
+      (existingIndex >= 0 ? currentVault[existingIndex].vocabularyStatus : "LEARNING"),
+    masteryScore: backendItem?.masteryScore ?? 0,
+    masteryLevel:
+      backendItem?.masteryLevel ??
+      (existingIndex >= 0 ? currentVault[existingIndex].masteryLevel : 1),
+    isFavorite:
+      backendItem?.isFavorite ??
+      (existingIndex >= 0 ? currentVault[existingIndex].isFavorite : false),
+    alreadyExists,
+    createdAt:
+      backendItem?.createdAt ||
+      (existingIndex >= 0 ? currentVault[existingIndex].createdAt : now),
+    updatedAt: backendItem?.updatedAt || now,
   };
 
   if (existingIndex >= 0) {
@@ -95,16 +176,24 @@ export async function addSingleVocabulary(
     saveLocalVault(currentVault);
     return {
       success: true,
-      message: `Updated '${wordInfo.word}' in your vocabulary vault!`,
+      message:
+        serverMessage ||
+        `This vocabulary word is already in your personal collection.`,
       item: currentVault[existingIndex],
+      alreadyExists: true,
     };
   } else {
     currentVault.unshift(newItem);
     saveLocalVault(currentVault);
     return {
       success: true,
-      message: `Successfully generated and added '${wordInfo.word}' to your vault!`,
+      message:
+        serverMessage ||
+        (alreadyExists
+          ? `This vocabulary word is already in your personal collection.`
+          : `Successfully generated and added '${wordInfo.word}' to your vault!`),
       item: newItem,
+      alreadyExists,
     };
   }
 }
@@ -123,9 +212,11 @@ export async function addVocabularyWithAi(dto: AddVocabularyDto) {
   return {
     success: result.success,
     message: result.message,
+    alreadyExists: result.alreadyExists,
     data: {
       processed: 1,
       items: [result.item],
+      alreadyExists: result.alreadyExists,
     },
   };
 }
