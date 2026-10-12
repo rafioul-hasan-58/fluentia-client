@@ -105,7 +105,7 @@ export function useVocabularies() {
 
   // Pagination state derived from URL
   const currentPage = Number(searchParams?.get("page")) || 1;
-  const [pageSize, setPageSize] = useState<number>(12);
+  const [pageSize, setPageSize] = useState<number>(() => Number(searchParams?.get("limit")) || 12);
 
   const setCurrentPage = useCallback(
     (pageOrUpdater: number | ((prev: number) => number)) => {
@@ -121,17 +121,31 @@ export function useVocabularies() {
     [currentPage, pathname, router, searchParams]
   );
 
+  // Initial filter values from URL searchParams
+  const initialSearch = searchParams?.get("search") || "";
+  const initialPos = (searchParams?.get("partOfSpeech") as PartOfSpeech) || "ALL";
+  const initialStatus = searchParams?.get("status") || "ALL";
+  const initialLevel = searchParams?.get("englishLevel") || "ALL";
+  const initialMastery = searchParams?.get("masteryLevel") || "ALL";
+  const initialSort =
+    (searchParams?.get("sortOrder") as "asc" | "desc") ||
+    (searchParams?.get("sortBy") as "asc" | "desc") ||
+    "desc";
+  const initialFavoritesOnly = searchParams?.get("isFavorite") === "true";
+  const initialTodayOnly = searchParams?.get("todayOnly") === "true";
+  const initialDate = searchParams?.get("date") || null;
+
   // Filter state
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
-  const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">("ALL");
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
-  const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
-  const [selectedMastery, setSelectedMastery] = useState<string>("ALL");
-  const [selectedSort, setSelectedSort] = useState<"asc" | "desc">("desc");
-  const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false);
-  const [todayOnly, setTodayOnly] = useState<boolean>(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>(initialSearch);
+  const [selectedPos, setSelectedPos] = useState<PartOfSpeech | "ALL">(initialPos);
+  const [selectedStatus, setSelectedStatus] = useState<string>(initialStatus);
+  const [selectedLevel, setSelectedLevel] = useState<string>(initialLevel);
+  const [selectedMastery, setSelectedMastery] = useState<string>(initialMastery);
+  const [selectedSort, setSelectedSort] = useState<"asc" | "desc">(initialSort);
+  const [favoritesOnly, setFavoritesOnly] = useState<boolean>(initialFavoritesOnly);
+  const [todayOnly, setTodayOnly] = useState<boolean>(initialTodayOnly);
+  const [selectedDate, setSelectedDate] = useState<string | null>(initialDate);
 
   // Deletion modal state
   const [itemToDelete, setItemToDelete] = useState<MyVocabularyItem | null>(null);
@@ -144,7 +158,6 @@ export function useVocabularies() {
   // Inline sentence builder tracker
   const [newSentenceInputs, setNewSentenceInputs] = useState<Record<string, string>>({});
 
-
   // 1. Debounce search query (300ms)
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -152,6 +165,98 @@ export function useVocabularies() {
     }, 300);
     return () => clearTimeout(handler);
   }, [searchQuery]);
+
+  // Sync state from URL searchParams when searchParams change (e.g. returning from details page or browser back)
+  useEffect(() => {
+    if (!searchParams) return;
+    const urlSearch = searchParams.get("search") || "";
+    const urlPos = (searchParams.get("partOfSpeech") as PartOfSpeech) || "ALL";
+    const urlStatus = searchParams.get("status") || "ALL";
+    const urlLevel = searchParams.get("englishLevel") || "ALL";
+    const urlMastery = searchParams.get("masteryLevel") || "ALL";
+    const urlSort =
+      (searchParams.get("sortOrder") as "asc" | "desc") ||
+      (searchParams.get("sortBy") as "asc" | "desc") ||
+      "desc";
+    const urlFavorites = searchParams.get("isFavorite") === "true";
+    const urlToday = searchParams.get("todayOnly") === "true";
+    const urlDate = searchParams.get("date") || null;
+    const urlLimit = Number(searchParams.get("limit")) || 12;
+
+    setSearchQuery((prev) => (prev !== urlSearch ? urlSearch : prev));
+    setDebouncedSearchQuery((prev) => (prev !== urlSearch ? urlSearch : prev));
+    setSelectedPos((prev) => (prev !== urlPos ? urlPos : prev));
+    setSelectedStatus((prev) => (prev !== urlStatus ? urlStatus : prev));
+    setSelectedLevel((prev) => (prev !== urlLevel ? urlLevel : prev));
+    setSelectedMastery((prev) => (prev !== urlMastery ? urlMastery : prev));
+    setSelectedSort((prev) => (prev !== urlSort ? urlSort : prev));
+    setFavoritesOnly((prev) => (prev !== urlFavorites ? urlFavorites : prev));
+    setTodayOnly((prev) => (prev !== urlToday ? urlToday : prev));
+    setSelectedDate((prev) => (prev !== urlDate ? urlDate : prev));
+    setPageSize((prev) => (prev !== urlLimit ? urlLimit : prev));
+  }, [searchParams]);
+
+  // Keep browser URL in sync with active filters
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams();
+    if (currentPage > 1) {
+      params.set("page", String(currentPage));
+    }
+    if (pageSize !== 12) {
+      params.set("limit", String(pageSize));
+    }
+    if (debouncedSearchQuery.trim()) {
+      params.set("search", debouncedSearchQuery.trim());
+    }
+    if (selectedPos && selectedPos !== "ALL") {
+      params.set("partOfSpeech", selectedPos);
+    }
+    if (selectedStatus && selectedStatus !== "ALL") {
+      params.set("status", selectedStatus);
+    }
+    if (selectedLevel && selectedLevel !== "ALL") {
+      params.set("englishLevel", selectedLevel);
+    }
+    if (selectedMastery && selectedMastery !== "ALL") {
+      params.set("masteryLevel", selectedMastery);
+    }
+    if (selectedSort && selectedSort !== "desc") {
+      params.set("sortOrder", selectedSort);
+    }
+    if (favoritesOnly) {
+      params.set("isFavorite", "true");
+    }
+    if (todayOnly) {
+      params.set("todayOnly", "true");
+    }
+    if (selectedDate) {
+      params.set("date", selectedDate);
+    }
+
+    const currentSearch = window.location.search.replace(/^\?/, "");
+    const newSearch = params.toString();
+
+    if (currentSearch !== newSearch) {
+      const newUrl = newSearch ? `${pathname}?${newSearch}` : pathname;
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [
+    currentPage,
+    pageSize,
+    debouncedSearchQuery,
+    selectedPos,
+    selectedStatus,
+    selectedLevel,
+    selectedMastery,
+    selectedSort,
+    favoritesOnly,
+    todayOnly,
+    selectedDate,
+    pathname,
+    router,
+  ]);
 
   const isMountedRef = useRef(false);
   const prevFiltersRef = useRef({

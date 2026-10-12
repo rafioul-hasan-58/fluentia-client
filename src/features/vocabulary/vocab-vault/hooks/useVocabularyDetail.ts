@@ -402,9 +402,11 @@ export function useVocabularyDetail(word: string) {
 
   const handleExit = useCallback(() => {
     const fromPage = searchParams?.get("from");
+    const limit = searchParams?.get("limit");
     const activeFilters = getActiveFiltersFromSearchParams();
     const queryParams = new URLSearchParams();
     if (fromPage) queryParams.set("page", fromPage);
+    if (limit) queryParams.set("limit", limit);
     Object.entries(activeFilters).forEach(([k, v]) => queryParams.set(k, v));
     const str = queryParams.toString();
     router.push(

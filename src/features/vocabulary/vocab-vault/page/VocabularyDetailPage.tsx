@@ -89,7 +89,7 @@ export function VocabularyDetailPage({ word }: VocabularyDetailPageProps) {
     return <DetailLoadingSkeleton />;
   }
   if (!item || !wordData) {
-    return <DetailNotFound decodedWord={decodedWord} />;
+    return <DetailNotFound decodedWord={decodedWord} onBack={handleExit} />;
   }
 
   return (

@@ -547,6 +547,9 @@ const VocabularyPage = () => {
     if (filters.favoritesOnly) {
       params.set("isFavorite", "true");
     }
+    if (filters.todayOnly) {
+      params.set("todayOnly", "true");
+    }
     if (filters.selectedDate) {
       params.set("date", filters.selectedDate);
     }
@@ -661,6 +664,7 @@ const VocabularyPage = () => {
                     selectedPos !== "ALL" ||
                     selectedStatus !== "ALL" ||
                     selectedLevel !== "ALL" ||
+                    selectedMastery !== "ALL" ||
                     favoritesOnly ||
                     todayOnly
                     ? "No words matched your current search or filter criteria. Try resetting filters."
@@ -675,6 +679,7 @@ const VocabularyPage = () => {
                   selectedPos !== "ALL" ||
                   selectedStatus !== "ALL" ||
                   selectedLevel !== "ALL" ||
+                  selectedMastery !== "ALL" ||
                   favoritesOnly ||
                   todayOnly
                 ) {
@@ -682,6 +687,7 @@ const VocabularyPage = () => {
                   setSelectedPos("ALL");
                   setSelectedStatus("ALL");
                   setSelectedLevel("ALL");
+                  setSelectedMastery("ALL");
                   setFavoritesOnly(false);
                   setTodayOnly(false);
                   setSelectedDate(null);
@@ -696,6 +702,7 @@ const VocabularyPage = () => {
                 selectedPos !== "ALL" ||
                 selectedStatus !== "ALL" ||
                 selectedLevel !== "ALL" ||
+                selectedMastery !== "ALL" ||
                 favoritesOnly ||
                 todayOnly ? (
                 <>
