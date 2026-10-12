@@ -131,7 +131,7 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
                 ? "bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-300 font-bold"
                 : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:border-slate-300 hover:text-slate-900 dark:hover:text-slate-200"
             }`}
-            title={`Sort Order: ${sortOrder === "desc" ? "Newest First (desc)" : "Oldest First (asc)"} — Click to switch`}
+            title={`Sort Order: ${sortOrder === "desc" ? "Newest First" : "Oldest First (asc)"} — Click to switch`}
           >
             <ArrowUpDown
               className={`w-3.5 h-3.5 text-amber-500 shrink-0 transition-transform duration-200 ${
@@ -139,9 +139,6 @@ export const VocabStoryFilterBar: React.FC<VocabStoryFilterBarProps> = ({
               }`}
             />
             <span className="truncate">{sortOrder === "desc" ? "Newest First" : "Oldest First"}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-              {sortOrder}
-            </span>
           </button>
 
           {/* Stories Count Badge */}
