@@ -7,6 +7,7 @@ import {
   BookOpen,
   Plus,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { useLegacyCalendarCounts, useVocabularies } from "../hooks";
 import { VocabularyCard, VocabularyFilterBar, VocabularyHeader, VocabularyPagination, VocabularyStoryBanner, VocabularyTableView } from "../components";
@@ -344,10 +345,13 @@ const VocabularyPage = () => {
   };
 
   // Execute Single Word AI generation & addition
-  const handleExecuteAddSingleWord = async (e?: React.FormEvent) => {
+  const handleExecuteAddSingleWord = async (
+    e?: React.FormEvent,
+    overrideWord?: string
+  ) => {
     if (e) e.preventDefault();
 
-    const targetWord = inputWordText.trim();
+    const targetWord = (overrideWord !== undefined ? overrideWord : inputWordText).trim();
     if (!targetWord) {
       setFeedbackMessage({
         type: "error",
@@ -478,6 +482,31 @@ const VocabularyPage = () => {
         type: "error",
         text: err.message || "Failed to generate vocabulary with AI. Please try again.",
       });
+    }
+  };
+
+  // Reset all active filters and search
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setSelectedPos("ALL");
+    setSelectedStatus("ALL");
+    setSelectedLevel("ALL");
+    setSelectedMastery("ALL");
+    setFavoritesOnly(false);
+    setTodayOnly(false);
+    setSelectedDate(null);
+  };
+
+  // Trigger Add to Vault modal and execute AI generation from empty state
+  const handleAddFromEmptyState = (wordToGenerate?: string) => {
+    const clean = (wordToGenerate || searchQuery).trim();
+    if (clean) {
+      setInputWordText(clean);
+      setIsModalOpen(true);
+      handleExecuteAddSingleWord(undefined, clean);
+    } else {
+      setInputWordText("");
+      setIsModalOpen(true);
     }
   };
 
@@ -763,51 +792,50 @@ const VocabularyPage = () => {
                     : "You haven't added any words to your vault yet. Add a word to generate with AI!"}
               </p>
             </div>
-            <button
-              onClick={() => {
-                if (
-                  selectedDate ||
-                  searchQuery ||
-                  selectedPos !== "ALL" ||
-                  selectedStatus !== "ALL" ||
-                  selectedLevel !== "ALL" ||
-                  selectedMastery !== "ALL" ||
-                  favoritesOnly ||
-                  todayOnly
-                ) {
-                  setSearchQuery("");
-                  setSelectedPos("ALL");
-                  setSelectedStatus("ALL");
-                  setSelectedLevel("ALL");
-                  setSelectedMastery("ALL");
-                  setFavoritesOnly(false);
-                  setTodayOnly(false);
-                  setSelectedDate(null);
-                } else {
-                  setIsModalOpen(true);
-                }
-              }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md transition-colors cursor-pointer"
-            >
-              {selectedDate ||
-                searchQuery ||
-                selectedPos !== "ALL" ||
-                selectedStatus !== "ALL" ||
-                selectedLevel !== "ALL" ||
-                selectedMastery !== "ALL" ||
-                favoritesOnly ||
-                todayOnly ? (
-                <>
+            {selectedDate ||
+            searchQuery.trim() ||
+            selectedPos !== "ALL" ||
+            selectedStatus !== "ALL" ||
+            selectedLevel !== "ALL" ||
+            selectedMastery !== "ALL" ||
+            favoritesOnly ||
+            todayOnly ? (
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700 shadow-xs"
+                >
                   <RefreshCw className="w-4 h-4" />
-                  Reset Filters
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  Add Your First Word
-                </>
-              )}
-            </button>
+                  <span>Reset Filters</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAddFromEmptyState(searchQuery.trim())}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-sm font-bold shadow-md shadow-purple-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>
+                    {searchQuery.trim()
+                      ? `Add "${searchQuery.trim()}" to Vault`
+                      : "Add to Vault with AI"}
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setInputWordText("");
+                  setIsModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-primary to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-sm font-bold shadow-md shadow-purple-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Your First Word</span>
+              </button>
+            )}
           </div>
         ) : (
           <>
