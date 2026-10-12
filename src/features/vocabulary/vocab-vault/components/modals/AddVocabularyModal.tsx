@@ -11,7 +11,7 @@ export interface AddVocabularyModalProps {
   userNote: string;
   setUserNote: (note: string) => void;
   isGenerating: boolean;
-  feedbackMessage: { text: string; type: "success" | "error" } | null;
+  feedbackMessage: { text: string; type: "success" | "error" | "exists" } | null;
 }
 
 export default function AddVocabularyModal({
@@ -139,12 +139,17 @@ export default function AddVocabularyModal({
 
                 {feedbackMessage && (
                   <div
-                    className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-semibold border ${feedbackMessage.type === "success"
-                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20"
-                      }`}
+                    className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-semibold border ${
+                      feedbackMessage.type === "exists"
+                        ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20"
+                        : feedbackMessage.type === "success"
+                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20"
+                    }`}
                   >
-                    {feedbackMessage.type === "success" ? (
+                    {feedbackMessage.type === "exists" ? (
+                      <CheckCircle2 className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
+                    ) : feedbackMessage.type === "success" ? (
                       <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                     ) : (
                       <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />

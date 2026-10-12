@@ -93,7 +93,7 @@ const VocabularyPage = () => {
   const [userNote, setUserNote] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{
-    type: "success" | "error";
+    type: "success" | "error" | "exists";
     text: string;
   } | null>(null);
 
@@ -367,11 +367,12 @@ const VocabularyPage = () => {
 
       // Case 1: Word already exists in vault -> Redirect to details page maintaining all search params
       if (response.alreadyExists) {
+        setIsGenerating(false);
         setFeedbackMessage({
-          type: "success",
+          type: "exists",
           text:
             response.message ||
-            `This vocabulary word is already in your personal collection. Redirecting to details...`,
+            `This vocabulary word is already in your personal collection.`,
         });
 
         const wordSlug = (response.item.word?.word || targetWord)
@@ -453,6 +454,7 @@ const VocabularyPage = () => {
       }
 
       // Case 2: Newly Created Word
+      setIsGenerating(false);
       setFeedbackMessage({
         type: "success",
         text: response.message || `Successfully generated '${response.item.word.word}' with AI!`,
