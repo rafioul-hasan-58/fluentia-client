@@ -77,18 +77,18 @@ export const VocabFlashcard: React.FC<VocabFlashcardProps> = ({
     return (
         <div className="space-y-3">
             <div className="relative group/carousel">
-                {/* Desktop Prev Button (Hidden on Mobile) */}
+                {/* Desktop Prev Button (Hidden on Mobile & Tablet) */}
                 <button
                     type="button"
                     onClick={(e) => {
                         e.stopPropagation();
                         onPrev();
                     }}
-                    className="hidden sm:flex absolute -left-5 md:-left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+                    className="hidden lg:flex absolute lg:-left-12 xl:-left-14 top-1/2 -translate-y-1/2 z-20 w-11 h-11 xl:w-12 xl:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
                     title="Previous word"
                     aria-label="Previous word"
                 >
-                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6" />
                 </button>
 
                 <div
@@ -228,16 +228,16 @@ export const VocabFlashcard: React.FC<VocabFlashcardProps> = ({
                     e.stopPropagation();
                     onNext();
                 }}
-                className="hidden sm:flex absolute -right-5 md:-right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+                className="hidden lg:flex absolute lg:-right-12 xl:-right-14 top-1/2 -translate-y-1/2 z-20 w-11 h-11 xl:w-12 xl:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
                 title="Next word"
                 aria-label="Next word"
             >
-                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6" />
             </button>
         </div>
 
-        {/* Mobile Bottom Navigation Controls */}
-        <div className="flex sm:hidden items-center justify-between gap-3 pt-1">
+        {/* Mobile & Tablet Bottom Navigation Controls */}
+        <div className="flex lg:hidden items-center justify-between gap-3 pt-1">
             <button
                 type="button"
                 onClick={(e) => {

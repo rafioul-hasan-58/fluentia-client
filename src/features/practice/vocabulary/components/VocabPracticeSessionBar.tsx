@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Shuffle } from "lucide-react";
+import { Shuffle, ChevronLeft, ChevronRight } from "lucide-react";
 import { PartOfSpeech } from "@/types";
 import { POS_COLORS } from "@/features/vocabulary";
 
@@ -36,6 +36,28 @@ export const VocabPracticeSessionBar: React.FC<VocabPracticeSessionBarProps> = (
             </div>
 
             <div className="flex items-center gap-2">
+                {onPrev && onNext && (
+                    <div className="flex items-center gap-1">
+                        <button
+                            type="button"
+                            onClick={onPrev}
+                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                            title="Previous word"
+                            aria-label="Previous word"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onNext}
+                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                            title="Next word"
+                            aria-label="Next word"
+                        >
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
                 <button
                     type="button"
                     onClick={onShuffle}
