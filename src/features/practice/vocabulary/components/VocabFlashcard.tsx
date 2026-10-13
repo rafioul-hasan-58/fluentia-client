@@ -29,26 +29,75 @@ export const VocabFlashcard: React.FC<VocabFlashcardProps> = ({
     const pos = currentWord.word.partOfSpeech;
     const posConfig = POS_COLORS[pos];
 
-    return (
-        <div className="relative group/carousel">
-            {/* Backward / Prev Carousel Button */}
-            <button
-                type="button"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onPrev();
-                }}
-                className="absolute left-2 sm:-left-5 md:-left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
-                title="Previous word"
-                aria-label="Previous word"
-            >
-                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
+    // Touch gesture tracking for mobile swipe navigation
+    const touchStartX = React.useRef<number | null>(null);
+    const touchStartY = React.useRef<number | null>(null);
+    const isSwiping = React.useRef<boolean>(false);
 
-            <div
-                onClick={onToggleFlip}
-                className="min-h-[350px] sm:min-h-[390px] p-6 sm:p-10 rounded-3xl bg-white dark:bg-slate-900 border-2 border-indigo-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600/60 shadow-md cursor-pointer transition-all flex flex-col justify-between select-none group relative overflow-hidden"
-            >
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+        isSwiping.current = false;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (touchStartX.current === null) return;
+        const diffX = Math.abs(e.touches[0].clientX - touchStartX.current);
+        if (diffX > 15) {
+            isSwiping.current = true;
+        }
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStartX.current === null || touchStartY.current === null) return;
+        const diffX = touchStartX.current - e.changedTouches[0].clientX;
+        const diffY = Math.abs(touchStartY.current - e.changedTouches[0].clientY);
+
+        // If swipe distance is substantial and more horizontal than vertical
+        if (Math.abs(diffX) > 40 && Math.abs(diffX) > diffY) {
+            if (diffX > 0) {
+                onNext();
+            } else {
+                onPrev();
+            }
+        }
+
+        touchStartX.current = null;
+        touchStartY.current = null;
+        setTimeout(() => {
+            isSwiping.current = false;
+        }, 50);
+    };
+
+    const handleCardClick = () => {
+        if (isSwiping.current) return;
+        onToggleFlip();
+    };
+
+    return (
+        <div className="space-y-3">
+            <div className="relative group/carousel">
+                {/* Desktop Prev Button (Hidden on Mobile) */}
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onPrev();
+                    }}
+                    className="hidden sm:flex absolute -left-5 md:-left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+                    title="Previous word"
+                    aria-label="Previous word"
+                >
+                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+
+                <div
+                    onClick={handleCardClick}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    className="min-h-[350px] sm:min-h-[390px] p-6 sm:p-10 rounded-3xl bg-white dark:bg-slate-900 border-2 border-indigo-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600/60 shadow-md cursor-pointer transition-all flex flex-col justify-between select-none group relative overflow-hidden"
+                >
                 {/* Top card bar: Part of Speech + Flip hint */}
                 <div className="flex items-center justify-between">
                     <span
@@ -172,19 +221,49 @@ export const VocabFlashcard: React.FC<VocabFlashcardProps> = ({
                 </div>
             </div>
 
-            {/* Forward / Next Carousel Button */}
+            {/* Forward / Next Carousel Button (Desktop only) */}
             <button
                 type="button"
                 onClick={(e) => {
                     e.stopPropagation();
                     onNext();
                 }}
-                className="absolute right-2 sm:-right-5 md:-right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+                className="hidden sm:flex absolute -right-5 md:-right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-110 active:scale-95 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
                 title="Next word"
                 aria-label="Next word"
             >
                 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
         </div>
+
+        {/* Mobile Bottom Navigation Controls */}
+        <div className="flex sm:hidden items-center justify-between gap-3 pt-1">
+            <button
+                type="button"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onPrev();
+                }}
+                className="flex-1 py-3 px-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800/80 active:scale-98 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                aria-label="Previous word"
+            >
+                <ChevronLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <span>Previous</span>
+            </button>
+
+            <button
+                type="button"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onNext();
+                }}
+                className="flex-1 py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
+                aria-label="Next word"
+            >
+                <span>Next</span>
+                <ChevronRight className="w-4 h-4" />
+            </button>
+        </div>
+    </div>
     );
 };
