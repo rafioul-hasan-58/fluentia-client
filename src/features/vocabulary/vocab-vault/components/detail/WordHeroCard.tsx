@@ -132,7 +132,7 @@ export function WordHeroCard({
             className={`inline-flex items-center justify-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer border shrink-0 ${
               isPlayingAudio
                 ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-                : "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                : "bg-indigo-50 lg:hover:bg-indigo-100 dark:bg-indigo-950/60 dark:lg:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
             }`}
             title="Pronounce"
           >
@@ -218,7 +218,7 @@ export function WordHeroCard({
               {formsList.map((form) => (
                 <div
                   key={form.code}
-                  className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 hover:border-emerald-400 dark:hover:border-emerald-500/50 hover:bg-white dark:hover:bg-slate-800 transition-all flex flex-col justify-between gap-1.5 group shadow-2xs"
+                  className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 lg:hover:border-emerald-400 dark:lg:hover:border-emerald-500/50 lg:hover:bg-white dark:lg:hover:bg-slate-800 transition-all flex flex-col justify-between gap-1.5 group shadow-2xs"
                 >
                   <div className="flex items-center justify-between gap-1">
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60">
@@ -227,7 +227,7 @@ export function WordHeroCard({
                     <button
                       type="button"
                       onClick={() => playPronunciation(form.value)}
-                      className="p-1 rounded-md text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                      className="p-1 rounded-md text-slate-400 lg:hover:text-emerald-600 dark:lg:hover:text-emerald-300 lg:hover:bg-emerald-50 dark:lg:hover:bg-emerald-950/50 transition-colors cursor-pointer"
                       title={`Pronounce "${form.value}"`}
                       aria-label={`Pronounce ${form.value}`}
                     >
@@ -271,7 +271,7 @@ export function WordHeroCard({
               return (
                 <div
                   key={idx}
-                  className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:bg-white dark:hover:bg-slate-800 transition-all flex items-center justify-between gap-2.5 group shadow-2xs"
+                  className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 lg:hover:border-indigo-300 dark:lg:hover:border-indigo-500/50 lg:hover:bg-white dark:lg:hover:bg-slate-800 transition-all flex items-center justify-between gap-2.5 group shadow-2xs"
                 >
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -309,7 +309,7 @@ export function WordHeroCard({
                     <button
                       type="button"
                       onClick={() => playPronunciation(wfWord)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg text-slate-400 lg:hover:text-indigo-600 dark:lg:hover:text-indigo-300 lg:hover:bg-indigo-50 dark:lg:hover:bg-slate-700/60 transition-colors cursor-pointer"
                       title={`Pronounce "${wfWord}"`}
                       aria-label={`Pronounce ${wfWord}`}
                     >
@@ -321,7 +321,7 @@ export function WordHeroCard({
                       )}&op=translate`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg text-slate-400 lg:hover:text-emerald-600 dark:lg:hover:text-emerald-400 lg:hover:bg-emerald-50 dark:lg:hover:bg-emerald-950/50 transition-colors cursor-pointer"
                       title="Google Translator"
                       aria-label={`Google Translator for ${wfWord}`}
                     >
@@ -346,7 +346,7 @@ export function WordHeroCard({
               key={star}
               type="button"
               onClick={() => handleSetMastery(star)}
-              className="p-1 hover:scale-125 transition-transform cursor-pointer"
+              className="p-1 lg:hover:scale-125 transition-transform cursor-pointer"
               title={`Set mastery to ${star}`}
             >
               <Star

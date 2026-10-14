@@ -31,7 +31,7 @@ export function SynonymsAntonymsCard({ wordData }: SynonymsAntonymsCardProps) {
                   href={`/dashboard/user/vocabulary/${encodeURIComponent(
                     synText.toLowerCase()
                   )}`}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 hover:scale-105 transition-transform"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 lg:hover:scale-105 transition-transform"
                 >
                   <span>{synText}</span>
                   {synBangla && (
@@ -65,7 +65,7 @@ export function SynonymsAntonymsCard({ wordData }: SynonymsAntonymsCardProps) {
                   href={`/dashboard/user/vocabulary/${encodeURIComponent(
                     antText.toLowerCase()
                   )}`}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80 hover:scale-105 transition-transform"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80 lg:hover:scale-105 transition-transform"
                 >
                   <span>{antText}</span>
                   {antBangla && (

@@ -46,7 +46,7 @@ export function PracticeSentencesCard({
         <button
           type="submit"
           disabled={isAddingSentence || !newSentence.trim()}
-          className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-all cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-purple-600 lg:hover:bg-purple-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-all cursor-pointer shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add</span>
@@ -66,7 +66,7 @@ export function PracticeSentencesCard({
               <button
                 type="button"
                 onClick={() => handleDeleteSentence(idx)}
-                className="p-1 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer shrink-0"
+                className="p-1 rounded-lg text-slate-400 lg:hover:text-rose-600 dark:lg:hover:text-rose-400 transition-colors sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer shrink-0"
                 title="Delete sentence"
               >
                 <Trash2 className="w-3.5 h-3.5" />

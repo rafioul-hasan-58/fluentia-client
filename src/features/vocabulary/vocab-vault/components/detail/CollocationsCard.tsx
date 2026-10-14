@@ -54,7 +54,7 @@ export function CollocationsCard({
           return (
             <div
               key={idx}
-              className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50/90 dark:bg-slate-800/50 border border-slate-200/90 dark:border-slate-700/70 hover:border-indigo-300 dark:hover:border-indigo-500/60 hover:bg-white dark:hover:bg-slate-800/80 transition-all shadow-2xs flex flex-col justify-between gap-3 group"
+              className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50/90 dark:bg-slate-800/50 border border-slate-200/90 dark:border-slate-700/70 lg:hover:border-indigo-300 dark:lg:hover:border-indigo-500/60 lg:hover:bg-white dark:lg:hover:bg-slate-800/80 transition-all shadow-2xs flex flex-col justify-between gap-3 group"
             >
               {/* Header: Number + Phrase + Pronounce */}
               <div className="flex items-start justify-between gap-2">
@@ -63,7 +63,7 @@ export function CollocationsCard({
                     {idx + 1}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight break-words capitalize group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight break-words capitalize lg:group-hover:text-indigo-600 dark:lg:group-hover:text-indigo-400 transition-colors">
                       {colText}
                     </h4>
                   </div>
@@ -71,7 +71,7 @@ export function CollocationsCard({
                 <button
                   type="button"
                   onClick={() => playPronunciation(colText)}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
+                  className="p-1.5 rounded-xl text-slate-400 lg:hover:text-indigo-600 dark:lg:hover:text-indigo-300 lg:hover:bg-indigo-50 dark:lg:hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
                   title={`Pronounce "${colText}"`}
                   aria-label={`Pronounce ${colText}`}
                 >
@@ -112,7 +112,7 @@ export function CollocationsCard({
                     <button
                       type="button"
                       onClick={() => playPronunciation(example)}
-                      className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
+                      className="p-1 sm:p-1.5 rounded-lg text-slate-400 lg:hover:text-indigo-600 dark:lg:hover:text-indigo-300 lg:hover:bg-indigo-50 dark:lg:hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
                       title="Pronounce example sentence"
                       aria-label="Pronounce example sentence"
                     >

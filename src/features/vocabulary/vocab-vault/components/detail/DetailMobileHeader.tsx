@@ -48,7 +48,7 @@ export function DetailMobileHeader({
         <button
           type="button"
           onClick={handleExit}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs shrink-0"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs shrink-0"
           title="Exit to Vocabulary Vault"
         >
           <Minimize2 className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
@@ -63,7 +63,7 @@ export function DetailMobileHeader({
           onClick={() => navigateCarousel(-1)}
           disabled={isPrevDisabled ?? (currentIndex <= 0)}
           title="Previous Word (← Arrow key)"
-          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -78,7 +78,7 @@ export function DetailMobileHeader({
           onClick={() => navigateCarousel(1)}
           disabled={isNextDisabled ?? (currentIndex === -1 || currentIndex >= vaultListLength - 1)}
           title="Next Word (→ Arrow key)"
-          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -89,7 +89,7 @@ export function DetailMobileHeader({
         <button
           type="button"
           onClick={() => handleOpenEditModal(item)}
-          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-indigo-50/80 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 transition-all cursor-pointer border border-indigo-200/80 dark:border-indigo-800/60 shadow-xs shrink-0"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 transition-all cursor-pointer border border-indigo-200/80 dark:border-indigo-800/60 shadow-xs shrink-0"
           title="Update Vocabulary"
         >
           <Edit3 className="w-3.5 h-3.5 text-indigo-500" />
@@ -98,7 +98,7 @@ export function DetailMobileHeader({
         <button
           type="button"
           onClick={() => setItemToDelete(item)}
-          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-rose-50/90 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-500 dark:text-rose-400 transition-all cursor-pointer border border-rose-200/80 dark:border-rose-800/60 shadow-xs shrink-0"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-rose-50/90 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 transition-all cursor-pointer border border-rose-200/80 dark:border-rose-800/60 shadow-xs shrink-0"
           title="Delete Vocabulary"
         >
           <Trash2 className="w-3.5 h-3.5 text-rose-500" />
@@ -111,7 +111,7 @@ export function DetailMobileHeader({
           className={`inline-flex items-center justify-center w-7 h-7 rounded-xl transition-all cursor-pointer border shadow-xs shrink-0 ${
             item.isFavorite
               ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
-              : "bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-slate-200/90 dark:border-slate-700/80"
+              : "bg-white dark:bg-slate-800 text-slate-400 border-slate-200/90 dark:border-slate-700/80"
           }`}
         >
           <Star
@@ -124,7 +124,7 @@ export function DetailMobileHeader({
         <button
           type="button"
           onClick={handleExit}
-          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs shrink-0"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/90 dark:border-slate-700/80 shadow-xs shrink-0"
           title="Close to Vocabulary Vault (Esc)"
         >
           <X className="w-4 h-4" />

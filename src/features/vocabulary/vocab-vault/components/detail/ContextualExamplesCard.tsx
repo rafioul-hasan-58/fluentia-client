@@ -30,7 +30,7 @@ export function ContextualExamplesCard({
             <button
               type="button"
               onClick={() => playPronunciation(sent)}
-              className="p-1 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors shrink-0 cursor-pointer"
+              className="p-1 rounded-lg text-slate-400 lg:hover:text-indigo-600 dark:lg:hover:text-indigo-300 transition-colors shrink-0 cursor-pointer"
               title="Pronounce sentence"
               aria-label="Pronounce sentence"
             >

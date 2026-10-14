@@ -45,7 +45,7 @@ export function PersonalNotesCard({
             type="button"
             onClick={handleSaveNotes}
             disabled={isSavingNotes}
-            className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-indigo-600 lg:hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-all cursor-pointer"
           >
             {isSavingNotes ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />

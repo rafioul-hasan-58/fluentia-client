@@ -55,7 +55,7 @@ export function DetailNotFound({ decodedWord, onBack }: DetailNotFoundProps) {
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 lg:hover:bg-purple-700 text-white font-semibold text-sm transition-all shadow-xs cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Back to Vocabulary Vault</span>
@@ -63,7 +63,7 @@ export function DetailNotFound({ decodedWord, onBack }: DetailNotFoundProps) {
         ) : (
           <Link
             href="/dashboard/user/vocabulary"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm transition-all shadow-xs"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 lg:hover:bg-purple-700 text-white font-semibold text-sm transition-all shadow-xs"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Back to Vocabulary Vault</span>
@@ -71,7 +71,7 @@ export function DetailNotFound({ decodedWord, onBack }: DetailNotFoundProps) {
         )}
         <Link
           href="/dashboard/user/practice/vocab"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 lg:hover:bg-slate-200 dark:lg:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm transition-colors"
         >
           <span>Practice Drills</span>
           <ArrowRight className="w-4 h-4" />
