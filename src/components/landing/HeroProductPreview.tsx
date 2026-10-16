@@ -70,7 +70,7 @@ export function HeroProductPreview() {
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
             </div>
             <span className="text-slate-300 dark:text-white/20 text-xs">|</span>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-ink dark:text-white">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-ink dark:text-white whitespace-nowrap">
               <span>🧠 Fluentia Adaptive Tutor</span>
               <span className="hidden sm:inline-block text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary dark:text-purple-300 font-mono">
                 v2.4
@@ -78,7 +78,7 @@ export function HeroProductPreview() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Adaptive Engine Online
