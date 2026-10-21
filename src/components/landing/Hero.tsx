@@ -208,8 +208,8 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right Column: Interactive AI Learning Product Visualization */}
-          <div className="lg:col-span-6 mt-6 lg:mt-0">
+          {/* Right Column: Interactive AI Learning Product Visualization (Desktop only) */}
+          <div className="hidden lg:block lg:col-span-6 mt-6 lg:mt-0">
             <HeroProductPreview />
           </div>
         </div>
