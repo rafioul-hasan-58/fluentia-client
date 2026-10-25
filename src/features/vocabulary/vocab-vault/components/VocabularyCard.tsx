@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
-import { Calendar, Check, Edit3, ExternalLink, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
+import { Calendar, Check, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
 import { POS_COLORS } from "../constants/vocabularyConstants";
 import { MyVocabularyItem } from "@/types";
 
@@ -41,7 +41,6 @@ export default function VocabularyCard({
 }: VocabularyCardProps) {
   const posConfig = POS_COLORS[item.word.partOfSpeech] || POS_COLORS.NOUN;
   const isAudioPlaying = playingWord === item.word.word;
-  const isFav = item.isFavorite;
   const displayLevel = item.word.englishLevel || item.word.cefrLevel;
   const detailUrl = `/dashboard/user/vocabulary/${encodeURIComponent(
     item.word.word.toLowerCase()
@@ -126,7 +125,7 @@ export default function VocabularyCard({
                     e.stopPropagation();
                     handleToggleStoryWord(item);
                   }}
-                  className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-left cursor-pointer capitalize truncate"
+                  className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-left cursor-pointer capitalize truncate"
                   title={`Select ${item.word.word}`}
                 >
                   {item.word.word}
@@ -134,13 +133,12 @@ export default function VocabularyCard({
               ) : (
                 <Link
                   href={detailUrl}
-                  className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-left cursor-pointer capitalize truncate"
+                  className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-left cursor-pointer capitalize truncate"
                   title={`View details for ${item.word.word}`}
                 >
                   {item.word.word}
                 </Link>
               )}
-
 
               <button
                 onClick={() => playPronunciation(item.word.word)}
@@ -155,38 +153,14 @@ export default function VocabularyCard({
               </button>
             </div>
 
-            {/* Action Icons: Edit / Favorite / Delete */}
-            <div className="flex items-center gap-0.5 shrink-0">
-              <button
-                onClick={() => handleOpenEditModal(item)}
-                title="Update vocabulary"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-              </button>
-
-              <button
-                onClick={() => handleToggleFavorite(item)}
-                title={isFav ? "Remove from favorites" : "Add to favorites"}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer border ${
-                  isFav
-                    ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
-                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-              >
-                <Star
-                  className={`w-3.5 h-3.5 ${isFav ? "fill-amber-400 text-amber-400" : ""}`}
-                />
-              </button>
-
-              <button
-                onClick={() => setItemToDelete(item)}
-                title="Delete word"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            {/* Action: Delete */}
+            <button
+              onClick={() => setItemToDelete(item)}
+              title="Delete word"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           {/* Tags: Part of Speech, CEFR, Date Added, Status & Pronunciation */}
