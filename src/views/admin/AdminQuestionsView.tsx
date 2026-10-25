@@ -5,6 +5,7 @@ import { AdminHeader } from "@/components/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { LevelTestQuestion, LevelTestQuestionSet } from "@/types/level-test";
 import {
   fetchAdminLevelTestQuestions,
@@ -729,20 +730,19 @@ export function AdminQuestionsView() {
         <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-end">
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-ink-soft text-[11px] font-semibold">Per page:</span>
-            <select
+            <Select<number>
               value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
+              onChange={(newSize) => {
+                setPageSize(Number(newSize));
                 setCurrentPage(1);
               }}
-              className="h-8 px-2 rounded-lg bg-paper border border-slate-200 dark:border-white/10 text-xs font-semibold text-ink cursor-pointer"
-            >
-              {[10, 20, 30, 50].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
+              options={[10, 20, 30, 50]}
+              size="sm"
+              direction="auto"
+              triggerClassName="min-w-[4rem] font-bold"
+              dropdownClassName="w-24"
+              ariaLabel="Select questions per page"
+            />
           </div>
 
           <div className="flex items-center gap-1">

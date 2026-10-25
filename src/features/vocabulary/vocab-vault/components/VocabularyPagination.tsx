@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 
 export interface VocabularyPaginationProps {
   currentPage: number;
@@ -125,20 +126,19 @@ export default function VocabularyPagination({
           <span className="text-ink-soft text-[11px] font-semibold">
             Per page:
           </span>
-          <select
+          <Select<number>
             value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
+            onChange={(newSize) => {
+              setPageSize(Number(newSize));
               setCurrentPage(1);
             }}
-            className="h-8 px-2 rounded-lg bg-paper border border-slate-200 dark:border-white/10 text-xs font-semibold text-ink cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40"
-          >
-            {[8, 12, 24, 36, 48].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+            options={[8, 12, 24, 36, 48]}
+            size="sm"
+            direction={isTopPosition ? "down" : "auto"}
+            triggerClassName="min-w-[4rem] font-bold"
+            dropdownClassName="w-24"
+            ariaLabel="Select items per page"
+          />
         </div>
 
         <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap">

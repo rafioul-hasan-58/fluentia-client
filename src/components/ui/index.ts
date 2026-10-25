@@ -6,5 +6,4 @@ export * from "./avatar";
 export * from "./loader";
 export * from "./curved-underline";
 export * from "./FlowArrow";
-
-
+export * from "./select";
