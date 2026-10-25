@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
-import { Check, Edit3, ExternalLink, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
+import { Calendar, Check, Edit3, ExternalLink, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
 import { POS_COLORS } from "../constants/vocabularyConstants";
 import { getVerbForms, MyVocabularyItem } from "@/types";
 
@@ -49,6 +49,26 @@ export default function VocabularyCard({
     limit !== undefined ? `&limit=${limit}` : ""
   }${filterQueryString || ""}`;
 
+  const formattedDate = useMemo(() => {
+    const rawDate = item.createdAt || item.updatedAt;
+    if (!rawDate) return null;
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return null;
+    return `${d.getDate()} ${d.toLocaleString("en-US", { month: "short" })}`;
+  }, [item.createdAt, item.updatedAt]);
+
+  const fullDate = useMemo(() => {
+    const rawDate = item.createdAt || item.updatedAt;
+    if (!rawDate) return "";
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }, [item.createdAt, item.updatedAt]);
+
   return (
     <div
       onClick={isStorySelectMode ? () => handleToggleStoryWord(item) : undefined}
@@ -79,7 +99,7 @@ export default function VocabularyCard({
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-2">
             {/* Word Title & Audio */}
-            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               {/* Square Radio Button in Top Left */}
               {isStorySelectMode && (
                 <button
@@ -169,7 +189,7 @@ export default function VocabularyCard({
             </div>
           </div>
 
-          {/* Tags: Part of Speech & CEFR & Status & Pronunciation */}
+          {/* Tags: Part of Speech, CEFR, Date Added, Status & Pronunciation */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <span
               className={`px-2 py-0.5 rounded-md text-[11px] font-semibold border ${posConfig.bg} ${posConfig.text} ${posConfig.border}`}
@@ -180,6 +200,16 @@ export default function VocabularyCard({
             {displayLevel && (
               <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 {displayLevel}
+              </span>
+            )}
+
+            {formattedDate && (
+              <span
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+                title={fullDate ? `Added on ${fullDate}` : undefined}
+              >
+                <Calendar className="w-2.5 h-2.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                <span>{formattedDate}</span>
               </span>
             )}
 
