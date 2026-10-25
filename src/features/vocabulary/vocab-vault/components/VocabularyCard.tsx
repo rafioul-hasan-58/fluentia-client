@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { Calendar, Check, Edit3, ExternalLink, Maximize2, Star, Trash2, Volume2 } from "lucide-react";
 import { POS_COLORS } from "../constants/vocabularyConstants";
-import { getVerbForms, MyVocabularyItem } from "@/types";
+import { MyVocabularyItem } from "@/types";
 
 interface VocabularyCardProps {
   item: MyVocabularyItem;
@@ -244,30 +244,6 @@ export default function VocabularyCard({
         <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
           {item.word.meaning}
         </p>
-
-        {/* Verb Forms Preview (if VERB) */}
-        {item.word.partOfSpeech === "VERB" && (() => {
-          const vf = item.word.verbForms || getVerbForms(item.word);
-          if (!vf) return null;
-          return (
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 bg-emerald-50/50 dark:bg-emerald-950/20 px-2.5 py-1 rounded-lg border border-emerald-200/50 dark:border-emerald-800/40 overflow-x-auto scrollbar-none">
-              <span className="font-bold text-emerald-700 dark:text-emerald-400 text-[10px] uppercase shrink-0">
-                Forms:
-              </span>
-              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V1 (Base)">
-                {vf.v1}
-              </span>
-              <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
-              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V2 (Past Simple)">
-                {vf.v2}
-              </span>
-              <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
-              <span className="font-semibold text-slate-900 dark:text-slate-200" title="V3 (Past Participle)">
-                {vf.v3}
-              </span>
-            </div>
-          );
-        })()}
       </div>
 
       {/* Card Bottom Bar: Mastery Stars + Details (Full Screen) Button */}
